@@ -8,6 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/web3@4.4.0/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/modal@2.6.2/dist/index.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.10.0/dist/index.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -23,6 +25,11 @@
       background: #1f2937; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;
       white-space: nowrap; z-index: 10;
     }
+    .connection-status {
+      display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 12px;
+    }
+    .connected { background: #d1fae5; color: #065f46; }
+    .disconnected { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
@@ -41,7 +48,7 @@
       const [tokenContract, setTokenContract] = useState('');
       const [tokenType, setTokenType] = useState('native');
       const [tokenIds, setTokenIds] = useState('');
-      const [status, setStatus] = useState('Welcome! Follow these steps:\n1. Click "Test Connection" to verify RPC.\n2. Click "Connect Wallet" to link MetaMask (approve in MetaMask).\n3. Ensure Cronos Mainnet is selected.\n4. Enter your NFT contract address and token IDs.\n5. Fetch holders and send airdrops or rewards.\nIf MetaMask disconnects, click "Reconnect Wallet", update MetaMask, or try a custom RPC (e.g., https://cronos-rpc.publicnode.com).\n');
+      const [status, setStatus] = useState('Welcome! Follow these steps:\n1. Click "Test Connection" to verify RPC.\n2. Choose MetaMask or WalletConnect to link your wallet.\n3. Ensure Cronos Mainnet is selected.\n4. Enter your NFT contract address and token IDs.\n5. Fetch holders and send airdrops or rewards.\nIf disconnected, click "Reconnect Wallet", try WalletConnect, or use a custom RPC (e.g., https://cronos-rpc.publicnode.com).\n');
       const [isLoading, setIsLoading] = useState(false);
       const [nftContract, setNftContract] = useState('');
       const [startTokenId, setStartTokenId] = useState('1');
@@ -55,6 +62,8 @@
       const [theme, setTheme] = useState('light');
       const [customRpc, setCustomRpc] = useState('');
       const [batchSize, setBatchSize] = useState('2');
+      const [walletProvider, setWalletProvider] = useState('MetaMask');
+      const [walletConnectModal, setWalletConnectModal] = useState(null);
 
       const networks = [
         {
@@ -147,6 +156,44 @@
         }
       ];
 
+      useEffect(() => {
+        const initWalletConnectModal = async () => {
+          // Wait for WalletConnectModal to load
+          const waitForWalletConnectModal = () => {
+            return new Promise((resolve, reject) => {
+              let attempts = 0;
+              const maxAttempts = 10;
+              const interval = setInterval(() => {
+                if (window.WalletConnectModal) {
+                  clearInterval(interval);
+                  resolve(window.WalletConnectModal);
+                } else if (attempts >= maxAttempts) {
+                  clearInterval(interval);
+                  reject(new Error('WalletConnectModal failed to load after maximum attempts.'));
+                }
+                attempts++;
+              }, 500);
+            });
+          };
+
+          try {
+            await waitForWalletConnectModal();
+            const modal = new window.WalletConnectModal({
+              projectId: 'YOUR_WALLET_CONNECT_PROJECT_ID', // Replace with your WalletConnect Project ID
+              themeMode: theme,
+              themeVariables: {
+                '--wcm-z-index': '1000'
+              }
+            });
+            setWalletConnectModal(modal);
+            setStatus(prev => `${prev}WalletConnectModal initialized successfully.\n`);
+          } catch (error) {
+            setStatus(prev => `${prev}Error: WalletConnectModal not loaded. Please refresh and try again or use MetaMask.\n`);
+          }
+        };
+        initWalletConnectModal();
+      }, [theme]);
+
       const toggleTheme = () => {
         setTheme(theme === 'light' ? 'dark' : 'light');
         document.documentElement.classList.toggle('dark');
@@ -156,9 +203,16 @@
         return window.ethereum && window.ethereum.isConnected();
       };
 
-      const reconnectMetaMask = async (retries = 12, delay = 5000) => {
+      const checkWalletConnectConnection = (provider) => {
+        return provider && provider.connected;
+      };
+
+      const reconnectMetaMask = async (retries = 15, delay = 5000) => {
         for (let i = 0; i < retries; i++) {
-          if (checkMetaMaskConnection()) return true;
+          if (checkMetaMaskConnection()) {
+            setStatus(prev => `${prev}MetaMask reconnected successfully.\n`);
+            return true;
+          }
           setStatus(prev => `${prev}MetaMask disconnected. Attempting to reconnect (${i + 1}/${retries})...\n`);
           try {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -169,7 +223,7 @@
             await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
-        setStatus(prev => `${prev}Failed to reconnect MetaMask after ${retries} attempts. Please reload the page, click "Reconnect Wallet", ensure MetaMask is unlocked, or try a custom RPC (e.g., https://cronos-rpc.publicnode.com).\n`);
+        setStatus(prev => `${prev}Failed to reconnect MetaMask after ${retries} attempts. Try WalletConnect or a custom RPC (e.g., https://cronos-rpc.publicnode.com).\n`);
         return false;
       };
 
@@ -195,7 +249,7 @@
 
       useEffect(() => {
         const checkExistingConnection = async () => {
-          if (checkMetaMaskConnection()) {
+          if (walletProvider === 'MetaMask' && checkMetaMaskConnection()) {
             try {
               const accounts = await window.ethereum.request({ method: 'eth_accounts' });
               if (accounts.length > 0) {
@@ -209,109 +263,120 @@
                 setNetwork(matchedNetwork.name);
                 setTokenType('native');
                 setRewardType('native');
-                setStatus(prev => `${prev}Detected existing MetaMask connection: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}. Select Cronos Mainnet and enter your NFT contract to continue.\n`);
+                setStatus(prev => `${prev}Detected existing MetaMask connection: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}.\n`);
               }
             } catch (error) {
-              setStatus(prev => `${prev}Error checking existing MetaMask connection: ${error.message}. Click "Connect Wallet" to try again.\n`);
+              setStatus(prev => `${prev}Error checking MetaMask connection: ${error.message}. Try WalletConnect or reconnect.\n`);
             }
           }
         };
         checkExistingConnection();
-      }, []);
+      }, [walletProvider]);
 
       useEffect(() => {
         const interval = setInterval(async () => {
-          if (!checkMetaMaskConnection()) {
-            setStatus(prev => `${prev}MetaMask disconnected. Please click "Reconnect Wallet" or reload the page.\n`);
+          if (walletProvider === 'MetaMask' && !checkMetaMaskConnection()) {
+            setStatus(prev => `${prev}MetaMask disconnected. Please click "Reconnect Wallet" or try WalletConnect.\n`);
+            setAccount(null);
+            setWeb3(null);
+          } else if (walletProvider === 'WalletConnect' && web3 && !checkWalletConnectConnection(web3.currentProvider)) {
+            setStatus(prev => `${prev}WalletConnect disconnected. Please reconnect using WalletConnect.\n`);
             setAccount(null);
             setWeb3(null);
           }
         }, 5000);
         return () => clearInterval(interval);
-      }, []);
+      }, [walletProvider, web3]);
 
-      const testConnection = async () => {
+      const connectWallet = useCallback(async () => {
         setIsLoading(true);
-        setStatus(prev => `${prev}Testing RPC and wallet connection...\n`);
+        setStatus(prev => `${prev}Attempting to connect via ${walletProvider}...\n`);
 
-        const selectedNetwork = networks.find(n => n.name === network);
-        let rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-
-        try {
-          const web3Test = new Web3(rpcUrl);
-          const chainId = await web3Test.eth.getChainId();
-          if (parseInt(chainId) !== parseInt(selectedNetwork.chainId, 16)) {
-            setStatus(prev => `${prev}Error: RPC chain ID (${chainId}) does not match selected network (${selectedNetwork.chainId}). Please use a valid Cronos RPC (e.g., https://cronos-rpc.publicnode.com).\n`);
+        if (walletProvider === 'MetaMask') {
+          if (!window.ethereum) {
+            setStatus(prev => `${prev}Error: MetaMask not detected. Please install MetaMask or try WalletConnect.\n`);
             setIsLoading(false);
             return;
           }
-          setStatus(prev => `${prev}Success: RPC connection to ${rpcUrl} is working.\n`);
-
-          if (checkMetaMaskConnection()) {
-            try {
-              await window.ethereum.request({ method: 'eth_requestAccounts' });
-              setStatus(prev => `${prev}Success: MetaMask is available and responsive.\n`);
-            } catch (error) {
-              setStatus(prev => `${prev}Error: MetaMask failed to respond: ${error.message}. Try updating MetaMask, disabling conflicting extensions, or using a custom RPC.\n`);
+          const selectedNetwork = networks.find(n => n.name === network);
+          const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
+          try {
+            const web3Instance = new Web3(rpcUrl);
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const accounts = await web3Instance.eth.getAccounts();
+            if (accounts.length > 0) {
+              setWeb3(web3Instance);
+              setAccount(accounts[0]);
+              const chainId = await web3Instance.eth.getChainId();
+              const matchedNetwork = networks.find(n => n.chainId === `0x${chainId.toString(16)}`) || { name: 'Unknown', nativeCurrency: 'Unknown', blockTime: 12 };
+              setNetwork(matchedNetwork.name);
+              setTokenType('native');
+              setRewardType('native');
+              setStatus(prev => `${prev}MetaMask connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}.\n`);
+            } else {
+              setStatus(prev => `${prev}No accounts returned from MetaMask. Please ensure MetaMask is unlocked.\n`);
             }
-          } else {
-            setStatus(prev => `${prev}Error: MetaMask not detected. Please ensure MetaMask is installed and unlocked.\n`);
+          } catch (error) {
+            setStatus(prev => `${prev}Error connecting MetaMask: ${error.message}${error.message.includes('User rejected') ? '. Please approve in MetaMask.' : error.message.includes('Premature close') ? '. Try WalletConnect or a custom RPC.' : ''}\n`);
+          } finally {
+            setIsLoading(false);
           }
-        } catch (error) {
-          setStatus(prev => `${prev}Error testing RPC connection: ${error.message}. Try a different RPC (e.g., https://cronos-rpc.publicnode.com) or check your internet connection.\n`);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      const connectWallet = useCallback(async () => {
-        if (!window.ethereum) {
-          setStatus(prev => `${prev}Error: MetaMask not detected. Please install MetaMask and refresh the page.\n`);
-          return;
-        }
-
-        setIsLoading(true);
-        setStatus(prev => `${prev}Attempting to connect MetaMask...\n`);
-
-        const selectedNetwork = networks.find(n => n.name === network);
-        const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-
-        try {
-          const web3Instance = new Web3(rpcUrl);
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
-          const accounts = await web3Instance.eth.getAccounts();
-          if (accounts.length > 0) {
-            setWeb3(web3Instance);
-            setAccount(accounts[0]);
-            const chainId = await web3Instance.eth.getChainId();
-            const matchedNetwork = networks.find(n => n.chainId === `0x${chainId.toString(16)}`) || { name: 'Unknown', nativeCurrency: 'Unknown', blockTime: 12 };
-            setNetwork(matchedNetwork.name);
-            setTokenType('native');
-            setRewardType('native');
-            setStatus(prev => `${prev}MetaMask connected successfully: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}. Select Cronos Mainnet and enter your NFT contract to continue.\n`);
-          } else {
-            setStatus(prev => `${prev}No accounts returned from MetaMask. Please ensure MetaMask is unlocked and try again.\n`);
+        } else if (walletProvider === 'WalletConnect') {
+          if (!window.EthereumProvider || !window.WalletConnectModal) {
+            setStatus(prev => `${prev}Error: WalletConnect libraries not loaded. Please refresh and try again.\n`);
+            setIsLoading(false);
+            return;
           }
-        } catch (error) {
-          setStatus(prev => `${prev}Error connecting to MetaMask: ${error.message}${error.message.includes('User rejected') ? '. Please approve the connection in MetaMask.' : error.message.includes('Premature close') ? '. Try updating MetaMask, reloading the page, or using a different RPC.' : ''}. Check browser console for details.\n`);
-          console.error('MetaMask connection error:', error);
-        } finally {
-          setIsLoading(false);
+          try {
+            const provider = await window.EthereumProvider.init({
+              projectId: 'YOUR_WALLET_CONNECT_PROJECT_ID', // Replace with your WalletConnect Project ID
+              chains: [parseInt(networks.find(n => n.name === network).chainId, 16)],
+              optionalChains: networks.map(n => parseInt(n.chainId, 16)),
+              rpcMap: networks.reduce((acc, n) => ({
+                ...acc,
+                [parseInt(n.chainId, 16)]: customRpc || n.rpcUrls[0]
+              }), {}),
+              showQrModal: false
+            });
+
+            await walletConnectModal.openModal({ provider });
+            await provider.connect();
+            const web3Instance = new Web3(provider);
+            const accounts = await web3Instance.eth.getAccounts();
+            if (accounts.length > 0) {
+              setWeb3(web3Instance);
+              setAccount(accounts[0]);
+              const chainId = await web3Instance.eth.getChainId();
+              const matchedNetwork = networks.find(n => n.chainId === `0x${chainId.toString(16)}`) || { name: 'Unknown', nativeCurrency: 'Unknown', blockTime: 12 };
+              setNetwork(matchedNetwork.name);
+              setTokenType('native');
+              setRewardType('native');
+              setStatus(prev => `${prev}WalletConnect connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}.\n`);
+            }
+            walletConnectModal.closeModal();
+          } catch (error) {
+            setStatus(prev => `${prev}Error connecting WalletConnect: ${error.message}. Try MetaMask or a custom RPC.\n`);
+            walletConnectModal.closeModal();
+          } finally {
+            setIsLoading(false);
+          }
         }
-      }, [network, customRpc]);
+      }, [walletProvider, network, customRpc, walletConnectModal]);
 
       useEffect(() => {
-        if (window.ethereum) {
+        if (!web3 || !account) return;
+        const provider = web3.currentProvider;
+        if (walletProvider === 'MetaMask' && window.ethereum) {
           const handleAccountsChanged = async (accounts) => {
             if (!checkMetaMaskConnection()) {
-              setStatus(prev => `${prev}MetaMask disconnected. Please click "Reconnect Wallet" or reload the page.\n`);
+              setStatus(prev => `${prev}MetaMask disconnected. Please reconnect or try WalletConnect.\n`);
               setAccount(null);
               setWeb3(null);
               return;
             }
             if (accounts.length > 0) {
               setAccount(accounts[0]);
-              setStatus(prev => `${prev}Wallet account changed: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}. Ready to proceed.\n`);
+              setStatus(prev => `${prev}MetaMask account changed: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}.\n`);
             } else {
               disconnectWallet();
             }
@@ -319,7 +384,7 @@
 
           const handleChainChanged = async (chainId) => {
             if (!checkMetaMaskConnection()) {
-              setStatus(prev => `${prev}MetaMask disconnected. Please click "Reconnect Wallet" or reload the page.\n`);
+              setStatus(prev => `${prev}MetaMask disconnected. Please reconnect or try WalletConnect.\n`);
               setAccount(null);
               setWeb3(null);
               return;
@@ -328,14 +393,12 @@
             setNetwork(selectedNetwork.name);
             setTokenType('native');
             setRewardType('native');
-            setStatus(prev => `${prev}Network changed to ${selectedNetwork.name}. Enter your NFT contract to fetch holders.\n`);
+            setStatus(prev => `${prev}Network changed to ${selectedNetwork.name}.\n`);
             try {
               const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-              if (accounts.length > 0) {
-                setAccount(accounts[0]);
-              }
+              if (accounts.length > 0) setAccount(accounts[0]);
             } catch (error) {
-              setStatus(prev => `${prev}Error fetching accounts after network change: ${error.message}.\n`);
+              setStatus(prev => `${prev}Error fetching accounts: ${error.message}.\n`);
             }
           };
 
@@ -346,7 +409,7 @@
             handleAccountsChanged([]);
           });
           window.ethereum.on('disconnect', () => {
-            setStatus(prev => `${prev}MetaMask disconnected. Please click "Reconnect Wallet" or reload the page.\n`);
+            setStatus(prev => `${prev}MetaMask disconnected. Please reconnect or try WalletConnect.\n`);
             disconnectWallet();
           });
 
@@ -356,54 +419,112 @@
             window.ethereum.removeListener('connect', handleAccountsChanged);
             window.ethereum.removeListener('disconnect', disconnectWallet);
           };
+        } else if (walletProvider === 'WalletConnect') {
+          const handleAccountsChanged = async (accounts) => {
+            if (!checkWalletConnectConnection(provider)) {
+              setStatus(prev => `${prev}WalletConnect disconnected. Please reconnect.\n`);
+              setAccount(null);
+              setWeb3(null);
+              return;
+            }
+            if (accounts.length > 0) {
+              setAccount(accounts[0]);
+              setStatus(prev => `${prev}WalletConnect account changed: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}.\n`);
+            } else {
+              disconnectWallet();
+            }
+          };
+
+          const handleChainChanged = async (chainId) => {
+            if (!checkWalletConnectConnection(provider)) {
+              setStatus(prev => `${prev}WalletConnect disconnected. Please reconnect.\n`);
+              setAccount(null);
+              setWeb3(null);
+              return;
+            }
+            const selectedNetwork = networks.find(n => n.chainId === `0x${chainId.toString(16)}`) || { name: 'Unknown', nativeCurrency: 'Unknown', blockTime: 12 };
+            setNetwork(selectedNetwork.name);
+            setTokenType('native');
+            setRewardType('native');
+            setStatus(prev => `${prev}Network changed to ${selectedNetwork.name}.\n`);
+            try {
+              const accounts = await provider.request({ method: 'eth_accounts' });
+              if (accounts.length > 0) setAccount(accounts[0]);
+            } catch (error) {
+              setStatus(prev => `${prev}Error fetching accounts: ${error.message}.\n`);
+            }
+          };
+
+          provider.on('accountsChanged', handleAccountsChanged);
+          provider.on('chainChanged', handleChainChanged);
+          provider.on('connect', () => {
+            setStatus(prev => `${prev}WalletConnect connected. Checking accounts...\n`);
+            handleAccountsChanged([]);
+          });
+          provider.on('disconnect', () => {
+            setStatus(prev => `${prev}WalletConnect disconnected. Please reconnect.\n`);
+            disconnectWallet();
+          });
+
+          return () => {
+            provider.removeListener('accountsChanged', handleAccountsChanged);
+            provider.removeListener('chainChanged', handleChainChanged);
+            provider.removeListener('connect', handleAccountsChanged);
+            provider.removeListener('disconnect', disconnectWallet);
+          };
         }
-      }, []);
+      }, [web3, account, walletProvider]);
 
       const switchNetwork = async (chainId) => {
         try {
-          if (!checkMetaMaskConnection()) {
-            setStatus(prev => `${prev}MetaMask is disconnected. Please click "Reconnect Wallet" or reload the page.\n`);
-            return;
-          }
-          const network = networks.find(n => n.chainId === chainId);
-          const rpcUrl = customRpc || await getValidRpcUrl(network.rpcUrls);
-
-          try {
-            await window.ethereum.request({
+          if (walletProvider === 'MetaMask') {
+            if (!checkMetaMaskConnection()) {
+              setStatus(prev => `${prev}MetaMask disconnected. Please reconnect or try WalletConnect.\n`);
+              return;
+            }
+            const network = networks.find(n => n.chainId === chainId);
+            const rpcUrl = customRpc || await getValidRpcUrl(network.rpcUrls);
+            try {
+              await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId }]
+              });
+            } catch (switchError) {
+              if (switchError.code === 4902) {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: chainId,
+                    chainName: network.name,
+                    nativeCurrency: { name: network.nativeCurrency, symbol: network.nativeCurrency, decimals: 18 },
+                    rpcUrls: [rpcUrl],
+                    blockExplorerUrls: network.blockExplorerUrls
+                  }]
+                });
+              } else {
+                throw switchError;
+              }
+            }
+          } else if (walletProvider === 'WalletConnect') {
+            await web3.currentProvider.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId }]
             });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: chainId,
-                  chainName: network.name,
-                  nativeCurrency: {
-                    name: network.nativeCurrency,
-                    symbol: network.nativeCurrency,
-                    decimals: 18
-                  },
-                  rpcUrls: [rpcUrl],
-                  blockExplorerUrls: network.blockExplorerUrls
-                }]
-              });
-            } else {
-              throw switchError;
-            }
           }
           const selectedNetwork = networks.find(n => n.chainId === chainId) || { name: 'Unknown', nativeCurrency: 'Unknown', blockTime: 12 };
           setNetwork(selectedNetwork.name);
           setTokenType('native');
           setRewardType('native');
-          setStatus(prev => `${prev}Switched to ${selectedNetwork.name}. Enter your NFT contract to fetch holders.\n`);
+          setStatus(prev => `${prev}Switched to ${selectedNetwork.name}.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}Error switching network: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask, reloading the page, or using a different RPC.' : ''}. Please try again.\n`);
+          setStatus(prev => `${prev}Error switching network: ${error.message}. Try a custom RPC.\n`);
         }
       };
 
       const disconnectWallet = () => {
+        if (walletProvider === 'WalletConnect' && web3?.currentProvider?.disconnect) {
+          web3.currentProvider.disconnect();
+        }
         setAccount(null);
         setWeb3(null);
         setNetwork('Cronos Mainnet');
@@ -423,25 +544,61 @@
         setRewardTokenContract('');
         setCustomRpc('');
         setBatchSize('2');
-        setStatus(prev => `${prev}Wallet disconnected. Click "Test Connection" then "Connect Wallet" to reconnect and start again.\n`);
+        setStatus(prev => `${prev}Wallet disconnected. Click "Test Connection" then connect via MetaMask or WalletConnect.\n`);
+      };
+
+      const testConnection = async () => {
+        setIsLoading(true);
+        setStatus(prev => `${prev}Testing RPC and wallet connection...\n`);
+
+        const selectedNetwork = networks.find(n => n.name === network);
+        let rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
+
+        try {
+          const web3Test = new Web3(rpcUrl);
+          const chainId = await web3Test.eth.getChainId();
+          if (parseInt(chainId) !== parseInt(selectedNetwork.chainId, 16)) {
+            setStatus(prev => `${prev}Error: RPC chain ID (${chainId}) does not match ${selectedNetwork.name} (${selectedNetwork.chainId}). Use a valid RPC.\n`);
+            setIsLoading(false);
+            return;
+          }
+          setStatus(prev => `${prev}Success: RPC connection to ${rpcUrl} is working.\n`);
+
+          if (walletProvider === 'MetaMask' && checkMetaMaskConnection()) {
+            try {
+              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              setStatus(prev => `${prev}Success: MetaMask is responsive.\n`);
+            } catch (error) {
+              setStatus(prev => `${prev}Error: MetaMask failed: ${error.message}. Try WalletConnect or a custom RPC.\n`);
+            }
+          } else if (walletProvider === 'WalletConnect' && web3 && checkWalletConnectConnection(web3.currentProvider)) {
+            setStatus(prev => `${prev}Success: WalletConnect is responsive.\n`);
+          } else {
+            setStatus(prev => `${prev}Error: No wallet detected. Ensure ${walletProvider} is installed and unlocked.\n`);
+          }
+        } catch (error) {
+          setStatus(prev => `${prev}Error testing RPC: ${error.message}. Try a custom RPC.\n`);
+        } finally {
+          setIsLoading(false);
+        }
       };
 
       const fetchNftHolders = async () => {
         if (!web3 || !account) {
-          setStatus(prev => `${prev}Wallet not connected. Please click "Connect Wallet" and ensure MetaMask is unlocked.\n`);
+          setStatus(prev => `${prev}Wallet not connected. Connect via ${walletProvider}.\n`);
           return;
         }
 
-        if (!checkMetaMaskConnection()) {
-          const reconnected = await reconnectMetaMask();
+        if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+          const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
           if (!reconnected) {
-            setStatus(prev => `${prev}Cannot proceed with fetching NFT holders. Please reconnect your wallet.\n`);
+            setStatus(prev => `${prev}Cannot fetch NFT holders. Reconnect via ${walletProvider} or try the other provider.\n`);
             return;
           }
         }
 
         if (!web3.utils.isAddress(nftContract)) {
-          setStatus(prev => `${prev}Invalid NFT contract address. Please enter a valid address (e.g., 0x...) and verify it on Cronoscan (https://cronoscan.com).\n`);
+          setStatus(prev => `${prev}Invalid NFT contract address. Enter a valid address (e.g., 0x...).\n`);
           return;
         }
 
@@ -449,21 +606,21 @@
         if (useSpecificIds) {
           tokenIdList = specificTokenIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id >= 0);
           if (tokenIdList.length === 0) {
-            setStatus(prev => `${prev}Please provide valid comma-separated token IDs (e.g., 1,2,3).\n`);
+            setStatus(prev => `${prev}Provide valid comma-separated token IDs (e.g., 1,2,3).\n`);
             return;
           }
         } else {
           const start = parseInt(startTokenId);
           const end = parseInt(endTokenId);
           if (isNaN(start) || isNaN(end) || start > end || start < 0) {
-            setStatus(prev => `${prev}Invalid token ID range. Start must be less than or equal to end and non-negative (e.g., 1 to 5).\n`);
+            setStatus(prev => `${prev}Invalid token ID range. Start must be <= end and non-negative.\n`);
             return;
           }
           tokenIdList = Array.from({ length: end - start + 1 }, (_, i) => start + i);
         }
 
         if (tokenIdList.length > 5) {
-          setStatus(prev => `${prev}Too many token IDs (max 5). Please reduce the range or use specific IDs to avoid wallet issues.\n`);
+          setStatus(prev => `${prev}Too many token IDs (max 5). Reduce range or use specific IDs.\n`);
           return;
         }
 
@@ -473,15 +630,15 @@
 
         const retry = async (fn, retries = 5, baseDelay = 1000) => {
           for (let i = 0; i < retries; i++) {
-            if (!checkMetaMaskConnection()) {
-              setStatus(prev => `${prev}MetaMask disconnected during operation. Please click "Reconnect Wallet" or reload the page.\n`);
+            if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+              setStatus(prev => `${prev}${walletProvider} disconnected. Please reconnect.\n`);
               return;
             }
             try {
               return await fn();
             } catch (error) {
               if (i === retries - 1) throw error;
-              setStatus(prev => `${prev}Retrying operation (${i + 1}/${retries}) after ${baseDelay * Math.pow(2, i)}ms...\n`);
+              setStatus(prev => `${prev}Retrying (${i + 1}/${retries}) after ${baseDelay * Math.pow(2, i)}ms...\n`);
               await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, i)));
             }
           }
@@ -490,7 +647,7 @@
         try {
           const selectedNetwork = networks.find(n => n.name === network);
           const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-          const web3Instance = new Web3(rpcUrl);
+          const web3Instance = new Web3(walletProvider === 'WalletConnect' ? web3.currentProvider : rpcUrl);
           setWeb3(web3Instance);
           const contract = new web3Instance.eth.Contract(erc721Abi, nftContract);
 
@@ -501,21 +658,21 @@
               holders.push({ tokenId, owner });
               setStatus(prev => `${prev}Fetched owner for token ${tokenId}: ${owner.slice(0, 6)}...${owner.slice(-4)}.\n`);
             } catch (error) {
-              setStatus(prev => `${prev}Error fetching owner for token ${tokenId}: ${error.message}. Possibly unminted or invalid token. Skipping.\n`);
+              setStatus(prev => `${prev}Error fetching token ${tokenId}: ${error.message}. Skipping.\n`);
             }
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 300));
           }
 
           if (holders.length === 0) {
-            setStatus(prev => `${prev}No valid holders found for the specified token IDs. Check the contract address on Cronoscan (https://cronoscan.com) or try different token IDs (e.g., 1 to 5).\n`);
+            setStatus(prev => `${prev}No valid holders found. Check contract on Cronoscan or try different token IDs.\n`);
             setIsLoading(false);
             return;
           }
 
           setNftHolders(holders);
-          setStatus(prev => `${prev}Fetched ${holders.length} NFT holders successfully.\n`);
+          setStatus(prev => `${prev}Fetched ${holders.length} NFT holders.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}Error fetching NFT holders: ${error.message}. Please check the contract address, use a premium RPC (e.g., QuickNode), or verify on Cronoscan (https://cronoscan.com).\n`);
+          setStatus(prev => `${prev}Error fetching NFT holders: ${error.message}. Check contract or use a premium RPC.\n`);
         } finally {
           setIsLoading(false);
         }
@@ -523,64 +680,54 @@
 
       const sendBatchNativeRewards = async () => {
         if (!web3 || !account) {
-          setStatus(prev => `${prev}Wallet not connected. Please click "Connect Wallet" and ensure MetaMask is unlocked.\n`);
+          setStatus(prev => `${prev}Wallet not connected. Connect via ${walletProvider}.\n`);
           return;
         }
 
-        if (!checkMetaMaskConnection()) {
-          const reconnected = await reconnectMetaMask(12, 5000);
+        if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+          const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
           if (!reconnected) {
-            setStatus(prev => `${prev}Cannot proceed with reward distribution. Please reload the page, click "Reconnect Wallet", and ensure MetaMask is unlocked.\n`);
+            setStatus(prev => `${prev}Cannot send rewards. Reconnect via ${walletProvider} or try the other provider.\n`);
             setIsLoading(false);
             return;
           }
         }
 
         if (nftHolders.length === 0) {
-          setStatus(prev => `${prev}No NFT holders fetched. Please fetch holders first using a valid NFT contract address.\n`);
+          setStatus(prev => `${prev}No NFT holders fetched. Fetch holders first.\n`);
           return;
         }
 
         if (!rewardAmount || isNaN(rewardAmount) || parseFloat(rewardAmount) <= 0) {
-          setStatus(prev => `${prev}Invalid reward amount. Please enter a positive number (e.g., 1 CRO).\n`);
+          setStatus(prev => `${prev}Invalid reward amount. Enter a positive number (e.g., 1 CRO).\n`);
           return;
         }
 
         const batchSizeNum = parseInt(batchSize);
         if (isNaN(batchSizeNum) || batchSizeNum < 1 || batchSizeNum > 3) {
-          setStatus(prev => `${prev}Invalid batch size. Please enter a number between 1 and 3.\n`);
+          setStatus(prev => `${prev}Invalid batch size. Enter 1-3.\n`);
           return;
         }
 
         if (nftHolders.length > batchSizeNum) {
-          setStatus(prev => `${prev}Too many NFT holders (max ${batchSizeNum}). Please fetch a smaller range of token IDs or increase the batch size.\n`);
+          setStatus(prev => `${prev}Too many NFT holders (max ${batchSizeNum}). Reduce token IDs or increase batch size.\n`);
           return;
         }
 
-        const confirm = window.confirm(`Are you sure you want to send ${rewardAmount} CRO to ${nftHolders.length} NFT holders? Confirm each transaction in MetaMask.`);
+        const confirm = window.confirm(`Send ${rewardAmount} ${networks.find(n => n.name === network)?.nativeCurrency || 'CRO'} to ${nftHolders.length} NFT holders? Confirm each transaction in ${walletProvider}.`);
         if (!confirm) {
-          setStatus(prev => `${prev}Reward distribution cancelled by user.\n`);
+          setStatus(prev => `${prev}Reward distribution cancelled.\n`);
           return;
         }
 
         setIsLoading(true);
-        setStatus(prev => `${prev}Preparing to send native rewards to ${nftHolders.length} NFT holders (batch size: ${batchSizeNum})... Please confirm each transaction in MetaMask and keep the MetaMask window open.\n`);
+        setStatus(prev => `${prev}Sending native rewards to ${nftHolders.length} holders (batch size: ${batchSizeNum})... Confirm in ${walletProvider}.\n`);
 
         try {
           const selectedNetwork = networks.find(n => n.name === network);
           const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-          const web3Instance = new Web3(rpcUrl);
+          const web3Instance = new Web3(walletProvider === 'WalletConnect' ? web3.currentProvider : rpcUrl);
           setWeb3(web3Instance);
-
-          try {
-            await web3Instance.eth.getChainId();
-            setStatus(prev => `${prev}RPC connection validated: ${rpcUrl}.\n`);
-          } catch (error) {
-            setStatus(prev => `${prev}RPC validation failed: ${error.message}. Switching to fallback RPC or use a custom RPC (e.g., https://cronos-rpc.publicnode.com).\n`);
-            const fallbackRpc = await getValidRpcUrl(selectedNetwork.rpcUrls.filter(url => url !== rpcUrl));
-            setWeb3(new Web3(fallbackRpc));
-            setStatus(prev => `${prev}Switched to fallback RPC: ${fallbackRpc}.\n`);
-          }
 
           let nonce = await web3Instance.eth.getTransactionCount(account, 'pending');
           const amountWei = web3Instance.utils.toWei(rewardAmount, 'ether');
@@ -588,10 +735,10 @@
           let successCount = 0;
 
           for (let i = 0; i < validRecipients.length; i++) {
-            if (!checkMetaMaskConnection()) {
-              const reconnected = await reconnectMetaMask(12, 5000);
+            if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+              const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
               if (!reconnected) {
-                setStatus(prev => `${prev}MetaMask disconnected during reward distribution. Please reload the page, click "Reconnect Wallet", ensure MetaMask is unlocked, and try again.\n`);
+                setStatus(prev => `${prev}${walletProvider} disconnected. Reconnect and try again.\n`);
                 setIsLoading(false);
                 return;
               }
@@ -601,7 +748,7 @@
             const amount = (BigInt(amountWei) / BigInt(nftHolders.length)).toString();
 
             if (BigInt(amount) <= 0) {
-              setStatus(prev => `${prev}Skipping ${recipient}: Invalid or zero amount.\n`);
+              setStatus(prev => `${prev}Skipping ${recipient}: Invalid amount.\n`);
               continue;
             }
 
@@ -615,51 +762,20 @@
             };
 
             try {
-              setStatus(prev => `${prev}Awaiting MetaMask signature for ${web3Instance.utils.fromWei(amount, 'ether')} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient.slice(0, 6)}...${recipient.slice(-4)}...\n`);
-              const txHash = await new Promise((resolve, reject) => {
-                let attempts = 0;
-                const maxAttempts = 4;
-                const timeoutMs = 30000;
-
-                const trySend = async () => {
-                  const timeout = setTimeout(() => {
-                    reject(new Error('Transaction timed out: MetaMask did not respond within 30 seconds.'));
-                  }, timeoutMs);
-
-                  try {
-                    const result = await window.ethereum.request({
-                      method: 'eth_sendTransaction',
-                      params: [tx]
-                    });
-                    clearTimeout(timeout);
-                    resolve(result);
-                  } catch (error) {
-                    clearTimeout(timeout);
-                    attempts++;
-                    if (attempts >= maxAttempts || (!error.message.includes('Premature close') && !error.message.includes('timed out'))) {
-                      reject(error);
-                      return;
-                    }
-                    setStatus(prev => `${prev}Transaction attempt ${attempts} failed for ${recipient.slice(0, 6)}...${recipient.slice(-4)}: ${error.message}. Retrying after 6s...\n`);
-                    await new Promise(resolve => setTimeout(resolve, 6000));
-                    trySend();
-                  }
-                };
-                trySend();
-              });
-
-              setStatus(prev => `${prev}Success: Sent ${web3Instance.utils.fromWei(amount, 'ether')} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient.slice(0, 6)}...${recipient.slice(-4)}, Tx Hash: ${txHash}\n`);
+              setStatus(prev => `${prev}Awaiting ${walletProvider} signature for ${web3Instance.utils.fromWei(amount, 'ether')} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient.slice(0, 6)}...${recipient.slice(-4)}...\n`);
+              const txHash = await web3Instance.eth.sendTransaction(tx);
+              setStatus(prev => `${prev}Success: Sent ${web3Instance.utils.fromWei(amount, 'ether')} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient.slice(0, 6)}...${recipient.slice(-4)}, Tx: ${txHash.transactionHash}\n`);
               successCount++;
               nonce++;
-              await new Promise(resolve => setTimeout(resolve, 6000));
+              await new Promise(resolve => setTimeout(resolve, 8000));
             } catch (error) {
-              setStatus(prev => `${prev}Error sending ${web3Instance.utils.fromWei(amount, 'ether')} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient.slice(0, 6)}...${recipient.slice(-4)}: ${error.message}${error.message.includes('Premature close') || error.message.includes('timed out') ? '. Please reload the page, ensure MetaMask is unlocked, and try a reliable RPC (e.g., https://cronos-rpc.publicnode.com or QuickNode).' : error.message.includes('insufficient funds') ? '. Ensure your wallet has enough CRO for gas and rewards.' : ''}\n`);
+              setStatus(prev => `${prev}Error sending to ${recipient.slice(0, 6)}...${recipient.slice(-4)}: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas and rewards.' : ''}\n`);
             }
           }
 
-          setStatus(prev => `${prev}Completed: Sent native rewards to ${successCount} of ${validRecipients.length} NFT holders.\n`);
+          setStatus(prev => `${prev}Completed: Sent rewards to ${successCount} of ${validRecipients.length} holders.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}Native reward distribution failed: ${error.message}${error.message.includes('Premature close') || error.message.includes('timed out') ? '. Please reload the page, ensure MetaMask is unlocked, and try a reliable RPC (e.g., https://cronos-rpc.publicnode.com or QuickNode).' : error.message.includes('insufficient funds') ? '. Ensure your wallet has enough CRO for gas and rewards.' : ''}. Try a smaller batch size (e.g., 1) or a different RPC.\n`);
+          setStatus(prev => `${prev}Reward distribution failed: ${error.message}. Try a smaller batch size or custom RPC.\n`);
         } finally {
           setIsLoading(false);
         }
@@ -667,55 +783,55 @@
 
       const sendBatchNativeAirdrop = async (recipientList) => {
         if (!web3 || !account) {
-          setStatus(prev => `${prev}Wallet not connected. Please click "Connect Wallet".\n`);
+          setStatus(prev => `${prev}Wallet not connected. Connect via ${walletProvider}.\n`);
           return;
         }
 
-        if (!checkMetaMaskConnection()) {
-          const reconnected = await reconnectMetaMask();
+        if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+          const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
           if (!reconnected) {
-            setStatus(prev => `${prev}Cannot proceed with airdrop. Please reconnect your wallet.\n`);
+            setStatus(prev => `${prev}Cannot send airdrop. Reconnect via ${walletProvider}.\n`);
             return;
           }
         }
 
         if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-          setStatus(prev => `${prev}Invalid amount per address. Please enter a positive number (e.g., 0.1 CRO).\n`);
+          setStatus(prev => `${prev}Invalid amount. Enter a positive number (e.g., 0.1 CRO).\n`);
           return;
         }
 
         const validRecipients = recipientList.filter(addr => web3.utils.isAddress(addr));
         if (validRecipients.length === 0) {
-          setStatus(prev => `${prev}No valid recipient addresses provided.\n`);
+          setStatus(prev => `${prev}No valid recipient addresses.\n`);
           return;
         }
 
         const batchSizeNum = parseInt(batchSize);
         if (isNaN(batchSizeNum) || batchSizeNum < 1 || batchSizeNum > 3) {
-          setStatus(prev => `${prev}Invalid batch size. Please enter a number between 1 and 3.\n`);
+          setStatus(prev => `${prev}Invalid batch size. Enter 1-3.\n`);
           return;
         }
 
         if (validRecipients.length > batchSizeNum) {
-          setStatus(prev => `${prev}Too many recipients (max ${batchSizeNum}). Please reduce the number of addresses or adjust the batch size.\n`);
+          setStatus(prev => `${prev}Too many recipients (max ${batchSizeNum}). Reduce addresses or adjust batch size.\n`);
           return;
         }
 
         setIsLoading(true);
-        setStatus(prev => `${prev}Sending native airdrops to ${validRecipients.length} addresses (batch size: ${batchSizeNum})... Please confirm each transaction in MetaMask.\n`);
+        setStatus(prev => `${prev}Sending native airdrops to ${validRecipients.length} addresses (batch size: ${batchSizeNum})... Confirm in ${walletProvider}.\n`);
 
         try {
           const selectedNetwork = networks.find(n => n.name === network);
           const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-          const web3Instance = new Web3(rpcUrl);
+          const web3Instance = new Web3(walletProvider === 'WalletConnect' ? web3.currentProvider : rpcUrl);
           setWeb3(web3Instance);
           let nonce = await web3Instance.eth.getTransactionCount(account);
           const amountWei = web3Instance.utils.toWei(amount, 'ether');
           let successCount = 0;
 
           for (const recipient of validRecipients) {
-            if (!checkMetaMaskConnection()) {
-              setStatus(prev => `${prev}MetaMask disconnected during airdrop. Please click "Reconnect Wallet" or reload the page.\n`);
+            if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+              setStatus(prev => `${prev}${walletProvider} disconnected. Reconnect or try the other provider.\n`);
               setIsLoading(false);
               return;
             }
@@ -730,22 +846,19 @@
             };
 
             try {
-              const txHash = await window.ethereum.request({
-                method: 'eth_sendTransaction',
-                params: [tx]
-              });
-              setStatus(prev => `${prev}Success: Sent ${amount} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient}, Tx Hash: ${txHash}\n`);
+              const txHash = await web3Instance.eth.sendTransaction(tx);
+              setStatus(prev => `${prev}Success: Sent ${amount} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient}, Tx: ${txHash.transactionHash}\n`);
               successCount++;
               nonce++;
-              await new Promise(resolve => setTimeout(resolve, 3000));
+              await new Promise(resolve => setTimeout(resolve, 8000));
             } catch (error) {
-              setStatus(prev => `${prev}Error sending ${amount} ${selectedNetwork?.nativeCurrency || 'CRO'} to ${recipient}: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : ''}\n`);
+              setStatus(prev => `${prev}Error sending to ${recipient}: ${error.message}\n`);
             }
           }
 
-          setStatus(prev => `${prev}Completed: Sent native airdrops to ${successCount} of ${validRecipients.length} addresses.\n`);
+          setStatus(prev => `${prev}Completed: Sent airdrops to ${successCount} of ${validRecipients.length} addresses.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}Native airdrop failed: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : ''}\n`);
+          setStatus(prev => `${prev}Airdrop failed: ${error.message}\n`);
         } finally {
           setIsLoading(false);
         }
@@ -753,52 +866,52 @@
 
       const sendBatchErc20Airdrop = async (recipientList) => {
         if (!web3 || !account) {
-          setStatus(prev => `${prev}Wallet not connected. Please click "Connect Wallet".\n`);
+          setStatus(prev => `${prev}Wallet not connected. Connect via ${walletProvider}.\n`);
           return;
         }
 
-        if (!checkMetaMaskConnection()) {
-          const reconnected = await reconnectMetaMask();
+        if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+          const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
           if (!reconnected) {
-            setStatus(prev => `${prev}Cannot proceed with airdrop. Please reconnect your wallet.\n`);
+            setStatus(prev => `${prev}Cannot send airdrop. Reconnect via ${walletProvider}.\n`);
             return;
           }
         }
 
         if (!web3.utils.isAddress(tokenContract)) {
-          setStatus(prev => `${prev}Invalid token contract address. Please enter a valid address (e.g., 0x...).\n`);
+          setStatus(prev => `${prev}Invalid token contract address.\n`);
           return;
         }
 
         if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-          setStatus(prev => `${prev}Invalid amount per address. Please enter a positive number (e.g., 0.1).\n`);
+          setStatus(prev => `${prev}Invalid amount. Enter a positive number (e.g., 0.1).\n`);
           return;
         }
 
         const validRecipients = recipientList.filter(addr => web3.utils.isAddress(addr));
         if (validRecipients.length === 0) {
-          setStatus(prev => `${prev}No valid recipient addresses provided.\n`);
+          setStatus(prev => `${prev}No valid recipient addresses.\n`);
           return;
         }
 
         const batchSizeNum = parseInt(batchSize);
         if (isNaN(batchSizeNum) || batchSizeNum < 1 || batchSizeNum > 3) {
-          setStatus(prev => `${prev}Invalid batch size. Please enter a number between 1 and 3.\n`);
+          setStatus(prev => `${prev}Invalid batch size. Enter 1-3.\n`);
           return;
         }
 
         if (validRecipients.length > batchSizeNum) {
-          setStatus(prev => `${prev}Too many recipients (max ${batchSizeNum}). Please reduce the number of addresses or adjust the batch size.\n`);
+          setStatus(prev => `${prev}Too many recipients (max ${batchSizeNum}). Reduce addresses or adjust batch size.\n`);
           return;
         }
 
         setIsLoading(true);
-        setStatus(prev => `${prev}Sending ERC-20 airdrops to ${validRecipients.length} addresses (batch size: ${batchSizeNum})... Please confirm each transaction in MetaMask.\n`);
+        setStatus(prev => `${prev}Sending ERC-20 airdrops to ${validRecipients.length} addresses (batch size: ${batchSizeNum})... Confirm in ${walletProvider}.\n`);
 
         try {
           const selectedNetwork = networks.find(n => n.name === network);
           const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-          const web3Instance = new Web3(rpcUrl);
+          const web3Instance = new Web3(walletProvider === 'WalletConnect' ? web3.currentProvider : rpcUrl);
           setWeb3(web3Instance);
           const contract = new web3Instance.eth.Contract(erc20Abi, tokenContract);
           let nonce = await web3Instance.eth.getTransactionCount(account);
@@ -806,8 +919,8 @@
           let successCount = 0;
 
           for (const recipient of validRecipients) {
-            if (!checkMetaMaskConnection()) {
-              setStatus(prev => `${prev}MetaMask disconnected during airdrop. Please click "Reconnect Wallet" or reload the page.\n`);
+            if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+              setStatus(prev => `${prev}${walletProvider} disconnected. Reconnect or try the other provider.\n`);
               setIsLoading(false);
               return;
             }
@@ -822,22 +935,19 @@
             };
 
             try {
-              const txHash = await window.ethereum.request({
-                method: 'eth_sendTransaction',
-                params: [tx]
-              });
-              setStatus(prev => `${prev}Success: Sent ${amount} tokens to ${recipient}, Tx Hash: ${txHash}\n`);
+              const txHash = await web3Instance.eth.sendTransaction(tx);
+              setStatus(prev => `${prev}Success: Sent ${amount} tokens to ${recipient}, Tx: ${txHash.transactionHash}\n`);
               successCount++;
               nonce++;
-              await new Promise(resolve => setTimeout(resolve, 3000));
+              await new Promise(resolve => setTimeout(resolve, 8000));
             } catch (error) {
-              setStatus(prev => `${prev}Error sending ${amount} tokens to ${recipient}: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : ''}\n`);
+              setStatus(prev => `${prev}Error sending to ${recipient}: ${error.message}\n`);
             }
           }
 
           setStatus(prev => `${prev}Completed: Sent ERC-20 airdrops to ${successCount} of ${validRecipients.length} addresses.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}ERC-20 airdrop failed: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : ''}\n`);
+          setStatus(prev => `${prev}ERC-20 airdrop failed: ${error.message}\n`);
         } finally {
           setIsLoading(false);
         }
@@ -845,20 +955,20 @@
 
       const sendErc721Airdrop = async () => {
         if (!web3 || !account) {
-          setStatus(prev => `${prev}Wallet not connected. Please click "Connect Wallet".\n`);
+          setStatus(prev => `${prev}Wallet not connected. Connect via ${walletProvider}.\n`);
           return;
         }
 
-        if (!checkMetaMaskConnection()) {
-          const reconnected = await reconnectMetaMask();
+        if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+          const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
           if (!reconnected) {
-            setStatus(prev => `${prev}Cannot proceed with airdrop. Please reconnect your wallet.\n`);
+            setStatus(prev => `${prev}Cannot send airdrop. Reconnect via ${walletProvider}.\n`);
             return;
           }
         }
 
         if (!web3.utils.isAddress(tokenContract)) {
-          setStatus(prev => `${prev}Invalid NFT contract address. Please enter a valid address (e.g., 0x...).\n`);
+          setStatus(prev => `${prev}Invalid NFT contract address.\n`);
           return;
         }
 
@@ -866,36 +976,36 @@
         const tokenIdList = tokenIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
 
         if (recipientList.length !== tokenIdList.length) {
-          setStatus(prev => `${prev}Number of recipients and token IDs must match (e.g., 3 addresses and 3 token IDs).\n`);
+          setStatus(prev => `${prev}Number of recipients and token IDs must match.\n`);
           return;
         }
 
         const batchSizeNum = parseInt(batchSize);
         if (isNaN(batchSizeNum) || batchSizeNum < 1 || batchSizeNum > 3) {
-          setStatus(prev => `${prev}Invalid batch size. Please enter a number between 1 and 3.\n`);
+          setStatus(prev => `${prev}Invalid batch size. Enter 1-3.\n`);
           return;
         }
 
         if (recipientList.length > batchSizeNum) {
-          setStatus(prev => `${prev}Too many recipients (max ${batchSizeNum}). Please reduce the number of addresses or adjust the batch size.\n`);
+          setStatus(prev => `${prev}Too many recipients (max ${batchSizeNum}). Reduce addresses or adjust batch size.\n`);
           return;
         }
 
         setIsLoading(true);
-        setStatus(prev => `${prev}Sending NFT airdrop to ${recipientList.length} addresses (batch size: ${batchSizeNum})... Please confirm transactions in MetaMask.\n`);
+        setStatus(prev => `${prev}Sending NFT airdrop to ${recipientList.length} addresses (batch size: ${batchSizeNum})... Confirm in ${walletProvider}.\n`);
 
         try {
           const selectedNetwork = networks.find(n => n.name === network);
           const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-          const web3Instance = new Web3(rpcUrl);
+          const web3Instance = new Web3(walletProvider === 'WalletConnect' ? web3.currentProvider : rpcUrl);
           setWeb3(web3Instance);
           const contract = new web3Instance.eth.Contract(erc721Abi, tokenContract);
           let nonce = await web3Instance.eth.getTransactionCount(account);
           let successCount = 0;
 
           for (let i = 0; i < recipientList.length; i++) {
-            if (!checkMetaMaskConnection()) {
-              setStatus(prev => `${prev}MetaMask disconnected during airdrop. Please click "Reconnect Wallet" or reload the page.\n`);
+            if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+              setStatus(prev => `${prev}${walletProvider} disconnected. Reconnect or try the other provider.\n`);
               setIsLoading(false);
               return;
             }
@@ -918,22 +1028,19 @@
             };
 
             try {
-              const txHash = await window.ethereum.request({
-                method: 'eth_sendTransaction',
-                params: [tx]
-              });
-              setStatus(prev => `${prev}Success: Sent NFT ${tokenId} to ${recipient}, Tx Hash: ${txHash}\n`);
+              const txHash = await web3Instance.eth.sendTransaction(tx);
+              setStatus(prev => `${prev}Success: Sent NFT ${tokenId} to ${recipient}, Tx: ${txHash.transactionHash}\n`);
               successCount++;
               nonce++;
-              await new Promise(resolve => setTimeout(resolve, 3000));
+              await new Promise(resolve => setTimeout(resolve, 8000));
             } catch (error) {
-              setStatus(prev => `${prev}Error sending NFT ${tokenId} to ${recipient}: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : ''}\n`);
+              setStatus(prev => `${prev}Error sending NFT ${tokenId} to ${recipient}: ${error.message}\n`);
             }
           }
 
           setStatus(prev => `${prev}Completed: Sent NFT airdrops to ${successCount} of ${recipientList.length} addresses.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}NFT airdrop failed: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : ''}\n`);
+          setStatus(prev => `${prev}NFT airdrop failed: ${error.message}\n`);
         } finally {
           setIsLoading(false);
         }
@@ -941,58 +1048,58 @@
 
       const sendBatchErc20Rewards = async () => {
         if (!web3 || !account) {
-          setStatus(prev => `${prev}Wallet not connected. Please click "Connect Wallet".\n`);
+          setStatus(prev => `${prev}Wallet not connected. Connect via ${walletProvider}.\n`);
           return;
         }
 
-        if (!checkMetaMaskConnection()) {
-          const reconnected = await reconnectMetaMask();
+        if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+          const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
           if (!reconnected) {
-            setStatus(prev => `${prev}Cannot proceed with reward distribution. Please reconnect your wallet.\n`);
+            setStatus(prev => `${prev}Cannot send rewards. Reconnect via ${walletProvider}.\n`);
             setIsLoading(false);
             return;
           }
         }
 
         if (!web3.utils.isAddress(rewardTokenContract)) {
-          setStatus(prev => `${prev}Invalid reward token contract address. Please enter a valid address (e.g., 0x...).\n`);
+          setStatus(prev => `${prev}Invalid reward token contract address.\n`);
           return;
         }
 
         if (nftHolders.length === 0) {
-          setStatus(prev => `${prev}No NFT holders fetched. Please fetch holders first.\n`);
+          setStatus(prev => `${prev}No NFT holders fetched. Fetch holders first.\n`);
           return;
         }
 
         if (!rewardAmount || isNaN(rewardAmount) || parseFloat(rewardAmount) <= 0) {
-          setStatus(prev => `${prev}Invalid reward amount. Please enter a positive number (e.g., 0.1).\n`);
+          setStatus(prev => `${prev}Invalid reward amount. Enter a positive number (e.g., 0.1).\n`);
           return;
         }
 
         const batchSizeNum = parseInt(batchSize);
         if (isNaN(batchSizeNum) || batchSizeNum < 1 || batchSizeNum > 3) {
-          setStatus(prev => `${prev}Invalid batch size. Please enter a number between 1 and 3.\n`);
+          setStatus(prev => `${prev}Invalid batch size. Enter 1-3.\n`);
           return;
         }
 
         if (nftHolders.length > batchSizeNum) {
-          setStatus(prev => `${prev}Too many NFT holders (max ${batchSizeNum}). Please fetch a smaller range of token IDs or adjust the batch size.\n`);
+          setStatus(prev => `${prev}Too many NFT holders (max ${batchSizeNum}). Reduce token IDs or adjust batch size.\n`);
           return;
         }
 
-        const confirm = window.confirm(`Are you sure you want to send ${rewardAmount} tokens to ${nftHolders.length} NFT holders? Confirm each transaction in MetaMask.`);
+        const confirm = window.confirm(`Send ${rewardAmount} tokens to ${nftHolders.length} NFT holders? Confirm each transaction in ${walletProvider}.`);
         if (!confirm) {
-          setStatus(prev => `${prev}Reward distribution cancelled by user.\n`);
+          setStatus(prev => `${prev}Reward distribution cancelled.\n`);
           return;
         }
 
         setIsLoading(true);
-        setStatus(prev => `${prev}Sending ERC-20 rewards to ${nftHolders.length} NFT holders (batch size: ${batchSizeNum})... Please confirm each transaction in MetaMask.\n`);
+        setStatus(prev => `${prev}Sending ERC-20 rewards to ${nftHolders.length} holders (batch size: ${batchSizeNum})... Confirm in ${walletProvider}.\n`);
 
         try {
           const selectedNetwork = networks.find(n => n.name === network);
           const rpcUrl = customRpc || await getValidRpcUrl(selectedNetwork.rpcUrls);
-          const web3Instance = new Web3(rpcUrl);
+          const web3Instance = new Web3(walletProvider === 'WalletConnect' ? web3.currentProvider : rpcUrl);
           setWeb3(web3Instance);
           const contract = new web3Instance.eth.Contract(erc20Abi, rewardTokenContract);
           let nonce = await web3Instance.eth.getTransactionCount(account);
@@ -1002,10 +1109,10 @@
           let successCount = 0;
 
           for (let i = 0; i < validRecipients.length; i++) {
-            if (!checkMetaMaskConnection()) {
-              const reconnected = await reconnectMetaMask();
+            if ((walletProvider === 'MetaMask' && !checkMetaMaskConnection()) || (walletProvider === 'WalletConnect' && !checkWalletConnectConnection(web3.currentProvider))) {
+              const reconnected = walletProvider === 'MetaMask' ? await reconnectMetaMask() : false;
               if (!reconnected) {
-                setStatus(prev => `${prev}MetaMask disconnected during reward distribution. Please click "Reconnect Wallet" or reload the page.\n`);
+                setStatus(prev => `${prev}${walletProvider} disconnected. Reconnect or try the other provider.\n`);
                 setIsLoading(false);
                 return;
               }
@@ -1015,7 +1122,7 @@
             const amount = amountPerHolder;
 
             if (BigInt(amount) <= 0) {
-              setStatus(prev => `${prev}Skipping ${recipient}: Invalid or zero amount.\n`);
+              setStatus(prev => `${prev}Skipping ${recipient}: Invalid amount.\n`);
               continue;
             }
 
@@ -1029,22 +1136,19 @@
             };
 
             try {
-              const txHash = await window.ethereum.request({
-                method: 'eth_sendTransaction',
-                params: [tx]
-              });
-              setStatus(prev => `${prev}Success: Sent ${web3Instance.utils.fromWei(amount, 'ether')} tokens to ${recipient}, Tx Hash: ${txHash}\n`);
+              const txHash = await web3Instance.eth.sendTransaction(tx);
+              setStatus(prev => `${prev}Success: Sent ${web3Instance.utils.fromWei(amount, 'ether')} tokens to ${recipient}, Tx: ${txHash.transactionHash}\n`);
               successCount++;
               nonce++;
-              await new Promise(resolve => setTimeout(resolve, 3000));
+              await new Promise(resolve => setTimeout(resolve, 8000));
             } catch (error) {
-              setStatus(prev => `${prev}Error sending ${web3Instance.utils.fromWei(amount, 'ether')} tokens to ${recipient}: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : error.message.includes('insufficient funds') ? '. Ensure your wallet has enough CRO for gas.' : ''}\n`);
+              setStatus(prev => `${prev}Error sending to ${recipient}: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas.' : ''}\n`);
             }
           }
 
-          setStatus(prev => `${prev}Completed: Sent ERC-20 rewards to ${successCount} of ${validRecipients.length} NFT holders.\n`);
+          setStatus(prev => `${prev}Completed: Sent ERC-20 rewards to ${successCount} of ${validRecipients.length} holders.\n`);
         } catch (error) {
-          setStatus(prev => `${prev}ERC-20 reward distribution failed: ${error.message}${error.message.includes('Premature close') ? '. Try updating MetaMask or using a different RPC.' : error.message.includes('insufficient funds') ? '. Ensure your wallet has enough CRO for gas.' : ''}\n`);
+          setStatus(prev => `${prev}ERC-20 reward distribution failed: ${error.message}\n`);
         } finally {
           setIsLoading(false);
         }
@@ -1056,9 +1160,9 @@
           let className = 'text-gray-700 dark:text-gray-300';
           if (line.includes('Error') || line.includes('failed') || line.includes('disconnected')) {
             className = 'text-red-600 dark:text-red-400';
-          } else if (line.includes('Success') || line.includes('Complete')) {
+          } else if (line.includes('Success') || line.includes('Completed')) {
             className = 'text-green-600 dark:text-green-400';
-          } else if (line.includes('Warning') || line.includes('Awaiting')) {
+          } else if (line.includes('Awaiting')) {
             className = 'text-yellow-600 dark:text-yellow-400';
           }
           return <p key={index} className={className}>{line}</p>;
@@ -1069,22 +1173,35 @@
         <div className="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 transition-colors duration-300">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Airdrop & Staking Rewards</h1>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-              data-tooltip="Toggle Dark/Light Mode"
-            >
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
+            <div className="flex items-center space-x-2">
+              <span className={`connection-status ${account ? 'connected' : 'disconnected'}`}>
+                {account ? `Connected via ${walletProvider}: ${account.slice(0, 6)}...${account.slice(-4)}` : 'Disconnected'}
+              </span>
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition tooltip"
+                data-tooltip="Toggle Dark/Light Mode"
+              >
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
+            </div>
           </div>
 
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Wallet Connection</h2>
             <div className="flex items-center space-x-4">
+              <select
+                value={walletProvider}
+                onChange={(e) => setWalletProvider(e.target.value)}
+                className="px-4 py-2 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="MetaMask">MetaMask</option>
+                <option value="WalletConnect">WalletConnect</option>
+              </select>
               <button
                 onClick={testConnection}
                 disabled={isLoading}
-                className={`px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'} transition`}
+                className={`px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'} transition tooltip`}
                 data-tooltip="Test RPC and wallet connectivity"
               >
                 Test Connection
@@ -1092,24 +1209,24 @@
               <button
                 onClick={connectWallet}
                 disabled={isLoading}
-                className={`px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} transition`}
-                data-tooltip="Connect via MetaMask"
+                className={`px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} transition tooltip`}
+                data-tooltip={`Connect via ${walletProvider}`}
               >
-                {account ? `Connected: ${account.slice(0, 6)}...${account.slice(-4)}` : 'Connect Wallet'}
+                {account ? `Connected: ${account.slice(0, 6)}...${account.slice(-4)}` : `Connect via ${walletProvider}`}
               </button>
               {account && (
                 <>
                   <button
                     onClick={reconnectMetaMask}
-                    disabled={isLoading}
-                    className={`px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-yellow-600 hover:bg-yellow-700'} transition`}
+                    disabled={isLoading || walletProvider === 'WalletConnect'}
+                    className={`px-4 py-2 rounded-lg text-white font-medium ${isLoading || walletProvider === 'WalletConnect' ? 'bg-gray-400 cursor-not-allowed' : 'bg-yellow-600 hover:bg-yellow-700'} transition tooltip`}
                     data-tooltip="Reconnect MetaMask if disconnected"
                   >
                     Reconnect Wallet
                   </button>
                   <button
                     onClick={disconnectWallet}
-                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition tooltip"
                     data-tooltip="Disconnect your wallet"
                   >
                     Disconnect
@@ -1205,7 +1322,7 @@
             <button
               onClick={fetchNftHolders}
               disabled={isLoading}
-              className={`mt-4 px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} transition`}
+              className={`mt-4 px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} transition tooltip`}
               data-tooltip="Fetch NFT holders for the specified contract (max 5 token IDs)"
             >
               Fetch Holders
@@ -1248,7 +1365,7 @@
                   placeholder={tokenType === 'erc721' ? 'Not applicable' : 'e.g., 0.1'}
                   disabled={tokenType === 'erc721'}
                   className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 dark:disabled:bg-gray-600"
-                  data-tooltip="Amount to send per address (e.g., 0.1 CRO or tokens for native/ERC-20)"
+                  data-tooltip="Amount to send per address (e.g., 0.1 CRO or tokens)"
                 />
               </div>
               <div>
@@ -1259,7 +1376,7 @@
                   onChange={(e) => setRecipients(e.target.value)}
                   placeholder="0x...,0x..."
                   className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                  data-tooltip="Comma-separated recipient addresses (e.g., 0x123...,0x456...)"
+                  data-tooltip="Comma-separated recipient addresses"
                 />
               </div>
               {tokenType !== 'native' && (
@@ -1284,7 +1401,7 @@
                     onChange={(e) => setTokenIds(e.target.value)}
                     placeholder="1,2,3"
                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                    data-tooltip="Comma-separated token IDs to send (e.g., 1,2,3)"
+                    data-tooltip="Comma-separated token IDs to send"
                   />
                 </div>
               )}
@@ -1303,7 +1420,7 @@
                   min="1"
                   max="3"
                   className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                  data-tooltip="Number of transactions per batch (1-3, default 2)"
+                  data-tooltip="Number of transactions per batch (1-3)"
                 />
               </div>
             </div>
@@ -1318,7 +1435,7 @@
                 }
               }}
               disabled={isLoading}
-              className={`mt-4 px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} transition`}
+              className={`mt-4 px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} transition tooltip`}
               data-tooltip="Send airdrop to specified recipients"
             >
               Send Airdrop
@@ -1347,7 +1464,7 @@
                   onChange={(e) => setRewardAmount(e.target.value)}
                   placeholder="e.g., 0.1"
                   className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                  data-tooltip="Total amount of tokens to distribute as rewards"
+                  data-tooltip="Total amount of tokens to distribute"
                 />
               </div>
               {rewardType === 'erc20' && (
@@ -1378,7 +1495,7 @@
                   min="1"
                   max="3"
                   className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                  data-tooltip="Number of transactions per batch (1-3, default 2)"
+                  data-tooltip="Number of transactions per batch (1-3)"
                 />
               </div>
             </div>
@@ -1391,7 +1508,7 @@
                 }
               }}
               disabled={isLoading}
-              className={`mt-4 px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} transition`}
+              className={`mt-4 px-4 py-2 rounded-lg text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} transition tooltip`}
               data-tooltip="Send rewards to fetched NFT holders"
             >
               Send Rewards
