@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NifftySwiggle Web3 Tools Launchpad</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            background: linear-gradient(45deg, #1a1a2e, #4b0082, #1e3a8a, #831843);
+            background-size: 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            cursor: none;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background: rgba(236, 72, 153, 0.6);
+            border: 2px solid transparent;
+            border-image: linear-gradient(45deg, #3b82f6, #ec4899) 1;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.7), 0 0 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .cursor-particle {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            animation: fadeParticle 1s ease-out forwards;
+        }
+
+        @keyframes fadeParticle {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.2); }
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://via.placeholder.com/1920x1080/2a2a4a/ec4899?text=Web3+Neon+Particles') no-repeat center center/cover;
+            filter: blur(8px);
+            opacity: 0.4;
+            transform: scale(1.1);
+            animation: pulse 10s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); opacity: 0.4; }
+            50% { transform: scale(1.15); opacity: 0.5; }
+        }
+
+        .hero-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.7));
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.7), 0 0 20px rgba(236, 72, 153, 0.5);
+            transform: perspective(500px) translateZ(0);
+            transition: transform 0.3s ease;
+        }
+
+        .hero-title:hover {
+            transform: perspective(500px) translateZ(20px);
+        }
+
+        .section {
+            padding: 4rem 1rem;
+            position: relative;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1rem;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            overflow: hidden;
+        }
+
+        .project-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(236, 72, 153, 0.4);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 0.5rem 0.5rem 0 0;
+            filter: brightness(0.9);
+            transition: filter 0.3s ease;
+        }
+
+        .project-card:hover .project-image {
+            filter: brightness(1.1);
+        }
+
+        .cta-button {
+            background: linear-gradient(90deg, #3b82f6, #ec4899);
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(236, 72, 153, 0.5);
+        }
+
+        .secondary-cta {
+            background: rgba(55, 65, 81, 0.8);
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .secondary-cta:hover {
+            background: rgba(75, 85, 99, 0.8);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            color: #e5e7eb;
+        }
+
+        .modal-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+        }
+
+        .modal-content p {
+            font-size: 1rem;
+            color: #d1d5db;
+            margin-bottom: 1.5rem;
+        }
+
+        .crypto-address {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #ffffff;
+            word-break: break-all;
+            margin-bottom: 1rem;
+        }
+
+        .copy-button {
+            background: linear-gradient(90deg, #3b82f6, #ec4899);
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .copy-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.5);
+        }
+
+        .close-button {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            color: #e5e7eb;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 640px) {
+            .hero {
+                text-align: center;
+                padding: 2rem;
+            }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .section {
+                padding: 2rem 1rem;
+            }
+            .project-image {
+                height: 160px;
+            }
+            .cta-button, .secondary-cta {
+                padding: 0.5rem 1.5rem;
+                font-size: 0.875rem;
+            }
+            .hero-logo {
+                width: 80px;
+                height: 80px;
+            }
+            .modal-content {
+                padding: 1.5rem;
+            }
+            .modal-content h2 {
+                font-size: 1.5rem;
+            }
+            .modal-content p {
+                font-size: 0.875rem;
+            }
+            .crypto-address {
+                font-size: 0.8rem;
+            }
+            #cursor, .cursor-particle {
+                display: none;
+            }
+            body {
+                cursor: auto;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <div id="cursor"></div>
+    <div id="cursor-trail"></div>
+    <script type="text/babel">
+        const { useEffect, useState } = React;
+
+        const App = () => {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [copyStatus, setCopyStatus] = useState('Copy Address');
+
+            const cryptoAddress = '0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f';
+
+            const handleCopyAddress = () => {
+                navigator.clipboard.writeText(cryptoAddress).then(() => {
+                    setCopyStatus('Copied!');
+                    setTimeout(() => setCopyStatus('Copy Address'), 2000);
+                }).catch(() => {
+                    setCopyStatus('Failed to copy');
+                });
+            };
+
+            useEffect(() => {
+                const cursor = document.getElementById('cursor');
+                const trailContainer = document.getElementById('cursor-trail');
+                const particles = [];
+                const maxParticles = 10;
+
+                const updateCursor = (e) => {
+                    cursor.style.left = `${e.clientX}px`;
+                    cursor.style.top = `${e.clientY}px`;
+
+                    const particle = document.createElement('div');
+                    particle.className = 'cursor-particle';
+                    const offsetX = (Math.random() - 0.5) * 10;
+                    const offsetY = (Math.random() - 0.5) * 10;
+                    particle.style.left = `${e.clientX + offsetX}px`;
+                    particle.style.top = `${e.clientY + offsetY}px`;
+                    trailContainer.appendChild(particle);
+                    particles.push(particle);
+
+                    if (particles.length > maxParticles) {
+                        const oldParticle = particles.shift();
+                        oldParticle.remove();
+                    }
+
+                    particle.addEventListener('animationend', () => {
+                        particle.remove();
+                        const index = particles.indexOf(particle);
+                        if (index > -1) particles.splice(index, 1);
+                    });
+                };
+
+                if (!('ontouchstart' in window)) {
+                    document.addEventListener('mousemove', updateCursor);
+                }
+
+                return () => {
+                    if (!('ontouchstart' in window)) {
+                        document.removeEventListener('mousemove', updateCursor);
+                    }
+                };
+            }, []);
+
+            useEffect(() => {
+                gsap.registerPlugin(ScrollTrigger);
+
+                gsap.from(".hero-content", {
+                    opacity: 0,
+                    y: 80,
+                    duration: 1.8,
+                    ease: "power4.out",
+                    delay: 0.3
+                });
+
+                gsap.from(".hero-logo", {
+                    opacity: 0,
+                    scale: 0.5,
+                    duration: 1.5,
+                    ease: "elastic.out(1, 0.5)",
+                    delay: 0.5
+                });
+
+                gsap.utils.toArray(".project-card").forEach((card, i) => {
+                    gsap.from(card, {
+                        opacity: 0,
+                        y: 120,
+                        duration: 1.2,
+                        ease: "power3.out",
+                        scrollTrigger: {
+                            trigger: card,
+                            start: "top 85%",
+                            toggleActions: "play none none none"
+                        },
+                        delay: i * 0.2
+                    });
+                });
+
+                gsap.from(".about-section", {
+                    opacity: 0,
+                    x: -120,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: ".about-section",
+                        start: "top 80%",
+                        toggleActions: "play none none none"
+                    }
+                });
+
+                gsap.from(".contact-section", {
+                    opacity: 0,
+                    x: 120,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: ".contact-section",
+                        start: "top 80%",
+                        toggleActions: "play none none none"
+                    }
+                });
+
+                gsap.from(".support-section", {
+                    opacity: 0,
+                    x: 120,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: ".support-section",
+                        start: "top 80%",
+                        toggleActions: "play none none none"
+                    }
+                });
+
+                gsap.from(".footer", {
+                    opacity: 0,
+                    y: 50,
+                    duration: 1,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: ".footer",
+                        start: "top 90%",
+                        toggleActions: "play none none none"
+                    }
+                });
+
+                if (isModalOpen) {
+                    gsap.from(".modal-content", {
+                        opacity: 0,
+                        scale: 0.7,
+                        duration: 0.5,
+                        ease: "back.out(1.7)"
+                    });
+                }
+            }, [isModalOpen]);
+
+            return (
+                <div>
+                    <section className="hero">
+                        <div className="hero-bg"></div>
+                        <div className="hero-content text-center z-10">
+                            <img
+                                src="./assets/NSlogo.png"
+                                alt="NifftySwiggle Web3 Tools Launchpad Logo"
+                                className="hero-logo mx-auto"
+                            />
+                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 font-orbitron hero-title">
+                                NifftySwiggle Web3 Tools
+                            </h1>
+                            <p className="text-lg sm:text-xl text-gray-300 mb-6 max-w-2xl mx-auto">
+                                Empowering the Web3 ecosystem with innovative tools for creators and developers.
+                            </p>
+                            <div className="flex justify-center space-x-4">
+                                <a href="#tools" className="cta-button">
+                                    Explore Tools
+                                </a>
+                                <a href="#contact" className="cta-button bg-gray-700 hover:bg-gray-600">
+                                    Connect with me
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="tools" className="section">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-center text-white font-orbitron mb-8">
+                            Web3 Tools
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                            <div className="project-card p-6">
+                                <img
+                                    src="./assets/NFTgenerator.png"
+                                    alt="NifftySwiggles NFT Generator"
+                                    className="project-image mb-4"
+                                />
+                                <h3 className="text-xl font-semibold text-white mb-2">NFT Generator</h3>
+                                <p className="text-gray-400 mb-4">
+                                    Create unique NFT collections with customizable layers, rarity weights, and IPFS-ready metadata.
+                                </p>
+                                <a
+                                    href="./NFTgenerator.html"
+                                    className="cta-button inline-block"
+                                >
+                                    Try Now
+                                </a>
+                            </div>
+                            <div className="project-card p-6">
+                                <img
+                                    src="./assets/Airdrop.png"
+                                    alt="Airdrop and Staking Tool"
+                                    className="project-image mb-4"
+                                />
+                                <h3 className="text-xl font-semibold text-white mb-2">Airdrop & Staking</h3>
+                                <p className="text-gray-400 mb-4">
+                                    Streamline token airdrops and staking with a secure, user-friendly Web3 platform.
+                                </p>
+                                <a
+                                    href="./AirDrop.html"
+                                    className="cta-button inline-block"
+                                >
+                                    Explore Tool
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="about" className="section about-section">
+                        <div className="max-w-4xl mx-auto text-center">
+                            <h2 className="text-3xl sm:text-4xl font-bold text-white font-orbitron mb-6">
+                                About NifftySwiggle Web3 Tools
+                            </h2>
+                            <p className="text-lg text-gray-300">
+                                NifftySwiggle Web3 Tools is dedicated to advancing the Web3 ecosystem with powerful, user-friendly tools like the NFT Generator and Airdrop/Staking platform, designed to empower creators and developers with cutting-edge blockchain technology.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="contact" className="section contact-section">
+                        <div className="max-w-4xl mx-auto text-center">
+                            <h2 className="text-3xl sm:text-4xl font-bold text-white font-orbitron mb-6">
+                                Let's Collaborate
+                            </h2>
+                            <p className="text-lg text-gray-300 mb-6">
+                                Have an idea for a Web3 tool or integration? Reach out to build the future of decentralized technology together.
+                            </p>
+                            <a
+                                href="https://discord.gg/CaSgfqdYCW"
+                                className="cta-button inline-block mb-6"
+                            >
+                                Contact Me
+                            </a>
+                            <div className="support-section">
+                                <h3 className="text-xl font-semibold text-white font-orbitron mb-4">
+                                    Support Our Mission
+                                </h3>
+                                <p className="text-lg text-gray-300 mb-6">
+                                    Fuel innovation in Web3 by supporting our tool development efforts.
+                                </p>
+                                <button
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="secondary-cta inline-block"
+                                >
+                                    Donate
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <footer className="footer">
+                        <p className="text-sm text-gray-400">
+                            &copy; 2025 NifftySwiggle Web3 Tools. All rights reserved.
+                        </p>
+                        <p className="text-sm text-gray-400 mt-2">
+                            Follow me on{' '}
+                            <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                                X
+                            </a>{' '}
+                            |{' '}
+                            <a href="https://github.com/nifftyswiggle" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                                GitHub
+                            </a>{' '}
+                            |{' '}
+                            <a href="https://discord.gg/CaSgfqdYCW" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                                Discord
+                            </a>
+                        </p>
+                    </footer>
+
+                    {isModalOpen && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h2>Support NifftySwiggle Web3 Tools</h2>
+                                <p>
+                                    Your donations drive innovation in Web3 tool development. By supporting NifftySwiggle, you help us enhance tools like the NFT Generator and Airdrop/Staking platform, empowering the decentralized ecosystem.
+                                </p>
+                                <div className="crypto-address">
+                                    {cryptoAddress}
+                                </div>
+                                <button
+                                    onClick={handleCopyAddress}
+                                    className="copy-button mb-4"
+                                >
+                                    {copyStatus}
+                                </button>
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="close-button"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        } else {
+            document.getElementById('root').innerHTML = `
+                <div class="p-6 m-4 bg-red-100 text-red-700 rounded-md max-w-4xl mx-auto">
+                    <h2 class="text-xl font-bold">Script Loading Error</h2>
+                    <p>Failed to load React or ReactDOM. Please check your network and try refreshing the page.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
