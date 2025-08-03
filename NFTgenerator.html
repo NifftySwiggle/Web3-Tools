@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NifftySwiggles NFT Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.1/dist/react-beautiful-dnd.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800&display=swap');
+        .light-theme {
+            background: linear-gradient(135deg, #d1d5db, #e5e7eb);
+            min-height: 100vh;
+        }
+        .dark-theme {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .dark-theme .container {
+            background: #1f2937;
+        }
+        .container:hover {
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        }
+        .title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            color: #1f2937;
+        }
+        .dark-theme .title {
+            color: #e5e7eb;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .title:hover {
+            transform: scale(1.05);
+            color: #3b82f6;
+            text-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+        }
+        button {
+            transition: all 0.3s ease;
+            min-width: 100px;
+            min-height: 44px;
+        }
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        input, textarea {
+            transition: all 0.3s ease;
+        }
+        .dark-theme input, .dark-theme textarea {
+            background: #374151;
+            color: #e5e7eb;
+            border-color: #4b5563;
+        }
+        input:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            outline: none;
+        }
+        .layer-card {
+            transition: all 0.3s ease;
+        }
+        .dark-theme .layer-card {
+            background: #2d3748;
+            border-color: #4b5563;
+        }
+        .layer-card:hover {
+            background: #f9fafb;
+            transform: translateX(3px);
+        }
+        .dark-theme .layer-card:hover {
+            background: #374151;
+        }
+        .trait-card {
+            transition: all 0.3s ease;
+        }
+        .dark-theme .trait-card {
+            background: #2d3748;
+            border-color: #4b5563;
+        }
+        .trait-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        .nft-image {
+            transition: all 0.3s ease;
+        }
+        .nft-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .dark-theme .text-gray-800 {
+            color: #e5e7eb;
+        }
+        .dark-theme .text-gray-700 {
+            color: #d1d5db;
+        }
+        .dark-theme .text-gray-600 {
+            color: #9ca3af;
+        }
+        .dark-theme .text-gray-500 {
+            color: #9ca3af;
+        }
+        .dark-theme .text-gray-400 {
+            color: #6b7280;
+        }
+        .dark-theme .bg-gray-50 {
+            background: #374151;
+        }
+        .dark-theme .bg-white {
+            background: #2d3748;
+        }
+        .theme-toggle svg, .donate-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        .modal {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .dark-theme .modal-content {
+            background: #1f2937;
+            color: #e5e7eb;
+        }
+        .footer {
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+        .dark-theme .footer {
+            background: #1f2937;
+            border-top: 1px solid #4b5563;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+            .title {
+                font-size: 1.5rem;
+            }
+            .grid-cols-4 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+            .grid-cols-3 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+            button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            input, textarea {
+                font-size: 0.875rem;
+            }
+            label {
+                font-size: 0.875rem;
+            }
+        }
+        @media (min-width: 640px) and (max-width: 768px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .grid-cols-3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 768px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, Component } = React;
+        const { DragDropContext, Droppable, Draggable } = window.ReactBeautifulDnd || {};
+
+        // Error Boundary Component
+        class ErrorBoundary extends Component {
+            state = { error: null };
+            static getDerivedStateFromError(error) {
+                return { error: error.message };
+            }
+            render() {
+                if (this.state.error) {
+                    return (
+                        <div className="p-6 m-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg max-w-4xl mx-auto">
+                            <h2 className="text-xl font-bold">Error: {this.state.error}</h2>
+                            <p>Please check the console for details and ensure all scripts loaded correctly.</p>
+                        </div>
+                    );
+                }
+                return this.props.children;
+            }
+        }
+
+        // Helper Functions
+        const Helpers = {
+            /**
+             * Generates a unique DNA hash for an NFT combination
+             * @param {Array} combination - Array of trait items
+             * @param {Array} layerIndices - Array of indices for each trait
+             * @returns {string} - Hex string representing the DNA
+             */
+            generateDNA: (combination, layerIndices) => {
+                const key = combination.map((item, i) => `${i}-${layerIndices[i]}`).join('|');
+                let hash = 0;
+                for (let i = 0; i < key.length; i++) {
+                    hash = ((hash << 5) - hash + key.charCodeAt(i)) | 0;
+                }
+                return hash.toString(16).padStart(40, '0');
+            },
+
+            /**
+             * Generates unique combinations based on layer weights
+             * @param {Array} layers - Array of layer objects
+             * @param {number} editionSize - Number of NFTs to generate
+             * @returns {Array} - Array of combinations with items and indices
+             */
+            generateCombinations: (layers, editionSize) => {
+                try {
+                    const totalCombinations = layers.reduce((acc, layer) => acc * (layer.items.length || 1), 1);
+                    if (editionSize > totalCombinations) {
+                        throw new Error(`Requested edition size (${editionSize}) exceeds possible unique combinations (${totalCombinations}). Add more traits or reduce edition size.`);
+                    }
+
+                    const combinations = [];
+                    const usedCombinations = new Set();
+
+                    while (combinations.length < editionSize) {
+                        const combination = [];
+                        const layerIndices = [];
+                        let combinationKey = '';
+                        layers.forEach((layer, layerIndex) => {
+                            const layerWeights = layer.weights;
+                            const totalLayerWeight = layerWeights.reduce((a, b) => a + b, 0) || 1;
+                            let rand = Math.random() * totalLayerWeight;
+                            for (let j = 0; j < layerWeights.length; j++) {
+                                rand -= layerWeights[j];
+                                if (rand <= 0 || j === layerWeights.length - 1) {
+                                    combination.push(layer.items[j]);
+                                    layerIndices.push(j);
+                                    combinationKey += `${layerIndex}-${j}|`;
+                                    break;
+                                }
+                            }
+                        });
+
+                        if (!usedCombinations.has(combinationKey)) {
+                            usedCombinations.add(combinationKey);
+                            combinations.push({ items: combination, indices: layerIndices });
+                        }
+                    }
+                    return combinations;
+                } catch (error) {
+                    console.error('Error in generateCombinations:', error);
+                    throw error;
+                }
+            },
+
+            /**
+             * Generates ERC-721 compliant metadata
+             * @param {Array} combinations - Array of combinations
+             * @param {string} collectionName - Name of the collection
+             * @param {string} description - Collection description
+             * @param {string} baseImageUri - Base URI for images
+             * @param {Array} layerNames - Array of layer names
+             * @returns {Array} - Array of metadata objects
+             */
+            generateMetadata: (combinations, collectionName, description, baseImageUri, layerNames) => {
+                try {
+                    return combinations.map((combo, index) => ({
+                        name: `${collectionName} #${index + 1}`,
+                        description: description,
+                        image: `${baseImageUri}/${index + 1}.png`,
+                        dna: Helpers.generateDNA(combo.items, combo.indices),
+                        edition: index + 1,
+                        date: Date.now(),
+                        attributes: combo.items.map((item, i) => ({
+                            trait_type: layerNames[i],
+                            value: item.name
+                        }))
+                    }));
+                } catch (error) {
+                    console.error('Error in generateMetadata:', error);
+                    throw error;
+                }
+            },
+
+            /**
+             * Gets dimensions of an image
+             * @param {string} url - Image URL
+             * @returns {Promise} - Resolves with width and height
+             */
+            getImageDimensions: (url) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = () => resolve({ width: img.width, height: img.height });
+                    img.onerror = () => reject(new Error('Failed to load image'));
+                });
+            },
+
+            /**
+             * Composites images from combinations
+             * @param {Array} combinations - Array of combinations
+             * @param {Array} layers - Array of layer objects
+             * @returns {Promise} - Array of generated image objects
+             */
+            compositeImages: async (combinations, layers) => {
+                try {
+                    const firstImage = layers[0].items[0]?.url;
+                    if (!firstImage) throw new Error('No images available for composition');
+                    const { width, height } = await Helpers.getImageDimensions(firstImage);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    const generatedImages = [];
+
+                    const sortedLayers = [...layers].sort((a, b) => {
+                        if (a.name.toLowerCase() === 'background') return -1;
+                        if (b.name.toLowerCase() === 'background') return 1;
+                        return 0;
+                    });
+
+                    for (const combo of combinations) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        for (const item of combo.items) {
+                            const img = new Image();
+                            img.src = item.url;
+                            await new Promise((resolve, reject) => {
+                                img.onload = () => {
+                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    resolve();
+                                };
+                                img.onerror = () => reject(new Error(`Failed to load image: ${item.url}`));
+                            });
+                        }
+                        generatedImages.push({
+                            id: generatedImages.length + 1,
+                            url: canvas.toDataURL('image/png')
+                        });
+                    }
+                    return generatedImages;
+                } catch (error) {
+                    console.error('Error in compositeImages:', error);
+                    throw error;
+                }
+            },
+
+            /**
+             * Validates IPFS CID format
+             * @param {string} cid - IPFS CID to validate
+             * @returns {boolean} - True if valid, false otherwise
+             */
+            isValidCID: (cid) => {
+                return /^[a-zA-Z0-9]{46}$/.test(cid);
+            }
+        };
+
+        // Main React Component
+        const App = () => {
+            const [layers, setLayers] = useState([
+                { id: `layer-1`, name: 'Background', items: [], weights: [] },
+                { id: `layer-2`, name: 'Character', items: [], weights: [] }
+            ]);
+            const [collectionName, setCollectionName] = useState('My NFT Collection');
+            const [description, setDescription] = useState('A unique NFT collection.');
+            const [editionSize, setEditionSize] = useState(10);
+            const [baseImageUri, setBaseImageUri] = useState('ipfs://your-cid');
+            const [imagesCid, setImagesCid] = useState('');
+            const [generatedImages, setGeneratedImages] = useState([]);
+            const [metadata, setMetadata] = useState([]);
+            const [combinations, setCombinations] = useState([]);
+            const [status, setStatus] = useState('');
+            const [showMetadata, setShowMetadata] = useState(false);
+            const [showIpfsGuide, setShowIpfsGuide] = useState(false);
+            const [showDonateModal, setShowDonateModal] = useState(false);
+            const [isCopied, setIsCopied] = useState(false);
+            const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+            // Configurable wallet address for donations
+            const walletAddress = '0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f'; // Replace with your actual wallet address
+
+            useEffect(() => {
+                localStorage.setItem('theme', theme);
+                document.body.className = `${theme}-theme`;
+            }, [theme]);
+
+            const toggleTheme = () => {
+                setTheme(theme === 'light' ? 'dark' : 'light');
+            };
+
+            // Handle copying wallet address
+            const handleCopyWallet = () => {
+                navigator.clipboard.writeText(walletAddress).then(() => {
+                    setIsCopied(true);
+                    setStatus('Wallet address copied to clipboard!');
+                    setTimeout(() => setIsCopied(false), 2000);
+                }).catch((error) => {
+                    console.error('Error copying wallet address:', error);
+                    setStatus('Failed to copy wallet address');
+                });
+            };
+
+            // Calculate rarity percentage for a trait
+            const calculateRarity = (weight, totalWeight) => {
+                if (totalWeight === 0) return 0;
+                return ((weight / totalWeight) * 100).toFixed(2);
+            };
+
+            // Handle file uploads with default naming
+            const handleFileUpload = async (event, layerIndex) => {
+                try {
+                    const files = Array.from(event.target.files);
+                    if (!files.every(file => ['image/png', 'image/jpeg'].includes(file.type))) {
+                        throw new Error('Only PNG and JPEG images are supported');
+                    }
+                    const newItems = await Promise.all(files.map(async (file, i) => {
+                        const url = URL.createObjectURL(file);
+                        return {
+                            id: `item-${Math.random().toString(36).substr(2, 9)}`,
+                            name: `${layers[layerIndex].name} ${layers[layerIndex].items.length + i + 1}`,
+                            url,
+                            file
+                        };
+                    }));
+                    const newLayers = [...layers];
+                    newLayers[layerIndex].items = [...newLayers[layerIndex].items, ...newItems];
+                    newLayers[layerIndex].weights = [...newLayers[layerIndex].weights, ...newItems.map(() => 1)];
+                    setLayers(newLayers);
+                    setStatus('Images uploaded successfully');
+                } catch (error) {
+                    console.error('Error in handleFileUpload:', error);
+                    setStatus(`Failed to upload images: ${error.message}`);
+                }
+            };
+
+            // Delete trait
+            const deleteTrait = (layerIndex, itemIndex) => {
+                try {
+                    const newLayers = [...layers];
+                    newLayers[layerIndex].items.splice(itemIndex, 1);
+                    newLayers[layerIndex].weights.splice(itemIndex, 1);
+                    setLayers(newLayers);
+                    setStatus('Trait deleted successfully');
+                } catch (error) {
+                    console.error('Error in deleteTrait:', error);
+                    setStatus(`Failed to delete trait: ${error.message}`);
+                }
+            };
+
+            // Rename trait
+            const renameTrait = (layerIndex, itemIndex, newName) => {
+                try {
+                    if (!newName.trim()) throw new Error('Trait name cannot be empty');
+                    const newLayers = [...layers];
+                    newLayers[layerIndex].items[itemIndex].name = newName;
+                    setLayers(newLayers);
+                    setStatus('Trait renamed successfully');
+                } catch (error) {
+                    console.error('Error in renameTrait:', error);
+                    setStatus(`Failed to rename trait: ${error.message}`);
+                }
+            };
+
+            // Handle drag-and-drop for layers and traits
+            const onDragEnd = (result) => {
+                try {
+                    if (!result.destination) return;
+                    const { source, destination, type } = result;
+
+                    if (type === 'layer') {
+                        const newLayers = Array.from(layers);
+                        const [reorderedLayer] = newLayers.splice(source.index, 1);
+                        newLayers.splice(destination.index, 0, reorderedLayer);
+                        setLayers(newLayers);
+                    } else if (source.droppableId === destination.droppableId) {
+                        const layerIndex = layers.findIndex(layer => layer.id === source.droppableId);
+                        const newItems = Array.from(layers[layerIndex].items);
+                        const newWeights = Array.from(layers[layerIndex].weights);
+                        const [reorderedItem] = newItems.splice(source.index, 1);
+                        const [reorderedWeight] = newWeights.splice(source.index, 1);
+                        newItems.splice(destination.index, 0, reorderedItem);
+                        newWeights.splice(destination.index, 0, reorderedWeight);
+                        const newLayers = [...layers];
+                        newLayers[layerIndex] = { ...newLayers[layerIndex], items: newItems, weights: newWeights };
+                        setLayers(newLayers);
+                    } else {
+                        const sourceLayerIndex = layers.findIndex(layer => layer.id === source.droppableId);
+                        const destLayerIndex = layers.findIndex(layer => layer.id === destination.droppableId);
+                        const newLayers = [...layers];
+                        const [movedItem] = newLayers[sourceLayerIndex].items.splice(source.index, 1);
+                        const [movedWeight] = newLayers[sourceLayerIndex].weights.splice(source.index, 1);
+                        newLayers[destLayerIndex].items.splice(destination.index, 0, {
+                            ...movedItem,
+                            name: `${newLayers[destLayerIndex].name} ${newLayers[destLayerIndex].items.length + 1}`
+                        });
+                        newLayers[destLayerIndex].weights.splice(destination.index, 0, movedWeight);
+                        setLayers(newLayers);
+                    }
+                    setStatus('Reordered successfully');
+                } catch (error) {
+                    console.error('Error in onDragEnd:', error);
+                    setStatus(`Drag-and-drop failed: ${error.message}`);
+                }
+            };
+
+            // Generate NFTs
+            const generateNFTs = async () => {
+                setStatus('Generating NFTs...');
+                try {
+                    if (editionSize < 1) throw new Error('Edition size must be at least 1');
+                    if (!layers.every(layer => layer.items.length > 0)) throw new Error('All layers must have at least one trait');
+                    const combos = Helpers.generateCombinations(layers, editionSize);
+                    const images = await Helpers.compositeImages(combos, layers);
+                    const metadataList = Helpers.generateMetadata(combos, collectionName, description, baseImageUri, layers.map(l => l.name));
+                    setCombinations(combos);
+                    setGeneratedImages(images);
+                    setMetadata(metadataList);
+                    setStatus('NFTs generated successfully! Click "Export Images" to download images, then follow the IPFS guide.');
+                } catch (error) {
+                    console.error('Error in generateNFTs:', error);
+                    setStatus(`Generation failed: ${error.message}`);
+                }
+            };
+
+            // Update Metadata with Images CID
+            const updateMetadata = async () => {
+                setStatus('Updating metadata...');
+                try {
+                    if (!imagesCid) throw new Error('Please enter the Images Folder CID');
+                    if (!Helpers.isValidCID(imagesCid)) throw new Error('Invalid CID format. It should be a 46-character string (e.g., Qm... or bafy...)');
+                    if (!combinations.length) throw new Error('Please generate NFTs first');
+                    const newMetadata = Helpers.generateMetadata(combinations, collectionName, description, `ipfs://${imagesCid}`, layers.map(l => l.name));
+                    setMetadata(newMetadata);
+                    setBaseImageUri(`ipfs://${imagesCid}`);
+                    setStatus('Metadata updated with Images Folder CID. Click "Download Metadata" to save.');
+                    await downloadUpdatedMetadata();
+                } catch (error) {
+                    console.error('Error in updateMetadata:', error);
+                    setStatus(`Metadata update failed: ${error.message}`);
+                }
+            };
+
+            // Export Images
+            const exportImages = async () => {
+                setStatus('Exporting images...');
+                try {
+                    if (!generatedImages.length) throw new Error('No images to export. Generate NFTs first.');
+                    const zip = new JSZip();
+                    const imagesFolder = zip.folder('images');
+                    generatedImages.forEach((img, index) => {
+                        const base64Data = img.url.split(',')[1];
+                        imagesFolder.file(`${index + 1}.png`, base64Data, { base64: true });
+                    });
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    window.saveAs(content, 'nifftyswiggles-images.zip');
+                    setStatus('Images exported successfully! Follow the IPFS guide to upload.');
+                } catch (error) {
+                    console.error('Error in exportImages:', error);
+                    setStatus(`Image export failed: ${error.message}`);
+                }
+            };
+
+            // Download Updated Metadata
+            const downloadUpdatedMetadata = async () => {
+                setStatus('Downloading metadata...');
+                try {
+                    if (!metadata.length) throw new Error('No metadata to download. Generate NFTs first.');
+                    const zip = new JSZip();
+                    const metadataFolder = zip.folder('metadata');
+                    metadata.forEach((meta, index) => {
+                        metadataFolder.file(`${index + 1}.json`, JSON.stringify(meta, null, 2));
+                    });
+                    metadataFolder.file('_metadata.json', JSON.stringify(metadata, null, 2));
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    window.saveAs(content, 'nifftyswiggles-metadata.zip');
+                    setStatus('Metadata downloaded successfully! Upload to IPFS and proceed to minting.');
+                } catch (error) {
+                    console.error('Error in downloadUpdatedMetadata:', error);
+                    setStatus(`Metadata download failed: ${error.message}`);
+                }
+            };
+
+            // Export Images and Initial Metadata with Retry
+            const exportImagesAndMetadata = async () => {
+                setStatus('Exporting images and metadata...');
+                try {
+                    if (!window.JSZip || !window.saveAs) throw new Error('JSZip or FileSaver is not available');
+                    if (!generatedImages.length || !metadata.length) throw new Error('Generate NFTs before exporting.');
+
+                    const tryExportZip = async (retryCount = 0, maxRetries = 2) => {
+                        try {
+                            const zip = new JSZip();
+                            const imageFolder = zip.folder('images');
+                            const metadataFolder = zip.folder('metadata');
+
+                            generatedImages.forEach((img, index) => {
+                                const base64Data = img.url.split(',')[1];
+                                imageFolder.file(`${index + 1}.png`, base64Data, { base64: true });
+                            });
+
+                            metadata.forEach((meta, index) => {
+                                metadataFolder.file(`${index + 1}.json`, JSON.stringify(meta, null, 2));
+                            });
+
+                            metadataFolder.file('_metadata.json', JSON.stringify(metadata, null, 2));
+
+                            const content = await zip.generateAsync({ type: 'blob' });
+                            window.saveAs(content, 'nifftyswiggles-collection.zip');
+                            setStatus('Images and metadata exported successfully! Follow the IPFS guide to upload.');
+                        } catch (error) {
+                            if (retryCount < maxRetries) {
+                                console.warn(`Zip export attempt ${retryCount + 1} failed, retrying...`, error);
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                return tryExportZip(retryCount + 1, maxRetries);
+                            }
+                            throw error;
+                        }
+                    };
+
+                    await tryExportZip();
+                } catch (error) {
+                    console.error('Error in exportImagesAndMetadata:', error);
+                    setStatus(`Zip export failed: ${error.message}`);
+                    try {
+                        const fallbackData = {
+                            images: generatedImages.map(img => ({ id: img.id, url: img.url })),
+                            metadata
+                        };
+                        const blob = new Blob([JSON.stringify(fallbackData, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'nifftyswiggles-collection-fallback.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        setStatus('Exported as JSON due to export failure. Check downloads for nifftyswiggles-collection-fallback.json.');
+                    } catch (fallbackError) {
+                        console.error('Error in fallback JSON export:', fallbackError);
+                        setStatus(`Export failed completely: ${fallbackError.message}`);
+                    }
+                }
+            };
+
+            // IPFS Guide Component
+            const IpfsGuideModal = () => (
+                <div className="fixed inset-0 modal flex items-center justify-center z-50">
+                    <div className="modal-content p-6 max-w-2xl w-full shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">How to Upload to IPFS and Mint NFTs</h2>
+                        <p className="text-gray-700 dark:text-gray-200 mb-4">Follow these steps to create, upload, and mint your NFTs:</p>
+                        <ol className="list-decimal pl-5 text-gray-600 dark:text-gray-200 space-y-2">
+                            <li><strong>Create Layers and Traits</strong>: Add layers (e.g., Background, Character) and upload PNG or JPEG images as traits. Set weights to control rarity.</li>
+                            <li><strong>Generate NFTs</strong>: Enter collection details and edition size, then click "Generate NFTs" to create images and initial metadata.</li>
+                            <li><strong>Export Images</strong>: Click "Export Images" to download a zip file containing your NFT images (images/1.png, images/2.png, etc.).</li>
+                            <li><strong>Upload Images to IPFS</strong>:
+                                <ul className="list-disc pl-5 mt-1">
+                                    <li>Install <a href="https://chrome.google.com/webstore/detail/ipfs-companion/nibjojkomfdiaoajekhjakgkdhaomnch" target="_blank" className="text-blue-500 hover:underline">IPFS Companion</a> or use a service like <a href="https://pinata.cloud" target="_blank" className="text-blue-500 hover:underline">Pinata</a>.</li>
+                                    <li>Extract the images.zip file to get the "images" folder.</li>
+                                    <li>In IPFS Companion or Pinata, upload the entire "images" folder.</li>
+                                    <li>Copy the folder's CID (e.g., Qm... or bafy...), which represents the directory containing 1.png, 2.png, etc.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Update Metadata</strong>: Paste the images folder CID into the "Images Folder CID" field and click "Update Metadata". This generates new metadata with correct image URIs (ipfs://CID/1.png, etc.) and automatically downloads a zip file (metadata.zip).</li>
+                            <li><strong>Upload Metadata to IPFS</strong>:
+                                <ul className="list-disc pl-5 mt-1">
+                                    <li>Extract metadata.zip to get the "metadata" folder (1.json, 2.json, etc.).</li>
+                                    <li>Upload each JSON file individually to IPFS to get a unique CID for each metadata file.</li>
+                                    <li>Note down the CIDs for use in minting.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Mint on Blockchain</strong>:
+                                <ul className="list-disc pl-5 mt-1">
+                                    <li>Use a platform like <a href="https://opensea.io" target="_blank" className="text-blue-500 hover:underline">OpenSea</a> or a custom smart contract.</li>
+                                    <li>For each NFT, set the tokenURI to the corresponding metadata CID (e.g., ipfs://metadata-cid).</li>
+                                    <li>Follow the platform’s instructions to mint, ensuring you have a wallet (e.g., MetaMask) with sufficient funds for gas fees.</li>
+                                </ul>
+                            </li>
+                        </ol>
+                        <button
+                            onClick={() => setShowIpfsGuide(false)}
+                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 font-semibold"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            );
+
+            // Donate Modal Component
+            const DonateModal = () => (
+                <div className="fixed inset-0 modal flex items-center justify-center z-50">
+                    <div className="modal-content p-6 max-w-2xl w-full shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Support NifftySwiggle</h2>
+                        <p className="text-gray-700 dark:text-gray-200 mb-4">
+                            Hi, I'm NifftySwiggle, the creator of this NFT Generator! I'm passionate about making NFT creation accessible and fun for everyone.
+                            Your contributions help me continue developing and improving this tool, adding new features, and keeping it free for the community.
+                            If you find this tool useful, please consider donating to the wallet address below. Thank you for your support!
+                        </p>
+                        <div className="flex items-center mb-4">
+                            <input
+                                type="text"
+                                value={walletAddress}
+                                readOnly
+                                className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none"
+                                title="Wallet address for donations"
+                            />
+                            <button
+                                onClick={handleCopyWallet}
+                                className="ml-2 bg-yellow-500 text-white px-3 py-2 rounded-md hover:bg-yellow-600 font-semibold flex items-center"
+                                title="Copy wallet address"
+                            >
+                                <svg className="mr-2 donate-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                {isCopied ? 'Copied!' : 'Copy'}
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => setShowDonateModal(false)}
+                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 font-semibold"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            );
+
+            return (
+                <ErrorBoundary>
+                    <div className={`${theme}-theme flex flex-col items-center min-h-screen p-4 sm:p-6`}>
+                        <div className="flex items-center justify-between w-full max-w-full sm:max-w-4xl mb-4 sm:mb-6">
+                            <h1 className="text-2xl sm:text-4xl font-extrabold title">NifftySwiggles NFT Generator</h1>
+                            <button
+                                onClick={toggleTheme}
+                                className="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 hover:shadow font-semibold flex items-center"
+                                title="Toggle theme"
+                            >
+                                {theme === 'light' ? (
+                                    <svg className="mr-1 sm:mr-2 theme-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"></path>
+                                    </svg>
+                                ) : (
+                                    <svg className="mr-1 sm:mr-2 theme-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                )}
+                                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                            </button>
+                        </div>
+                        <div className="w-full max-w-full sm:max-w-4xl container p-4 sm:p-6">
+                            <div className="mb-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">How to Create and Mint NFTs</h2>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    1. Add layers and upload PNG/JPEG traits.<br />
+ Hoh                                    2. Set collection name, description, and edition size, then click "Generate NFTs".<br />
+                                    3. Click "Export Images" to download images.zip.<br />
+                                    4. Upload the images folder to IPFS using the guide below and get the folder CID.<br />
+                                    5. Enter the CID and click "Update Metadata" to download updated metadata.zip.<br />
+                                    6. Upload each metadata JSON file to IPFS to get individual CIDs.<br />
+                                    7. Mint your NFTs on a platform like <a href="https://opensea.io" target="_blank" className="text-blue-500 hover:underline">OpenSea</a> using the metadata CIDs.
+                                </p>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">Collection Name</label>
+                                <input
+                                    type="text"
+                                    value={collectionName}
+                                    onChange={(e) => setCollectionName(e.target.value)}
+                                    className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow"
+                                    placeholder="Enter collection name"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">Description</label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow"
+                                    placeholder="Enter collection description"
+                                    rows="4"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">Edition Size</label>
+                                <input
+                                    type="number"
+                                    value={editionSize}
+                                    onChange={(e) => setEditionSize(Number(e.target.value))}
+                                    className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow"
+                                    placeholder="Number of NFTs"
+                                    min="1"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">Images Folder CID</label>
+                                <input
+                                    type="text"
+                                    value={imagesCid}
+                                    onChange={(e) => setImagesCid(e.target.value)}
+                                    className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow"
+                                    placeholder="Enter IPFS CID for images folder (e.g., Qm... or bafy...)"
+                                    title="Paste the CID of the images folder uploaded to IPFS"
+                                />
+                            </div>
+                            {window.ReactBeautifulDnd ? (
+                                <DragDropContext onDragEnd={onDragEnd}>
+                                    <Droppable droppableId="layers" type="layer">
+                                        {(provided) => (
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">
+                                                    Layers
+                                                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        (Drag to reorder layers; Background is always drawn first)
+                                                    </span>
+                                                </label>
+                                                {layers.map((layer, layerIndex) => {
+                                                    const totalWeight = layer.weights.reduce((sum, w) => sum + w, 0);
+                                                    return (
+                                                        <Draggable key={layer.id} draggableId={layer.id} index={layerIndex}>
+                                                            {(provided) => (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    {...provided.dragHandleProps}
+                                                                    className="mb-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700 layer-card"
+                                                                >
+                                                                    <div className="flex items-center mb-2">
+                                                                        <span className="mr-2 text-gray-600 dark:text-gray-400">☰</span>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={layer.name}
+                                                                            onChange={(e) => {
+                                                                                const newLayers = [...layers];
+                                                                                newLayers[layerIndex].name = e.target.value;
+                                                                                newLayers[layerIndex].items = newLayers[layerIndex].items.map((item, i) => ({
+                                                                                    ...item,
+                                                                                    name: `${e.target.value} ${i + 1}`
+                                                                                }));
+                                                                                setLayers(newLayers);
+                                                                            }}
+                                                                            className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow"
+                                                                            placeholder="Layer name"
+                                                                            title="Enter a name for this layer"
+                                                                        />
+                                                                    </div>
+                                                                    <input
+                                                                        type="file"
+                                                                        multiple
+                                                                        accept="image/png,image/jpeg"
+                                                                        onChange={(e) => handleFileUpload(e, layerIndex)}
+                                                                        className="mb-2 text-gray-600 dark:text-gray-400"
+                                                                        title="Upload PNG or JPEG images for this layer"
+                                                                    />
+                                                                    <Droppable droppableId={layer.id}>
+                                                                        {(provided) => (
+                                                                            <div
+                                                                                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
+                                                                                {...provided.droppableProps}
+                                                                                ref={provided.innerRef}
+                                                                            >
+                                                                                {layer.items.map((item, itemIndex) => (
+                                                                                    <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
+                                                                                        {(provided) => (
+                                                                                            <div
+                                                                                                ref={provided.innerRef}
+                                                                                                {...provided.draggableProps}
+                                                                                                {...provided.dragHandleProps}
+                                                                                                className="p-2 border rounded-md bg-white dark:bg-gray-800 relative trait-card"
+                                                                                            >
+                                                                                                <img src={item.url} alt={item.name} className="w-full h-20 object-contain mb-1 rounded" />
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    value={item.name}
+                                                                                                    onChange={(e) => renameTrait(layerIndex, itemIndex, e.target.value)}
+                                                                                                    className="w-full p-1 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow mb-1"
+                                                                                                    placeholder="Trait name"
+                                                                                                    title="Enter a name for this trait"
+                                                                                                />
+                                                                                                <div className="flex items-center">
+                                                                                                    <input
+                                                                                                        type="number"
+                                                                                                        value={layer.weights[itemIndex]}
+                                                                                                        onChange={(e) => {
+                                                                                                            const newLayers = [...layers];
+                                                                                                            newLayers[layerIndex].weights[itemIndex] = Number(e.target.value);
+                                                                                                            setLayers(newLayers);
+                                                                                                        }}
+                                                                                                        className="w-1/2 p-1 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:shadow"
+                                                                                                        placeholder="Weight"
+                                                                                                        min="1"
+                                                                                                        title="Set weight to control rarity (higher = more common)"
+                                                                                                    />
+                                                                                                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                                                                                                        {calculateRarity(layer.weights[itemIndex], totalWeight)}%
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                                                                                    Higher weight = more likely (less rare)
+                                                                                                </span>
+                                                                                                <button
+                                                                                                    onClick={() => deleteTrait(layerIndex, itemIndex)}
+                                                                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center delete-btn"
+                                                                                                    title="Delete this trait"
+                                                                                                >
+                                                                                                    ×
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </Draggable>
+                                                                                ))}
+                                                                                {provided.placeholder}
+                                                                            </div>
+                                                                        )}
+                                                                    </Droppable>
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    );
+                                                })}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            ) : (
+                                <div className="p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+                                    <p>Drag-and-drop functionality is unavailable. Please ensure the react-beautiful-dnd script loaded correctly.</p>
+                                </div>
+                            )}
+                            <button
+                                onClick={() => setLayers([...layers, { id: `layer-${layers.length + 1}`, name: `Layer ${layers.length + 1}`, items: [], weights: [] }])}
+                                className="mt-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 hover:shadow font-semibold"
+                                title="Add a new layer"
+                            >
+                                Add Layer
+                            </button>
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-4 mt-4">
+                                <button
+                                    onClick={generateNFTs}
+                                    className="bg-blue-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-blue-600 hover:shadow font-semibold disabled:opacity-50"
+                                    disabled={layers.some(layer => !layer.items.length)}
+                                    title="Generate NFT images and metadata"
+                                >
+                                    Generate NFTs
+                                </button>
+                                <button
+                                    onClick={exportImages}
+                                    className="bg-green-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-green-600 hover:shadow disabled:opacity-50 font-semibold"
+                                    disabled={!generatedImages.length}
+                                    title="Download generated images as a zip file"
+                                >
+                                    Export Images
+                                </button>
+                                <button
+                                    onClick={exportImagesAndMetadata}
+                                    className="bg-purple-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-purple-600 hover:shadow disabled:opacity-50 font-semibold"
+                                    disabled={!generatedImages.length || !metadata.length}
+                                    title="Download images and initial metadata as a zip file"
+                                >
+                                    Export Images & Metadata
+                                </button>
+                                <button
+                                    onClick={updateMetadata}
+                                    className="bg-teal-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-teal-600 hover:shadow disabled:opacity-50 font-semibold"
+                                    disabled={!imagesCid || !combinations.length}
+                                    title="Update metadata with IPFS CID and download"
+                                >
+                                    Update Metadata
+                                </button>
+                                <button
+                                    onClick={() => setShowIpfsGuide(true)}
+                                    className="bg-indigo-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-indigo-600 hover:shadow font-semibold"
+                                    title="View instructions for uploading to IPFS and minting"
+                                >
+                                    How to Upload to IPFS
+                                </button>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-200 font-medium text-sm sm:text-base">{status}</p>
+                            {metadata.length > 0 && (
+                                <div className="mt-4">
+                                    <button
+                                        onClick={() => setShowMetadata(!showMetadata)}
+                                        className="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 hover:shadow font-semibold"
+                                        title="Toggle metadata preview"
+                                    >
+                                        {showMetadata ? 'Hide Metadata Preview' : 'Show Metadata Preview'}
+                                    </button>
+                                    {showMetadata && (
+                                        <div className="mt-2 p-4 border rounded-md bg-gray-50 dark:bg-gray-700 max-h-96 overflow-y-auto">
+                                            <pre className="text-sm text-gray-700 dark:text-gray-200 font-mono">
+                                                {JSON.stringify(metadata.slice(0, 3), null, 2)}
+                                                {metadata.length > 3 && <p className="text-gray-500 dark:text-gray-400">...and {metadata.length - 3} more</p>}
+                                            </pre>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mt-6">
+                                {generatedImages.map((img) => (
+                                    <img
+                                        key={img.id}
+                                        src={img.url}
+                                        alt={`NFT ${img.id}`}
+                                        className="w-full h-auto rounded-md shadow nft-image"
+                                        title={`NFT ${img.id}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <footer className="footer w-full max-w-full sm:max-w-4xl mt-6 py-4 px-4 sm:px-6 text-center text-gray-600 dark:text-gray-400">
+                            <p className="text-sm">NifftySwiggles NFT Generator - Create unique NFTs with ease.</p>
+                            <div className="mt-2">
+                                <button
+                                    onClick={() => setShowDonateModal(true)}
+                                    className="bg-yellow-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-yellow-600 hover:shadow font-semibold flex items-center justify-center mx-auto"
+                                    title="Support the developer with a donation"
+                                >
+                                    <svg className="mr-2 donate-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Donate (Crypto)
+                                </button>
+                                <p className="text-xs mt-1">Wallet: {walletAddress}</p>
+                            </div>
+                        </footer>
+                        {showIpfsGuide && <IpfsGuideModal />}
+                        {showDonateModal && <DonateModal />}
+                    </div>
+                </ErrorBoundary>
+            );
+        };
+
+        // Check if all scripts loaded
+        const checkScripts = () => {
+            if (!window.React) {
+                console.error('React failed to load');
+                document.getElementById('root').innerHTML = `
+                    <div class="p-6 m-4 bg-red-100 text-red-700 rounded-md max-w-4xl mx-auto">
+                        <h2 class="text-xl font-bold">Script Loading Error</h2>
+                        <p>Failed to load React. Please check your network and try refreshing the page.</p>
+                    </div>
+                `;
+                return false;
+            }
+            if (!window.ReactDOM) {
+                console.error('ReactDOM failed to load');
+                document.getElementById('root').innerHTML = `
+                    <div class="p-6 m-4 bg-red-100 text-red-700 rounded-md max-w-4xl mx-auto">
+                        <h2 class="text-xl font-bold">Script Loading Error</h2>
+                        <p>Failed to load ReactDOM. Please check your network and try refreshing the page.</p>
+                    </div>
+                `;
+                return false;
+            }
+            if (!window.ReactBeautifulDnd) {
+                console.warn('react-beautiful-dnd failed to load; drag-and-drop disabled');
+            }
+            if (!window.JSZip || !window.saveAs) {
+                console.warn('JSZip or FileSaver failed to load; export will use JSON fallback');
+            }
+            console.log('Scripts checked successfully');
+            return true;
+        };
+
+        if (checkScripts()) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+</body>
+</html>
