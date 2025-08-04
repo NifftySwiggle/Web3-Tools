@@ -27,6 +27,8 @@
     @media (max-width: 640px) {
       button { width: 100%; margin-top: 0.5rem; }
       input, select { width: 100%; }
+      .holder-row { flex-direction: column; align-items: flex-start; }
+      .holder-row button { width: 100%; }
     }
   </style>
 </head>
@@ -140,19 +142,47 @@
         setSelectedNetwork(networks.find(n => n.name === 'Cronos Mainnet'));
       }, []);
 
+      const parseTokenIds = (input) => {
+        const ids = new Set();
+        const segments = input.split(',').map(s => s.trim()).filter(s => s);
+        for (const segment of segments) {
+          if (segment.includes('-') || segment.includes('to')) {
+            const separator = segment.includes('-') ? '-' : 'to';
+            const [start, end] = segment.split(separator).map(n => parseInt(n.trim()));
+            if (isNaN(start) || isNaN(end) || start < 0 || end < 0) {
+              throw new Error(`Invalid range: ${segment}`);
+            }
+            if (start > end) {
+              throw new Error(`Invalid range: ${start} > ${end} in ${segment}`);
+            }
+            for (let i = start; i <= end; i++) {
+              ids.add(i);
+            }
+          } else {
+            const id = parseInt(segment);
+            if (isNaN(id) || id < 0) {
+              throw new Error(`Invalid token ID: ${segment}`);
+            }
+            ids.add(id);
+          }
+        }
+        return Array.from(ids);
+      };
+
       const validateTokenIds = (value) => {
         if (!value) return '';
-        const ids = value.split(',').map(id => id.trim());
-        if (ids.some(id => !/^\d+$/.test(id) || parseInt(id) < 0)) {
-          return 'Token IDs must be non-negative integers (e.g., 1,3,5)';
+        try {
+          const ids = parseTokenIds(value);
+          if (ids.length === 0) {
+            return 'No valid token IDs provided';
+          }
+          if (ids.length > 100) {
+            return 'Maximum 100 token IDs allowed';
+          }
+          return '';
+        } catch (error) {
+          return error.message;
         }
-        if (new Set(ids).size !== ids.length) {
-          return 'Duplicate token IDs are not allowed';
-        }
-        if (ids.length > 100) {
-          return 'Maximum 100 token IDs allowed';
-        }
-        return '';
       };
 
       const validateAmount = (value) => {
@@ -350,14 +380,21 @@
           let holdersMap = new Map();
 
           if (fetchMethod === 'ownerOf') {
-            const tokenIdList = tokenIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id >= 0);
+            let tokenIdList;
+            try {
+              tokenIdList = parseTokenIds(tokenIds);
+            } catch (error) {
+              setStatus(prev => `${prev}${error.message}\n`);
+              setIsLoading(false);
+              return;
+            }
             if (tokenIdList.length === 0) {
               setStatus(prev => `${prev}No valid token IDs provided.\n`);
               setIsLoading(false);
               return;
             }
             if (tokenIdList.length > 100) {
-              setStatus(prev => `${prev}Too many token IDs (>100). Please reduce or use CSV upload.\n`);
+              setStatus(prev => `${prev}Too many token IDs (${tokenIdList.length} > 100). Please reduce or use CSV upload.\n`);
               setIsLoading(false);
               return;
             }
@@ -376,12 +413,17 @@
 
           const holderList = Array.from(holdersMap, ([address, count]) => ({ address, count }));
           setHolderPreview(holderList);
-          setStatus(prev => `${prev}Preview ${holderList.length} NFT holder addresses below (with ${multipleHoldings ? 'NFT counts' : 'single entries'}). Confirm to add to recipients.\n`);
+          setStatus(prev => `${prev}Preview ${holderList.length} NFT holder addresses below (with NFT counts). Confirm or remove addresses to add to recipients.\n`);
         } catch (error) {
           setStatus(prev => `${prev}Error fetching NFT holders: ${error.message}\n`);
         } finally {
           setIsLoading(false);
         }
+      };
+
+      const removeHolder = (address) => {
+        setHolderPreview(prev => prev.filter(holder => holder.address !== address));
+        setStatus(prev => `${prev}Removed address ${address.slice(0, 6)}...${address.slice(-4)} from preview.\n`);
       };
 
       const confirmHolders = () => {
@@ -438,7 +480,7 @@
             });
             const holderList = Array.from(holdersMap, ([address, count]) => ({ address, count }));
             setHolderPreview(holderList);
-            setStatus(prev => `${prev}Loaded ${holderList.length} valid NFT holder addresses from CSV (with ${multipleHoldings ? 'NFT counts' : 'single entries'}). Confirm to add to recipients.\n`);
+            setStatus(prev => `${prev}Loaded ${holderList.length} valid NFT holder addresses from CSV (with NFT counts). Confirm or remove addresses to add to recipients.\n`);
           } catch (error) {
             setStatus(prev => `${prev}Error parsing CSV: ${error.message}\n`);
             setIsLoading(false);
@@ -602,10 +644,13 @@
         <ErrorBoundary>
           <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              Note: WalletConnect Coming soon donate to 0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f to help. <a href="https://cloud.walletconnect.com/" target="_blank" className="text-blue-500"></a>
+              Note: WalletConnect coming soon. If you want to help, please
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              MetaMask is fully supported. Ensure sufficient CRO for gas fees on Cronos.
+              Donate to 0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f make it happen. <a href="https://cloud.walletconnect.com/" target="_blank" className="text-blue-500"></a>
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              MetaMask is fully supported. Created by NifftySwiggle.
             </p>
 
             <div className="mb-6">
@@ -699,7 +744,7 @@
               </div>
               {fetchMethod === 'ownerOf' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token IDs (comma-separated)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token IDs (comma-separated or ranges)</label>
                   <input
                     type="text"
                     value={tokenIds}
@@ -707,10 +752,10 @@
                       setTokenIds(e.target.value);
                       setTokenIdsError(validateTokenIds(e.target.value));
                     }}
-                    placeholder="e.g., 1,3,5"
+                    placeholder="e.g., 1to5,7,9to10 or 1-5,7,9-10 or 1,3,5"
                     className={`mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${tokenIdsError ? 'input-error' : ''}`}
                     disabled={isLoading}
-                    data-tooltip="Enter comma-separated token IDs (e.g., 1,3,5)"
+                    data-tooltip="Enter comma-separated token IDs or ranges (e.g., 1to5,7,9to10 or 1-5,7,9-10 or 1,3,5)"
                   />
                   {tokenIdsError && <p className="error-text mt-1">{tokenIdsError}</p>}
                 </div>
@@ -766,7 +811,16 @@
                   <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Preview NFT Holders</h3>
                   <div className="scrollable-preview bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-sm text-gray-800 dark:text-gray-200">
                     {holderPreview.map((holder, index) => (
-                      <div key={index}>{holder.address} {multipleHoldings ? `(x${holder.count} NFTs)` : ''}</div>
+                      <div key={index} className="holder-row flex items-center justify-between mb-2">
+                        <span>{holder.address} (x{holder.count} NFT{holder.count > 1 ? 's' : ''})</span>
+                        <button
+                          onClick={() => removeHolder(holder.address)}
+                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
+                          data-tooltip="Remove this address from the preview"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     ))}
                   </div>
                   <button
@@ -913,4 +967,3 @@
   </script>
 </body>
 </html>
-
