@@ -7,21 +7,23 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.14.3/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.14.3/dist/ethers.umd.min.js" onerror="document.getElementById('root').innerHTML='Error: Failed to load Ethers.js from jsdelivr. Trying fallback...'; fetch('https://unpkg.com/ethers@6.14.3/dist/ethers.umd.min.js').then(res => res.text()).then(text => { const script = document.createElement('script'); script.text = text; document.head.appendChild(script); }).catch(() => document.getElementById('root').innerHTML='Error: Failed to load Ethers.js from fallback CDN.')"></script>
   <script src="https://unpkg.com/@walletconnect/modal@2.7.0/dist/index.min.js"></script>
   <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.21.5/dist/index.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .scrollable-status { max-height: 300px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4b5563 #e5e7eb; }
-    .scrollable-status::-webkit-scrollbar { width: 8px; }
-    .scrollable-status::-webkit-scrollbar-track { background: #e5e7eb; }
-    .scrollable-status::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    .scrollable-status, .scrollable-preview, .scrollable-history { max-height: 300px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4b5563 #e5e7eb; }
+    .scrollable-status::-webkit-scrollbar, .scrollable-preview::-webkit-scrollbar, .scrollable-history::-webkit-scrollbar { width: 8px; }
+    .scrollable-status::-webkit-scrollbar-track, .scrollable-preview::-webkit-scrollbar-track, .scrollable-history::-webkit-scrollbar-track { background: #e5e7eb; }
+    .scrollable-status::-webkit-scrollbar-thumb, .scrollable-preview::-webkit-scrollbar-thumb, .scrollable-history::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
     .tooltip { position: relative; }
     .tooltip:hover::after {
       content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
       background: #1f2937; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 10;
     }
+    .input-error { border-color: #ef4444; }
+    .error-text { color: #ef4444; font-size: 0.875rem; }
     @media (max-width: 640px) {
       button { width: 100%; margin-top: 0.5rem; }
       input, select { width: 100%; }
@@ -31,14 +33,34 @@
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 sm:p-6 transition-colors duration-300">
   <div id="root"></div>
   <script type="text/babel">
-    const { useState, useEffect, useCallback, useRef } = React;
+    const { useState, useEffect, useCallback, useRef, Component } = React;
     const { createRoot } = ReactDOM;
     const { ethers } = window;
+
+    class ErrorBoundary extends Component {
+      state = { error: null };
+      static getDerivedStateFromError(error) {
+        return { error: error.message || 'An unexpected error occurred.' };
+      }
+      render() {
+        if (this.state.error) {
+          return (
+            <div className="p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
+              <h2 className="text-lg font-semibold">Error</h2>
+              <p>{this.state.error}</p>
+              <p>Please check the console (F12) for details, clear browser cache, or try refreshing.</p>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
 
     const AirdropStakingApp = () => {
       const [provider, setProvider] = useState(null);
       const [signer, setSigner] = useState(null);
       const [account, setAccount] = useState(null);
+      const [isConnected, setIsConnected] = useState(false);
       const [selectedNetwork, setSelectedNetwork] = useState(null);
       const [connectedNetwork, setConnectedNetwork] = useState(null);
       const [status, setStatus] = useState('Please connect your wallet to begin.\n');
@@ -49,12 +71,14 @@
       const [amount, setAmount] = useState('');
       const [tokenContract, setTokenContract] = useState('');
       const [tokenType, setTokenType] = useState('native');
-      const [batchSize, setBatchSize] = useState('10');
-      const [isConnected, setIsConnected] = useState(false);
       const [nftContract, setNftContract] = useState('');
-      const [tokenIdStart, setTokenIdStart] = useState('');
-      const [tokenIdEnd, setTokenIdEnd] = useState('');
-      const [fetchMethod, setFetchMethod] = useState('events');
+      const [tokenIds, setTokenIds] = useState('');
+      const [fetchMethod, setFetchMethod] = useState('ownerOf');
+      const [holderPreview, setHolderPreview] = useState([]);
+      const [multipleHoldings, setMultipleHoldings] = useState(false);
+      const [txHistory, setTxHistory] = useState([]);
+      const [tokenIdsError, setTokenIdsError] = useState('');
+      const [amountError, setAmountError] = useState('');
       const fileInputRef = useRef(null);
 
       const networks = [
@@ -90,20 +114,14 @@
           "name": "ownerOf",
           "outputs": [{ "name": "", "type": "address" }],
           "type": "function"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            { "indexed": true, "name": "from", "type": "address" },
-            { "indexed": true, "name": "to", "type": "address" },
-            { "indexed": true, "name": "tokenId", "type": "uint256" }
-          ],
-          "name": "Transfer",
-          "type": "event"
         }
       ];
 
       useEffect(() => {
+        if (!window.React || !window.ReactDOM || !window.ethers || !window.WalletConnectModal || !window.EthereumProvider) {
+          setStatus(prev => `${prev}Error: Missing required dependencies (React, ReactDOM, Ethers.js, WalletConnect). Check console (F12) and Network tab.\n`);
+          return;
+        }
         const initWalletConnect = async () => {
           const projectId = 'YOUR_WALLET_CONNECT_PROJECT_ID'; // Replace with your actual project ID
           try {
@@ -122,9 +140,32 @@
         setSelectedNetwork(networks.find(n => n.name === 'Cronos Mainnet'));
       }, []);
 
+      const validateTokenIds = (value) => {
+        if (!value) return '';
+        const ids = value.split(',').map(id => id.trim());
+        if (ids.some(id => !/^\d+$/.test(id) || parseInt(id) < 0)) {
+          return 'Token IDs must be non-negative integers (e.g., 1,3,5)';
+        }
+        if (new Set(ids).size !== ids.length) {
+          return 'Duplicate token IDs are not allowed';
+        }
+        if (ids.length > 100) {
+          return 'Maximum 100 token IDs allowed';
+        }
+        return '';
+      };
+
+      const validateAmount = (value) => {
+        if (!value) return '';
+        if (isNaN(value) || parseFloat(value) <= 0) {
+          return 'Amount must be a positive number';
+        }
+        return '';
+      };
+
       const connectWallet = useCallback(async () => {
         if (!ethers || !ethers.BrowserProvider || !ethers.isAddress) {
-          setStatus(prev => `${prev}Error: Ethers.js library failed to load. Please refresh the page or try an alternative CDN: https://unpkg.com/ethers@6.14.3/dist/ethers.umd.min.js\n`);
+          setStatus(prev => `${prev}Error: Ethers.js not loaded properly. Try alternative CDN: https://unpkg.com/ethers@6.14.3/dist/ethers.umd.min.js\n`);
           setIsLoading(false);
           return;
         }
@@ -147,6 +188,7 @@
               setProvider(browserProvider);
               setSigner(signer);
               setAccount(accounts[0]);
+              setIsConnected(true);
               const network = await browserProvider.getNetwork();
               const chainId = `0x${network.chainId.toString(16)}`;
               const selectedNet = networks.find(n => n.chainId === chainId);
@@ -176,7 +218,6 @@
               } else {
                 setStatus(prev => `${prev}Unsupported network: ${chainId}. Please switch to Cronos Mainnet.\n`);
               }
-              setIsConnected(true);
               setStatus(prev => `${prev}Connected to MetaMask: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}\n`);
             }
           } catch (error) {
@@ -208,6 +249,7 @@
             setProvider(browserProvider);
             setSigner(signer);
             setAccount(accounts);
+            setIsConnected(true);
             const network = await browserProvider.getNetwork();
             const chainId = `0x${network.chainId.toString(16)}`;
             const selectedNet = networks.find(n => n.chainId === chainId);
@@ -237,7 +279,6 @@
             } else {
               setStatus(prev => `${prev}Unsupported network: ${chainId}. Please switch to Cronos Mainnet.\n`);
             }
-            setIsConnected(true);
             setStatus(prev => `${prev}Connected to WalletConnect: ${accounts.slice(0, 6)}...${accounts.slice(-4)}\n`);
             walletConnectModal.closeModal();
           } catch (error) {
@@ -306,49 +347,54 @@
 
         try {
           const contract = new ethers.Contract(nftContract, erc721Abi, provider);
-          let holders = new Set();
+          let holdersMap = new Map();
 
-          if (fetchMethod === 'events') {
-            const filter = contract.filters.Transfer(null, null, null);
-            const latestBlock = await provider.getBlockNumber();
-            const fromBlock = Math.max(latestBlock - 10000, 0); // Limit to recent blocks
-            const events = await contract.queryFilter(filter, fromBlock, latestBlock);
-            events.forEach(event => {
-              const to = event.args.to;
-              if (ethers.isAddress(to) && to !== ethers.ZeroAddress) {
-                holders.add(to);
-              }
-            });
-            setStatus(prev => `${prev}Fetched ${holders.size} unique holders via Transfer events.\n`);
-          } else if (fetchMethod === 'ownerOf') {
-            const start = parseInt(tokenIdStart) || 1;
-            const end = parseInt(tokenIdEnd) || 100;
-            if (end - start > 100) {
-              setStatus(prev => `${prev}Token ID range too large (>100). Please reduce range or use CSV upload.\n`);
+          if (fetchMethod === 'ownerOf') {
+            const tokenIdList = tokenIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id >= 0);
+            if (tokenIdList.length === 0) {
+              setStatus(prev => `${prev}No valid token IDs provided.\n`);
               setIsLoading(false);
               return;
             }
-            for (let tokenId = start; tokenId <= end; tokenId++) {
+            if (tokenIdList.length > 100) {
+              setStatus(prev => `${prev}Too many token IDs (>100). Please reduce or use CSV upload.\n`);
+              setIsLoading(false);
+              return;
+            }
+            for (const tokenId of tokenIdList) {
               try {
                 const owner = await contract.ownerOf(tokenId);
                 if (ethers.isAddress(owner) && owner !== ethers.ZeroAddress) {
-                  holders.add(owner);
+                  holdersMap.set(owner, (holdersMap.get(owner) || 0) + 1);
                 }
               } catch (error) {
                 setStatus(prev => `${prev}Skipping token ID ${tokenId}: ${error.message}\n`);
               }
             }
-            setStatus(prev => `${prev}Fetched ${holders.size} unique holders for token IDs ${start} to ${end}.\n`);
+            setStatus(prev => `${prev}Fetched ${holdersMap.size} unique holders for ${tokenIdList.length} token IDs.\n`);
           }
 
-          const holderList = Array.from(holders).join(',');
-          setRecipients(holderList);
-          setStatus(prev => `${prev}Set ${holders.size} NFT holder addresses in recipients field.\n`);
+          const holderList = Array.from(holdersMap, ([address, count]) => ({ address, count }));
+          setHolderPreview(holderList);
+          setStatus(prev => `${prev}Preview ${holderList.length} NFT holder addresses below (with ${multipleHoldings ? 'NFT counts' : 'single entries'}). Confirm to add to recipients.\n`);
         } catch (error) {
           setStatus(prev => `${prev}Error fetching NFT holders: ${error.message}\n`);
         } finally {
           setIsLoading(false);
         }
+      };
+
+      const confirmHolders = () => {
+        if (multipleHoldings) {
+          const holderList = holderPreview.flatMap(holder => Array(holder.count).fill(holder.address)).join(',');
+          setRecipients(holderList);
+          setStatus(prev => `${prev}Added ${holderList.split(',').length} recipient entries (accounting for ${holderPreview.length} holders with multiple NFTs).\n`);
+        } else {
+          const holderList = holderPreview.map(holder => holder.address).join(',');
+          setRecipients(holderList);
+          setStatus(prev => `${prev}Added ${holderList.split(',').length} NFT holder addresses to recipients.\n`);
+        }
+        setHolderPreview([]);
       };
 
       const handleFileUpload = (event) => {
@@ -386,11 +432,15 @@
               setIsLoading(false);
               return;
             }
-            setRecipients(addresses.join(','));
-            setStatus(prev => `${prev}Loaded ${addresses.length} valid NFT holder addresses from CSV.\n`);
+            const holdersMap = new Map();
+            addresses.forEach(addr => {
+              holdersMap.set(addr, (holdersMap.get(addr) || 0) + 1);
+            });
+            const holderList = Array.from(holdersMap, ([address, count]) => ({ address, count }));
+            setHolderPreview(holderList);
+            setStatus(prev => `${prev}Loaded ${holderList.length} valid NFT holder addresses from CSV (with ${multipleHoldings ? 'NFT counts' : 'single entries'}). Confirm to add to recipients.\n`);
           } catch (error) {
             setStatus(prev => `${prev}Error parsing CSV: ${error.message}\n`);
-          } finally {
             setIsLoading(false);
           }
         };
@@ -402,110 +452,130 @@
       };
 
       const sendAirdrop = async () => {
-        if (!provider || !signer || !account) {
+        if (!provider || !signer || !account || !isConnected) {
           setStatus(prev => `${prev}Please connect your wallet first.\n`);
           return;
         }
         if (!ethers || !ethers.parseEther || !ethers.parseUnits || !ethers.isAddress) {
-          setStatus(prev => `${prev}Error: Ethers.js library failed to load. Please refresh the page or try an alternative CDN: https://unpkg.com/ethers@6.14.3/dist/ethers.umd.min.js\n`);
+          setStatus(prev => `${prev}Error: Ethers.js not loaded properly. Try alternative CDN: https://unpkg.com/ethers@6.14.3/dist/ethers.umd.min.js\n`);
+          return;
+        }
+        const amountErr = validateAmount(amount);
+        if (amountErr) {
+          setAmountError(amountErr);
+          setStatus(prev => `${prev}Invalid amount: ${amountErr}\n`);
+          return;
+        }
+        setAmountError('');
+        const recipientList = multipleHoldings
+          ? holderPreview.flatMap(holder => Array(holder.count).fill({ address: holder.address, count: holder.count }))
+          : recipients.split(',').map(r => ({ address: r.trim(), count: 1 })).filter(r => ethers.isAddress(r.address));
+        if (recipientList.length === 0) {
+          setStatus(prev => `${prev}No valid recipient addresses provided.\n`);
+          return;
+        }
+        const totalAmount = multipleHoldings
+          ? recipientList.reduce((sum, holder) => sum + holder.count * parseFloat(amount), 0)
+          : recipientList.length * parseFloat(amount);
+        const confirm = window.confirm(`Send ${totalAmount} ${tokenType === 'native' ? selectedNetwork.nativeCurrency : 'tokens'} to ${recipientList.length} recipient entries${multipleHoldings ? ' (accounting for NFT counts)' : ''}? Confirm each transaction in ${walletProvider}.`);
+        if (!confirm) {
+          setStatus(prev => `${prev}Airdrop cancelled.\n`);
           return;
         }
         setIsLoading(true);
-        const recipientList = recipients.split(',').map(r => r.trim()).filter(r => ethers.isAddress(r));
-        if (recipientList.length === 0) {
-          setStatus(prev => `${prev}No valid recipient addresses provided.\n`);
-          setIsLoading(false);
-          return;
-        }
-        const batchSizeNum = parseInt(batchSize) || 10;
-        const confirm = window.confirm(`Send ${amount} ${tokenType === 'native' ? selectedNetwork.nativeCurrency : 'tokens'} to ${recipientList.length} addresses in batches of ${batchSizeNum}? Confirm each transaction in ${walletProvider}.`);
-        if (!confirm) {
-          setStatus(prev => `${prev}Airdrop cancelled.\n`);
-          setIsLoading(false);
-          return;
-        }
-        setStatus(prev => `${prev}Sending airdrop to ${recipientList.length} addresses in batches of ${batchSizeNum}...\n`);
+        setStatus(prev => `${prev}Sending airdrop to ${recipientList.length} recipient entries${multipleHoldings ? ' (with NFT counts)' : ''}...\n`);
 
         try {
           let successCount = 0;
           let nonce = await provider.getTransactionCount(account, 'pending');
-          for (let i = 0; i < recipientList.length; i += batchSizeNum) {
-            const batch = recipientList.slice(i, i + batchSizeNum);
-            for (const recipient of batch) {
+          for (const recipient of recipientList) {
+            try {
+              let feeData;
               try {
-                let feeData;
-                try {
-                  feeData = await provider.getFeeData();
-                } catch (error) {
-                  setStatus(prev => `${prev}Warning: Failed to fetch fee data, using fallback gas values: ${error.message}\n`);
-                  feeData = {
-                    maxFeePerGas: ethers.parseUnits('50', 'gwei'),
-                    maxPriorityFeePerGas: ethers.parseUnits('2', 'gwei')
-                  };
-                }
-                if (tokenType === 'native') {
-                  let valueInWei;
-                  try {
-                    valueInWei = ethers.parseEther(amount);
-                  } catch (error) {
-                    setStatus(prev => `${prev}Invalid amount for CRO transfer: ${amount}. Please enter a valid number.\n`);
-                    setIsLoading(false);
-                    return;
-                  }
-                  const tx = {
-                    to: recipient,
-                    value: valueInWei,
-                    gasLimit: await provider.estimateGas({ to: recipient, value: valueInWei }).catch(() => 21000),
-                    maxFeePerGas: feeData.maxFeePerGas,
-                    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-                    nonce: nonce
-                  };
-                  const txResponse = await signer.sendTransaction(tx);
-                  const txReceipt = await txResponse.wait();
-                  setStatus(prev => `${prev}Sent ${amount} ${selectedNetwork.nativeCurrency} to ${recipient.slice(0, 6)}...${recipient.slice(-4)}, Tx: ${txReceipt.hash}\n`);
-                  successCount++;
-                  nonce++;
-                } else if (tokenType === 'erc20') {
-                  if (!tokenContract || !ethers.isAddress(tokenContract)) {
-                    setStatus(prev => `${prev}Invalid or missing token contract address.\n`);
-                    setIsLoading(false);
-                    return;
-                  }
-                  const contract = new ethers.Contract(tokenContract, erc20Abi, signer);
-                  let decimals;
-                  try {
-                    decimals = await contract.decimals();
-                  } catch (error) {
-                    setStatus(prev => `${prev}Warning: Could not fetch token decimals, assuming 18: ${error.message}\n`);
-                    decimals = 18;
-                  }
-                  let amountToken;
-                  try {
-                    amountToken = ethers.parseUnits(amount, decimals);
-                  } catch (error) {
-                    setStatus(prev => `${prev}Invalid amount for token transfer: ${amount}. Please enter a valid number.\n`);
-                    setIsLoading(false);
-                    return;
-                  }
-                  const tx = {
-                    gasLimit: await contract.transfer.estimateGas(recipient, amountToken).catch(() => 60000),
-                    maxFeePerGas: feeData.maxFeePerGas,
-                    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-                    nonce: nonce
-                  };
-                  const txResponse = await contract.transfer(recipient, amountToken, tx);
-                  const txReceipt = await txResponse.wait();
-                  setStatus(prev => `${prev}Sent ${amount} tokens to ${recipient.slice(0, 6)}...${recipient.slice(-4)}, Tx: ${txReceipt.hash}\n`);
-                  successCount++;
-                  nonce++;
-                }
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                feeData = await provider.getFeeData();
               } catch (error) {
-                setStatus(prev => `${prev}Error sending to ${recipient.slice(0, 6)}...${recipient.slice(-4)}: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas and tokens.' : ''}\n`);
+                setStatus(prev => `${prev}Warning: Failed to fetch fee data, using fallback gas values: ${error.message}\n`);
+                feeData = {
+                  maxFeePerGas: ethers.parseUnits('50', 'gwei'),
+                  maxPriorityFeePerGas: ethers.parseUnits('2', 'gwei')
+                };
               }
+              if (tokenType === 'native') {
+                let valueInWei;
+                try {
+                  valueInWei = ethers.parseEther((parseFloat(amount) * recipient.count).toString());
+                } catch (error) {
+                  setStatus(prev => `${prev}Invalid amount for CRO transfer: ${amount}. Please enter a valid number.\n`);
+                  setIsLoading(false);
+                  return;
+                }
+                const tx = {
+                  to: recipient.address,
+                  value: valueInWei,
+                  gasLimit: await provider.estimateGas({ to: recipient.address, value: valueInWei }).catch(() => 21000),
+                  maxFeePerGas: feeData.maxFeePerGas,
+                  maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+                  nonce: nonce
+                };
+                const txResponse = await signer.sendTransaction(tx);
+                const txReceipt = await txResponse.wait();
+                setStatus(prev => `${prev}Sent ${parseFloat(amount) * recipient.count} ${selectedNetwork.nativeCurrency} to ${recipient.address.slice(0, 6)}...${recipient.address.slice(-4)} (x${recipient.count} NFTs), Tx: ${txReceipt.hash}\n`);
+                setTxHistory(prev => [...prev, {
+                  recipient: recipient.address,
+                  amount: parseFloat(amount) * recipient.count,
+                  token: selectedNetwork.nativeCurrency,
+                  txHash: txReceipt.hash,
+                  timestamp: new Date().toLocaleString()
+                }]);
+                successCount++;
+                nonce++;
+              } else if (tokenType === 'erc20') {
+                if (!tokenContract || !ethers.isAddress(tokenContract)) {
+                  setStatus(prev => `${prev}Invalid or missing token contract address.\n`);
+                  setIsLoading(false);
+                  return;
+                }
+                const contract = new ethers.Contract(tokenContract, erc20Abi, signer);
+                let decimals;
+                try {
+                  decimals = await contract.decimals();
+                } catch (error) {
+                  setStatus(prev => `${prev}Warning: Could not fetch token decimals, assuming 18: ${error.message}\n`);
+                  decimals = 18;
+                }
+                let amountToken;
+                try {
+                  amountToken = ethers.parseUnits((parseFloat(amount) * recipient.count).toString(), decimals);
+                } catch (error) {
+                  setStatus(prev => `${prev}Invalid amount for token transfer: ${amount}. Please enter a valid number.\n`);
+                  setIsLoading(false);
+                  return;
+                }
+                const tx = {
+                  gasLimit: await contract.transfer.estimateGas(recipient.address, amountToken).catch(() => 60000),
+                  maxFeePerGas: feeData.maxFeePerGas,
+                  maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+                  nonce: nonce
+                };
+                const txResponse = await contract.transfer(recipient.address, amountToken, tx);
+                const txReceipt = await txResponse.wait();
+                setStatus(prev => `${prev}Sent ${parseFloat(amount) * recipient.count} tokens to ${recipient.address.slice(0, 6)}...${recipient.address.slice(-4)} (x${recipient.count} NFTs), Tx: ${txReceipt.hash}\n`);
+                setTxHistory(prev => [...prev, {
+                  recipient: recipient.address,
+                  amount: parseFloat(amount) * recipient.count,
+                  token: 'ERC-20',
+                  txHash: txReceipt.hash,
+                  timestamp: new Date().toLocaleString()
+                }]);
+                successCount++;
+                nonce++;
+              }
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (error) {
+              setStatus(prev => `${prev}Error sending to ${recipient.address.slice(0, 6)}...${recipient.address.slice(-4)} (x${recipient.count} NFTs): ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas and tokens.' : ''}\n`);
             }
           }
-          setStatus(prev => `${prev}Completed: Sent airdrop to ${successCount} of ${recipientList.length} addresses.\n`);
+          setStatus(prev => `${prev}Completed: Sent airdrop to ${successCount} of ${recipientList.length} recipient entries.\n`);
         } catch (error) {
           setStatus(prev => `${prev}Airdrop failed: ${error.message}\n`);
         } finally {
@@ -513,272 +583,328 @@
         }
       };
 
+      const resetForm = () => {
+        setRecipients('');
+        setAmount('');
+        setTokenContract('');
+        setTokenType('native');
+        setNftContract('');
+        setTokenIds('');
+        setFetchMethod('ownerOf');
+        setHolderPreview([]);
+        setMultipleHoldings(false);
+        setTokenIdsError('');
+        setAmountError('');
+        setStatus(prev => `${prev}Form reset.\n`);
+      };
+
       return (
-        <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-            Note: WalletConnect coming soon. <a href="https://cloud.walletconnect.com/" target="_blank" className="text-blue-500"></a>
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            MetaMask is fully supported. Ensure sufficient CRO for gas fees on Cronos.
-          </p>
+        <ErrorBoundary>
+          <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              Note: WalletConnect requires a project ID from <a href="https://cloud.walletconnect.com/" target="_blank" className="text-blue-500">WalletConnect Cloud</a>.
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              MetaMask is fully supported. Ensure sufficient CRO for gas fees on Cronos.
+            </p>
 
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Wallet Connection</h2>
-            <select
-              value={walletProvider}
-              onChange={(e) => setWalletProvider(e.target.value)}
-              className="w-full sm:w-1/2 p-2 border rounded-lg mb-2"
-              disabled={isConnected}
-            >
-              <option value="MetaMask">MetaMask</option>
-              <option value="WalletConnect">WalletConnect</option>
-            </select>
-            <button
-              onClick={isConnected ? disconnectWallet : connectWallet}
-              disabled={isLoading}
-              className={`w-full sm:w-auto p-2 rounded-lg text-white ${isConnected ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} disabled:bg-gray-400`}
-              data-tooltip={isConnected ? 'Disconnect your wallet' : 'Connect your wallet'}
-            >
-              {isLoading ? 'Connecting...' : isConnected ? 'Disconnect' : 'Connect Wallet'}
-            </button>
-            {isConnected && account && (
-              <p className="mt-2 text-gray-700 dark:text-gray-300">
-                Connected as: {account.slice(0, 6)}...{account.slice(-4)}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Network</h2>
-            <select
-              value={selectedNetwork?.name || networks[0].name}
-              onChange={handleNetworkChange}
-              className="w-full sm:w-1/2 p-2 border rounded-lg"
-              disabled={isLoading}
-            >
-              {networks.map(n => (
-                <option key={n.chainId} value={n.name}>{n.name}</option>
-              ))}
-            </select>
-            {connectedNetwork && (
-              <p className="mt-2 text-gray-700 dark:text-gray-300">
-                Connected to: {connectedNetwork.name}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">NFT Holders</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">NFT Contract Address</label>
-              <input
-                type="text"
-                value={nftContract}
-                onChange={(e) => setNftContract(e.target.value)}
-                placeholder="e.g., 0x..."
-                className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                disabled={isLoading}
-                data-tooltip="Enter the ERC-721 NFT contract address on Cronos"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fetch Method</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="events"
-                    checked={fetchMethod === 'events'}
-                    onChange={() => setFetchMethod('events')}
-                    className="mr-2"
-                    disabled={isLoading}
-                  />
-                  Transfer Events (recent)
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="ownerOf"
-                    checked={fetchMethod === 'ownerOf'}
-                    onChange={() => setFetchMethod('ownerOf')}
-                    className="mr-2"
-                    disabled={isLoading}
-                  />
-                  Token ID Range
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="csv"
-                    checked={fetchMethod === 'csv'}
-                    onChange={() => setFetchMethod('csv')}
-                    className="mr-2"
-                    disabled={isLoading}
-                  />
-                  Upload CSV
-                </label>
-              </div>
-            </div>
-            {fetchMethod === 'ownerOf' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token ID Start</label>
-                  <input
-                    type="number"
-                    value={tokenIdStart}
-                    onChange={(e) => setTokenIdStart(e.target.value)}
-                    min="1"
-                    className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isLoading}
-                    data-tooltip="Start of token ID range (e.g., 1)"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token ID End</label>
-                  <input
-                    type="number"
-                    value={tokenIdEnd}
-                    onChange={(e) => setTokenIdEnd(e.target.value)}
-                    min="1"
-                    className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isLoading}
-                    data-tooltip="End of token ID range (e.g., 100)"
-                  />
-                </div>
-              </div>
-            )}
-            {fetchMethod === 'csv' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload CSV</label>
-                <button
-                  onClick={() => fileInputRef.current.click()}
-                  className="mt-1 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
-                  disabled={isLoading}
-                  data-tooltip="Upload a CSV file with an 'address' column"
-                >
-                  Choose CSV File
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept=".csv"
-                  className="hidden"
-                  disabled={isLoading}
-                />
-              </div>
-            )}
-            {(fetchMethod === 'events' || fetchMethod === 'ownerOf') && (
-              <button
-                onClick={fetchNFTHolders}
-                disabled={isLoading || !nftContract}
-                className="mt-2 p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
-                data-tooltip="Fetch NFT holder addresses"
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Wallet Connection</h2>
+              <select
+                value={walletProvider}
+                onChange={(e) => setWalletProvider(e.target.value)}
+                className="w-full sm:w-1/2 p-2 border rounded-lg mb-2"
+                disabled={isConnected}
               >
-                {isLoading ? 'Fetching...' : 'Fetch NFT Holders'}
+                <option value="MetaMask">MetaMask</option>
+                <option value="WalletConnect">WalletConnect</option>
+              </select>
+              <button
+                onClick={isConnected ? disconnectWallet : connectWallet}
+                disabled={isLoading}
+                className={`w-full sm:w-auto p-2 rounded-lg text-white ${isConnected ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} disabled:bg-gray-400`}
+                data-tooltip={isConnected ? 'Disconnect your wallet' : 'Connect your wallet'}
+              >
+                {isLoading ? 'Connecting...' : isConnected ? 'Disconnect' : 'Connect Wallet'}
               </button>
-            )}
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Send Airdrop</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Token Type</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="native"
-                    checked={tokenType === 'native'}
-                    onChange={() => setTokenType('native')}
-                    className="mr-2"
-                    disabled={isLoading}
-                  />
-                  Native Token ({selectedNetwork?.nativeCurrency || 'CRO'})
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="erc20"
-                    checked={tokenType === 'erc20'}
-                    onChange={() => setTokenType('erc20')}
-                    className="mr-2"
-                    disabled={isLoading}
-                  />
-                  ERC-20 Token
-                </label>
-              </div>
+              {isConnected && account && (
+                <p className="mt-2 text-gray-700 dark:text-gray-300">
+                  Connected as: {account.slice(0, 6)}...{account.slice(-4)}
+                </p>
+              )}
             </div>
-            {tokenType === 'erc20' && (
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Network</h2>
+              <select
+                value={selectedNetwork?.name || networks[0].name}
+                onChange={handleNetworkChange}
+                className="w-full sm:w-1/2 p-2 border rounded-lg"
+                disabled={isLoading}
+              >
+                {networks.map(n => (
+                  <option key={n.chainId} value={n.name}>{n.name}</option>
+                ))}
+              </select>
+              {connectedNetwork && (
+                <p className="mt-2 text-gray-700 dark:text-gray-300">
+                  Connected to: {connectedNetwork.name}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">NFT Holders</h2>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token Contract Address</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">NFT Contract Address</label>
                 <input
                   type="text"
-                  value={tokenContract}
-                  onChange={(e) => setTokenContract(e.target.value)}
+                  value={nftContract}
+                  onChange={(e) => setNftContract(e.target.value)}
                   placeholder="e.g., 0x..."
-                  className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  className={`mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${!ethers.isAddress(nftContract) && nftContract ? 'input-error' : ''}`}
                   disabled={isLoading}
-                  data-tooltip="Enter the ERC-20 token contract address (e.g., LION token on Cronos)"
+                  data-tooltip="Enter the ERC-721 NFT contract address on Cronos"
                 />
+                {!ethers.isAddress(nftContract) && nftContract && (
+                  <p className="error-text mt-1">Invalid contract address</p>
+                )}
               </div>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Recipients (comma-separated)</label>
-                <input
-                  type="text"
-                  value={recipients}
-                  onChange={(e) => setRecipients(e.target.value)}
-                  placeholder="e.g., 0x..., 0x..."
-                  className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
-                  data-tooltip="Enter comma-separated wallet addresses or fetch from NFT holders"
-                />
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fetch Method</label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="ownerOf"
+                      checked={fetchMethod === 'ownerOf'}
+                      onChange={() => setFetchMethod('ownerOf')}
+                      className="mr-2"
+                      disabled={isLoading}
+                    />
+                    Specific Token IDs
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="csv"
+                      checked={fetchMethod === 'csv'}
+                      onChange={() => setFetchMethod('csv')}
+                      className="mr-2"
+                      disabled={isLoading}
+                    />
+                    Upload CSV
+                  </label>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Amount per Recipient {tokenType === 'native' ? `(${selectedNetwork?.nativeCurrency || 'CRO'})` : '(Tokens)'}
+              {fetchMethod === 'ownerOf' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token IDs (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={tokenIds}
+                    onChange={(e) => {
+                      setTokenIds(e.target.value);
+                      setTokenIdsError(validateTokenIds(e.target.value));
+                    }}
+                    placeholder="e.g., 1,3,5"
+                    className={`mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${tokenIdsError ? 'input-error' : ''}`}
+                    disabled={isLoading}
+                    data-tooltip="Enter comma-separated token IDs (e.g., 1,3,5)"
+                  />
+                  {tokenIdsError && <p className="error-text mt-1">{tokenIdsError}</p>}
+                </div>
+              )}
+              {fetchMethod === 'csv' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload CSV</label>
+                  <button
+                    onClick={() => fileInputRef.current.click()}
+                    className="mt-1 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+                    disabled={isLoading}
+                    data-tooltip="Upload a CSV file with an 'address' column"
+                  >
+                    Choose CSV File
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".csv"
+                    className="hidden"
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
+              <div className="mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={multipleHoldings}
+                    onChange={(e) => setMultipleHoldings(e.target.checked)}
+                    className="mr-2"
+                    disabled={isLoading}
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Airdrop per NFT Held</span>
                 </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="0"
-                  step="any"
-                  className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
-                  data-tooltip="Enter amount per recipient (e.g., 0.1 CRO or 100 LION)"
-                />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  If enabled, each holder receives the airdrop amount multiplied by their NFT count.
+                </p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Batch Size</label>
-                <input
-                  type="number"
-                  value={batchSize}
-                  onChange={(e) => setBatchSize(e.target.value)}
-                  min="1"
-                  className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+              {(fetchMethod === 'ownerOf' || fetchMethod === 'csv') && (
+                <button
+                  onClick={fetchNFTHolders}
+                  disabled={isLoading || (!ethers.isAddress(nftContract) && fetchMethod === 'ownerOf') || (fetchMethod === 'ownerOf' && tokenIdsError)}
+                  className="mt-2 p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
+                  data-tooltip="Fetch NFT holder addresses"
+                >
+                  {isLoading ? 'Fetching...' : 'Fetch NFT Holders'}
+                </button>
+              )}
+              {holderPreview.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Preview NFT Holders</h3>
+                  <div className="scrollable-preview bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-sm text-gray-800 dark:text-gray-200">
+                    {holderPreview.map((holder, index) => (
+                      <div key={index}>{holder.address} {multipleHoldings ? `(x${holder.count} NFTs)` : ''}</div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={confirmHolders}
+                    className="mt-2 p-2 rounded-lg bg-green-500 text-white hover:bg-green-600"
+                    data-tooltip="Add previewed holders to recipients"
+                  >
+                    Confirm Holders
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Send Airdrop</h2>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Token Type</label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="native"
+                      checked={tokenType === 'native'}
+                      onChange={() => setTokenType('native')}
+                      className="mr-2"
+                      disabled={isLoading}
+                    />
+                    Native Token ({selectedNetwork?.nativeCurrency || 'CRO'})
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="erc20"
+                      checked={tokenType === 'erc20'}
+                      onChange={() => setTokenType('erc20')}
+                      className="mr-2"
+                      disabled={isLoading}
+                    />
+                    ERC-20 Token
+                  </label>
+                </div>
+              </div>
+              {tokenType === 'erc20' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Token Contract Address</label>
+                  <input
+                    type="text"
+                    value={tokenContract}
+                    onChange={(e) => setTokenContract(e.target.value)}
+                    placeholder="e.g., 0x..."
+                    className={`mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${!ethers.isAddress(tokenContract) && tokenContract ? 'input-error' : ''}`}
+                    disabled={isLoading}
+                    data-tooltip="Enter the ERC-20 token contract address (e.g., LION token on Cronos)"
+                  />
+                  {!ethers.isAddress(tokenContract) && tokenContract && (
+                    <p className="error-text mt-1">Invalid token contract address</p>
+                  )}
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Recipients (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={recipients}
+                    onChange={(e) => setRecipients(e.target.value)}
+                    placeholder="e.g., 0x..., 0x..."
+                    className="mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
+                    data-tooltip="Enter comma-separated wallet addresses or fetch from NFT holders"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Amount per {multipleHoldings ? 'NFT' : 'Recipient'} {tokenType === 'native' ? `(${selectedNetwork?.nativeCurrency || 'CRO'})` : '(Tokens)'}
+                  </label>
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                      setAmountError(validateAmount(e.target.value));
+                    }}
+                    min="0"
+                    step="any"
+                    className={`mt-1 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${amountError ? 'input-error' : ''}`}
+                    disabled={isLoading}
+                    data-tooltip={`Enter amount per ${multipleHoldings ? 'NFT held' : 'recipient'} (e.g., 0.1 CRO or 100 LION)`}
+                  />
+                  {amountError && <p className="error-text mt-1">{amountError}</p>}
+                </div>
+              </div>
+              <div className="mt-4 flex space-x-4">
+                <button
+                  onClick={sendAirdrop}
+                  disabled={isLoading || amountError || (tokenType === 'erc20' && !ethers.isAddress(tokenContract))}
+                  className="p-2 rounded-lg bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-400"
+                  data-tooltip="Send airdrop to specified recipients"
+                >
+                  {isLoading ? 'Sending...' : 'Send Airdrop'}
+                </button>
+                <button
+                  onClick={resetForm}
                   disabled={isLoading}
-                  data-tooltip="Number of transactions per batch (e.g., 10)"
-                />
+                  className="p-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 disabled:bg-gray-400"
+                  data-tooltip="Reset all inputs and clear state"
+                >
+                  Reset Form
+                </button>
               </div>
             </div>
-            <button
-              onClick={sendAirdrop}
-              disabled={isLoading}
-              className="mt-4 w-full sm:w-auto p-2 rounded-lg bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-400"
-              data-tooltip="Send airdrop to specified recipients"
-            >
-              {isLoading ? 'Sending...' : 'Send Airdrop'}
-            </button>
-          </div>
 
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Status</h2>
-            <pre className="scrollable-status bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{status}</pre>
+            {txHistory.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Transaction History</h2>
+                <div className="scrollable-history bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-sm text-gray-800 dark:text-gray-200">
+                  {txHistory.map((tx, index) => (
+                    <div key={index} className="mb-2">
+                      Sent {tx.amount} {tx.token} to {tx.recipient.slice(0, 6)}...{tx.recipient.slice(-4)} at {tx.timestamp} (
+                      <a
+                        href={`${connectedNetwork?.blockExplorerUrls[0]}/tx/${tx.txHash}`}
+                        target="_blank"
+                        className="text-blue-500 hover:underline"
+                      >
+                        View on Cronoscan
+                      </a>)
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Status</h2>
+              <pre className="scrollable-status bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{status}</pre>
+            </div>
           </div>
-        </div>
+        </ErrorBoundary>
       );
     };
 
