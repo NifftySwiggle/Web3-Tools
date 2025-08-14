@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metadata Analyzer & Duplicate Checker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: linear-gradient(-45deg, #3498db, #9b59b6, #e74c3c, #1abc9c);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    header {
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    main {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      padding: 2rem;
+      margin: 2rem;
+      width: 90%;
+      max-width: 900px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .upload-area {
+      border: 2px dashed #3498db;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      color: #555;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin: 0 auto;
+    }
+
+    .upload-area.dragover {
+      background: #ecf0f1;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #results {
+      margin-top: 2rem;
+      max-height: 500px;
+      overflow-y: auto;
+      border-top: 1px solid #ccc;
+      padding-top: 1rem;
+    }
+
+    .result-section {
+      margin-bottom: 2rem;
+    }
+
+    .result-item {
+      background: #f9f9f9;
+      margin-bottom: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .result-item strong {
+      color: #e74c3c;
+    }
+
+    .no-duplicates {
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .export-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .export-btn:hover {
+      background: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Metadata Analyzer & Duplicate Checker</h1>
+    <h1>Created by NifftySwiggle</h1>
+  </header>
+  <main>
+    <label class="upload-area" id="dropZone" for="fileInput">
+      📁 Click or drag metadata JSON files here
+    </label>
+    <input type="file" id="fileInput" multiple accept=".json" webkitdirectory directory />
+    <div id="results"></div>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const resultsDiv = document.getElementById('results');
+    let traitCounts = {};
+
+    // Drag and drop support
+    ['dragenter', 'dragover'].forEach(evt =>
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      })
+    );
+
+    ['dragleave', 'drop'].forEach(evt =>
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      })
+    );
+
+    dropZone.addEventListener('drop', e => {
+      const files = Array.from(e.dataTransfer.files);
+      processFiles(files);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => {
+      const files = Array.from(e.target.files);
+      processFiles(files);
+    });
+
+    async function processFiles(files) {
+      const traitMap = new Map();
+      traitCounts = {};
+      const duplicates = [];
+
+      for (const file of files) {
+        if (file.name.endsWith('.json')) {
+          const text = await file.text();
+          try {
+            const data = JSON.parse(text);
+            const traits = (data.attributes || [])
+              .map(attr => {
+                const key = `${attr.trait_type}:${attr.value}`;
+                traitCounts[key] = (traitCounts[key] || 0) + 1;
+                return key;
+              })
+              .sort()
+              .join('|');
+
+            if (traitMap.has(traits)) {
+              duplicates.push({
+                original: traitMap.get(traits),
+                duplicate: file.name,
+                traits
+              });
+            } else {
+              traitMap.set(traits, file.name);
+            }
+          } catch (err) {
+            console.warn(`Error parsing ${file.name}:`, err);
+          }
+        }
+      }
+
+      renderResults(duplicates);
+    }
+
+    function renderResults(duplicates) {
+      resultsDiv.innerHTML = '';
+
+      // Duplicate Section
+      const dupSection = document.createElement('div');
+      dupSection.className = 'result-section';
+      if (duplicates.length > 0) {
+        dupSection.innerHTML = `<h3>🚨 Found ${duplicates.length} duplicate trait sets:</h3>`;
+        duplicates.forEach(d => {
+          const div = document.createElement('div');
+          div.className = 'result-item';
+          div.innerHTML = `<strong>${d.duplicate}</strong> duplicates <em>${d.original}</em><br/>Traits: ${d.traits}`;
+          dupSection.appendChild(div);
+        });
+      } else {
+        dupSection.innerHTML = `<p class="no-duplicates">✅ No duplicate trait sets found.</p>`;
+      }
+      resultsDiv.appendChild(dupSection);
+
+      // Trait Frequency Section
+      const freqSection = document.createElement('div');
+      freqSection.className = 'result-section';
+      freqSection.innerHTML = `<h3>📊 Trait Frequency Analysis:</h3>`;
+
+      const table = document.createElement('table');
+      const header = document.createElement('tr');
+      header.innerHTML = `<th>Trait Type</th><th>Value</th><th>Count</th>`;
+      table.appendChild(header);
+
+      const sortedKeys = Object.keys(traitCounts).sort();
+      sortedKeys.forEach(key => {
+        const [type, value] = key.split(':');
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${type}</td><td>${value}</td><td>${traitCounts[key]}</td>`;
+        table.appendChild(row);
+      });
+
+      freqSection.appendChild(table);
+
+      // Export Button
+      const exportBtn = document.createElement('button');
+      exportBtn.className = 'export-btn';
+      exportBtn.textContent = '⬇️ Export Trait Table as CSV';
+      exportBtn.onclick = exportCSV;
+      freqSection.appendChild(exportBtn);
+
+      resultsDiv.appendChild(freqSection);
+    }
+
+    function exportCSV() {
+      let csv = 'Trait Type,Value,Count\n';
+      const sortedKeys = Object.keys(traitCounts).sort();
+      sortedKeys.forEach(key => {
+        const [type, value] = key.split(':');
+        csv += `"${type}","${value}",${traitCounts[key]}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'trait_frequency.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+   </script>
+</body>
+</html>
