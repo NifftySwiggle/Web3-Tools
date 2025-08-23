@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT Metadata Updater</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #1a1a3d, #2a4066, #3d1a3d, #2a4066);
+            background-size: 400%;
+            animation: spaceGradient 15s ease infinite;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes spaceGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        input[type="file"], button, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input[type="file"] {
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            color: #000;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        select {
+            background: #333;
+            color: #fff;
+        }
+
+        textarea {
+            background: #222;
+            color: #fff;
+            resize: vertical;
+        }
+
+        #editor, #preview {
+            height: 300px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        hr {
+            border: 1px solid #00ffff;
+            margin: 20px 0;
+        }
+
+        #helpSection {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        #helpSection p, #helpSection ul {
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.2em;
+            }
+
+            input[type="file"], button, select, textarea {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            #editor, #preview {
+                height: 200px;
+            }
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="container">
+        <h1>NFT Metadata Updater</h1>
+        <button onclick="toggleHelp()">Show How-To Guide</button>
+        <div id="helpSection">
+            <h2>How to Use This Tool</h2>
+            <p>This tool allows you to upload a folder containing JSON metadata files and/or a master JSON file (array of metadata objects) for NFTs, edit them individually or in batch, and download all updated files as a single ZIP containing both individual JSONs and a deduplicated master JSON with all editions.</p>
+            <ul>
+                <li><strong>Load Folder:</strong> Click "Choose Folder" and select a directory containing your .json files (including a master JSON file if present). Then click "Load Folder" to parse them. Duplicates are removed based on the 'edition' field.</li>
+                <li><strong>Batch Updates:</strong>
+                    <ul>
+                        <li><strong>Update All Images with New CID:</strong> Enter the new IPFS folder CID (e.g., QmNewCID123). This will update the 'image' field in all metadata to use the new CID with the edition number (e.g., ipfs://newCID/1.png). It applies to all uploaded files.</li>
+                        <li><strong>Update All Descriptions:</strong> Enter a new description and click the button to apply it to all files.</li>
+                        <li><strong>Update All Dates:</strong> Click to set the 'date' field to the current timestamp in all files.</li>
+                    </ul>
+                </li>
+                <li><strong>Individual Edit:</strong> Select a file from the dropdown, edit the JSON in the textarea, and click "Save Changes to This File".</li>
+                <li><strong>Preview:</strong> Click "Generate Preview of All Updated Files" to see the current state of all metadata in text form.</li>
+                <li><strong>Download:</strong> Click "Download All Updated JSONs" to get a ZIP file containing all individual JSON files and a deduplicated master JSON file with all editions.</li>
+            </ul>
+            <p>Note: Changes are applied to all loaded metadata files, including the master JSON. Duplicates are removed based on edition number. Always preview to verify before downloading.</p>
+        </div>
+        <p>Select a folder containing JSON metadata files:</p>
+        <input type="file" id="folder" webkitdirectory directory multiple>
+        <button onclick="loadFiles()">Load Folder</button>
+        <hr>
+        <h2>Batch Updates</h2>
+        <label>New IPFS Folder CID for images (applies to all metadata):</label><br>
+        <input id="newCID" placeholder="e.g., QmNewCID123">
+        <button onclick="updateCID()">Update All Images with New Folder CID</button>
+        <br><br>
+        <label>New Description for all:</label><br>
+        <textarea id="newDesc" rows="4" placeholder="Enter new description"></textarea><br>
+        <button onclick="updateDesc()">Update All Descriptions</button>
+        <br><br>
+        <button onclick="updateDates()">Update All Dates to Now</button>
+        <hr>
+        <h2>Individual Edit</h2>
+        <select id="selectFile" onchange="showEditor()"></select><br>
+        <textarea id="editor"></textarea><br>
+        <button onclick="saveEdit()">Save Changes to This File</button>
+        <hr>
+        <h2>Preview Updated Metadata</h2>
+        <button onclick="previewAll()">Generate Preview of All Updated Files</button>
+        <textarea id="preview" rows="20"></textarea>
+        <hr>
+        <button onclick="downloadAll()">Download All Updated JSONs</button>
+    </div>
+
+    <script>
+        let metadata = [];
+
+        function toggleHelp() {
+            const help = document.getElementById('helpSection');
+            help.style.display = help.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function loadFiles() {
+            metadata = [];
+            const input = document.getElementById('folder');
+            const jsonFiles = Array.from(input.files).filter(f => f.name.endsWith('.json'));
+            if (jsonFiles.length === 0) {
+                alert('No JSON files found in the folder.');
+                return;
+            }
+            let loaded = 0;
+            const editionMap = new Map(); // Track unique editions
+            jsonFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        const parsed = JSON.parse(e.target.result);
+                        if (Array.isArray(parsed)) {
+                            // Handle master file: split into individual metadata
+                            parsed.forEach((item, index) => {
+                                const ed = item.edition || (index + 1);
+                                if (!editionMap.has(ed)) {
+                                    editionMap.set(ed, { filename: `${ed}.json`, json: item });
+                                }
+                            });
+                        } else {
+                            // Handle individual file
+                            const ed = parsed.edition || file.name.replace('.json', '');
+                            if (!editionMap.has(ed)) {
+                                editionMap.set(ed, { filename: file.name, json: parsed });
+                            }
+                        }
+                        loaded++;
+                        if (loaded === jsonFiles.length) {
+                            metadata = Array.from(editionMap.values());
+                            onAllLoaded();
+                        }
+                    } catch (err) {
+                        console.error('Error parsing ' + file.name);
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function onAllLoaded() {
+            metadata.sort((a, b) => (a.json.edition || 0) - (b.json.edition || 0));
+            const select = document.getElementById('selectFile');
+            select.innerHTML = '<option value="">Select a file</option>';
+            metadata.forEach((m, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.text = m.filename + ' (Edition ' + (m.json.edition || 'N/A') + ')';
+                select.appendChild(opt);
+            });
+        }
+
+        function showEditor() {
+            const i = document.getElementById('selectFile').value;
+            if (i === '') {
+                document.getElementById('editor').value = '';
+                return;
+            }
+            document.getElementById('editor').value = JSON.stringify(metadata[i].json, null, 2);
+        }
+
+        function saveEdit() {
+            const i = document.getElementById('selectFile').value;
+            if (i === '') return;
+            try {
+                metadata[i].json = JSON.parse(document.getElementById('editor').value);
+                alert('Changes saved for this file.');
+            } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+            }
+        }
+
+        function updateCID() {
+            const cid = document.getElementById('newCID').value.trim();
+            if (!cid) {
+                alert('Please enter a new CID.');
+                return;
+            }
+            metadata.forEach(m => {
+                const edition = m.json.edition || m.filename.replace('.json', '');
+                m.json.image = `ipfs://${cid}/${edition}.png`;
+            });
+            alert('Updated image folder CIDs for all uploaded metadata files. You can now preview or select individual files to verify.');
+            showEditor();
+        }
+
+        function updateDesc() {
+            const desc = document.getElementById('newDesc').value;
+            metadata.forEach(m => {
+                m.json.description = desc;
+            });
+            alert('Updated descriptions for all files. You can now preview or select individual files to verify.');
+            showEditor();
+        }
+
+        function updateDates() {
+            const now = Date.now();
+            metadata.forEach(m => {
+                m.json.date = now;
+            });
+            alert('Updated dates for all files. You can now preview or select individual files to verify.');
+            showEditor();
+        }
+
+        function previewAll() {
+            let previewText = '';
+            metadata.forEach(m => {
+                previewText += m.filename + ':\n' + JSON.stringify(m.json, null, 2) + '\n\n---\n\n';
+            });
+            previewText += 'master_metadata.json:\n' + JSON.stringify(metadata.map(m => m.json), null, 2) + '\n';
+            document.getElementById('preview').value = previewText;
+        }
+
+        function downloadAll() {
+            const zip = new JSZip();
+            // Add individual JSON files
+            metadata.forEach(m => {
+                zip.file(m.filename, JSON.stringify(m.json, null, 2));
+            });
+            // Add master JSON file
+            zip.file('master_metadata.json', JSON.stringify(metadata.map(m => m.json), null, 2));
+            zip.generateAsync({ type: 'blob' }).then(blob => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'updated_metadata.zip';
+                a.click();
+            });
+        }
+
+        // Create twinkling stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = star.style.height = Math.random() * 3 + 'px';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>
