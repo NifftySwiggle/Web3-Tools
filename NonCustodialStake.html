@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-Custodial NFT Staking Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(45deg, #1a1a40, #2a2a60, #3a3a80, #2a2a60);
+            background-size: 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: transparent;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+        }
+
+        .button:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toggle-button {
+            background: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .toggle-button.collapsed {
+            background: #dc3545;
+        }
+
+        .toggle-button:hover {
+            background: #218838;
+        }
+
+        .toggle-button.collapsed:hover {
+            background: #c82333;
+        }
+
+        input, select {
+            padding: 10px;
+            margin: 8px;
+            width: 220px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.306);
+            color: rgb(255, 255, 255);
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        select {
+            color: rgb(3, 3, 3);
+            background: rgba(255, 255, 255, 0.306);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        input[type="file"]::-webkit-file-upload-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background: #0056b3;
+        }
+
+        .nft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nft-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .nft-item:hover {
+            transform: scale(1.05);
+        }
+
+        .nft-item img {
+            max-width: 100px;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .pool-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+
+        .pool-tile {
+            flex: 0 0 200px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .pool-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .pool-tile p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .pool-tile .status-ended {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .pool-tile img {
+            max-width: 100px;
+            max-height: 100px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            object-fit: cover;
+        }
+
+        .pool-tile .text-content {
+            max-width: 150px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .success {
+            color: #51cf66;
+            font-weight: 600;
+        }
+
+        #loading {
+            display: none;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        #walletStatus {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            background: transparent;
+            color: #ffffff;
+            margin-top: 20px;
+        }
+
+        footer p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        footer strong {
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .modal-content p, .modal-content li {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .wallet-address {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-size: 0.85rem;
+        }
+
+        .modal-content .button {
+            margin-top: 10px;
+        }
+
+        .modal-content .note {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="container">
+        <h1>Gaia Ecosystem</h1>
+        <h1>Non-Custodial NFT Staking Platform</h1>
+        <div class="section">
+            <div>
+                <button id="connectWallet" class="button">Connect Wallet</button>
+                <button id="howToUse" class="button">How to Use</button>
+            </div>
+            <span id="walletStatus"></span>
+        </div>
+       
+        <div class="section" id="availablePoolsSection">
+            <div class="section-header">
+                <h2>Available Pools</h2>
+                <button id="toggleAvailablePools" class="button toggle-button">Collapse Available Pools Content</button>
+            </div>
+            <div id="poolsContent">
+                <button id="loadPools" class="button">Load Pools</button>
+                <div id="pools" class="pool-container"></div>
+            </div>
+        </div>
+        <div class="section" id="stakeSection" style="display: none;">
+            <div class="section-header">
+                <h2>Stake NFTs</h2>
+                <button id="toggleStakeSection" class="button toggle-button">Collapse Stake Content</button>
+            </div>
+            <div id="stakeContent">
+                <select id="selectedPool">
+                    <option value="">Select a Pool</option>
+                </select>
+                <div id="loading">Loading NFTs...</div>
+                <div id="nfts" class="nft-grid"></div>
+                <button id="selectAllStake" class="button">Select All for Stake</button>
+                <button id="stakeNFTs" class="button" disabled>Stake Selected NFTs</button>
+                <button id="offChainStake" class="button" disabled>Off-Chain Stake</button>
+                <div id="stakeStatus"></div>
+            </div>
+        </div>
+        <div class="section" id="unstakeSection" style="display: none;">
+            <div class="section-header">
+                <h2>Unstake NFTs</h2>
+                <button id="toggleUnstakeSection" class="button toggle-button">Collapse Unstake Content</button>
+            </div>
+            <div id="unstakeContent">
+                <div id="pendingRewards"></div>
+                <div id="stakedNFTs" class="nft-grid"></div>
+                <button id="selectAllUnstake" class="button">Select All for Unstake</button>
+                <button id="unstakeNFTs" class="button" disabled>Unstake Selected NFTs</button>
+                <button id="claimRewards" class="button" disabled>Claim Rewards</button>
+                <div id="unstakeStatus"></div>
+            </div>
+        </div>
+        <div class="section" id="deploySection" style="display: none;">
+            <div class="section-header">
+                <h2>Deploy New Staking Pool</h2>
+                <button id="toggleDeploySection" class="button toggle-button">Collapse Deploy Content</button>
+            </div>
+            <div id="deployContent">
+                <input id="nftAddress" type="text" placeholder="NFT Contract Address">
+                <input id="rewardToken" type="text" placeholder="Reward Token Address">
+                <input id="startTime" type="datetime-local" placeholder="Start Time">
+                <input id="endTime" type="datetime-local" placeholder="End Time">
+                <input id="totalRewards" type="number" placeholder="Total Rewards">
+                <input id="poolName" type="text" placeholder="Pool Name">
+                <input id="metadataURI" type="text" placeholder="Metadata URI (Optional)">
+                <input id="poolImage" type="file" accept="image/*">
+                <button id="deployPool" class="button">Deploy Pool</button>
+                <div id="deployStatus"></div>
+            </div>
+        </div>
+        <div class="section" id="myPoolsSection">
+            <div class="section-header">
+                <h2>My Pools</h2>
+                <button id="toggleMyPools" class="button toggle-button">Collapse My Pools Content</button>
+            </div>
+            <div id="myPoolsContent">
+                <button id="loadMyPools" class="button">Load My Pools</button>
+                <div id="myPools"></div>
+            </div>
+        </div>
+        <div class="section" id="manageSection" style="display: none;">
+            <div class="section-header">
+                <h2>Manage Pool</h2>
+                <button id="toggleManageSection" class="button toggle-button">Collapse Manage Content</button>
+            </div>
+            <div id="manageContent">
+                <select id="managePool">
+                    <option value="">Select a Pool</option>
+                </select>
+                <input id="newEndTime" type="datetime-local" placeholder="New End Time">
+                <button id="setEndTime" class="button">Set End Time</button>
+                <input id="newMetadataURI" type="text" placeholder="Metadata URI">
+                <button id="setMetadata" class="button">Set Metadata URI</button>
+                <input id="newPoolImage" type="file" accept="image/*">
+                <button id="setPoolImage" class="button">Set Pool Image</button>
+                <input id="addRewardAmount" type="number" placeholder="Reward Amount">
+                <button id="addRewards" class="button">Add Rewards</button>
+                <input id="withdrawAmount" type="number" placeholder="Withdraw Amount">
+                <button id="withdrawExcess" class="button">Withdraw Excess Rewards</button>
+                <button id="endPool" class="button">End Pool Now</button>
+                <button id="withdrawRemaining" class="button">Withdraw Remaining</button>
+                <input id="traitTokenId" type="number" placeholder="Token ID">
+                <input id="traitMultiplier" type="number" placeholder="Multiplier (e18)">
+                <button id="setTraitMultiplier" class="button">Set Trait Multiplier</button>
+                <div id="manageStatus"></div>
+            </div>
+        </div>
+        <div class="section" id="endedPoolsSection" style="display: none;">
+            <div class="section-header">
+                <h2>Ended Pools</h2>
+                <button id="toggleEndedPools" class="button toggle-button">Collapse Ended Pools Content</button>
+            </div>
+            <div id="endedPoolsContent">
+                <div id="endedPools" class="pool-container"></div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>Created by <strong>NifftySwiggle © 2025</strong> 🚀</p>
+        <button class="button" onclick="document.getElementById('donationModal').style.display='flex'">Donate</button>
+    </footer>
+    <div id="donationModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('donationModal').style.display='none'">✖</span>
+            <h2>Support the Builder 💜</h2>
+            <p>If this dApp helped you or inspired your own build, consider donating to keep the magic flowing.</p>
+            <p><strong>NifftySwiggle Wallet Address:</strong></p>
+            <div id="walletAddress" class="wallet-address">0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f</div>
+            <button class="button" onclick="copyWallet()">Copy Wallet Address</button>
+            <p class="note">Every bit counts. Thanks for supporting open-source builders!</p>
+        </div>
+    </div>
+    <div id="howToUseModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('howToUseModal').style.display='none'">✖</span>
+            <h2>How to Use the Non-Custodial NFT Staking Platform</h2>
+            <p>This platform is <strong>non-custodial</strong>, meaning your NFTs remain in your wallet during staking. This is achieved by using smart contract approvals, where you grant the staking contract permission to manage your NFTs without transferring ownership.</p>
+            <p>Follow these steps to use the platform effectively:</p>
+            <ul>
+                <li><strong>Connect Wallet:</strong> Click "Connect Wallet" to link your MetaMask wallet. Ensure MetaMask is installed and you are connected to the correct network.</li>
+                <li><strong>Deploy a Pool:</strong> In the "Deploy New Staking Pool" section, enter the required details (NFT contract address, reward token address, start/end times, total rewards, pool name). Deploying a pool requires <strong>two signatures</strong> in MetaMask: one to approve the reward tokens and one to create the pool.</li>
+                <li><strong>Stake NFTs:</strong> Select a pool from "Available Pools" and choose NFTs to stake. If you hold many NFTs, loading may take a while—please be patient.</li>
+                <li><strong>Unstake and Claim:</strong> In the "Unstake NFTs" section, view staked NFTs and pending rewards. Select NFTs to unstake or claim rewards.</li>
+                <li><strong>Manage Pools:</strong> If you own a pool, use the "Manage Pool" section to update end time, metadata, image, add rewards, withdraw excess, or end the pool.</li>
+                <li><strong>MetaMask:</strong> All transactions (deploying, staking, unstaking, claiming, managing) will prompt MetaMask to open for confirmation.</li>
+                <li><strong>Ended Pools:</strong> Only pool creators can view their ended pools in the "Ended Pools" section. Make sure you withdrawl remaining tokens right after ending pool.</li>
+            </ul>
+            <p class="note">Note: Ensure you have enough gas in your wallet for transactions.</p>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.15.0/ethers.umd.min.js"></script>
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 2 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+
+        const factoryAddress = "0xa1de2f96C8e223b78a4167b9c97E11f82FDCD601";
+        let provider, signer, factoryContract, account;
+        const factoryABI = [
+            "event PoolCreated(address indexed pool, address indexed owner, address nft, address rewardToken, string name)",
+            "function createPool(address nft, address rewardToken, uint256 startTime, uint256 endTime, uint256 totalRewards, string name, string metadataURI) external returns (address)",
+            "function getPools() external view returns (address[])"
+        ];
+        const poolABI = [
+            "function stake(uint256[] tokenIds) external",
+            "function offChainStake(uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external",
+            "function unstake(uint256[] tokenIds) external",
+            "function claim(uint256[] tokenIds) external",
+            "function addRewards(uint256 amount) external",
+            "function withdrawExcessRewards(uint256 amount) external",
+            "function setEndTime(uint256 newEnd) external",
+            "function setMetadataURI(string newURI) external",
+            "function setTraitMultiplier(uint256 tokenId, uint256 multiplier) external",
+            "function endPoolNow() external",
+            "function withdrawRemaining() external",
+            "function getUserStakedTokens(address user) external view returns (uint256[])",
+            "function earned(address account) external view returns (uint256)",
+            "function nft() external view returns (address)",
+            "function rewardToken() external view returns (address)",
+            "function name() external view returns (string)",
+            "function metadataURI() external view returns (string)",
+            "function owner() external view returns (address)",
+            "function startTime() external view returns (uint256)",
+            "function endTime() external view returns (uint256)",
+            "function totalRewards() external view returns (uint256)"
+        ];
+        const erc721ABI = [
+            "function ownerOf(uint256 tokenId) view returns (address)",
+            "function tokenURI(uint256 tokenId) view returns (string)",
+            "function name() view returns (string)",
+            "function supportsInterface(bytes4 interfaceId) view returns (bool)",
+            "function totalSupply() view returns (uint256)"
+        ];
+        const erc20ABI = [
+            "function approve(address spender, uint256 amount) external returns (bool)"
+        ];
+
+        const imageStorage = {};
+
+        async function getDefaultNFTImage(nftAddr) {
+            try {
+                const nftContract = new ethers.Contract(nftAddr, erc721ABI, provider);
+                const isERC721 = await nftContract.supportsInterface("0x80ac58cd");
+                if (!isERC721) return 'https://placehold.co/100x100';
+                let tokenURI;
+                try {
+                    tokenURI = await nftContract.tokenURI(1);
+                    if (!tokenURI || (!tokenURI.startsWith("http") && !tokenURI.startsWith("ipfs://"))) {
+                        throw new Error("Invalid tokenURI");
+                    }
+                } catch (e) {
+                    console.warn(`Failed to load tokenURI for token 1 at ${nftAddr}: ${e.message}`);
+                    return 'https://placehold.co/100x100';
+                }
+                try {
+                    const metadataRes = await fetch(
+                        tokenURI.startsWith("ipfs://")
+                            ? `https://ipfs.io/ipfs/${tokenURI.slice(7)}`
+                            : tokenURI
+                    );
+                    const metadata = await metadataRes.json();
+                    return metadata.image.startsWith("ipfs://")
+                        ? `https://ipfs.io/ipfs/${metadata.image.slice(7)}`
+                        : metadata.image;
+                } catch (e) {
+                    console.warn(`Failed to fetch metadata for token 1 at ${nftAddr}: ${e.message}`);
+                    return 'https://placehold.co/100x100';
+                }
+            } catch (e) {
+                console.warn(`Error fetching default NFT image for ${nftAddr}: ${e.message}`);
+                return 'https://placehold.co/100x100';
+            }
+        }
+
+        function isValidAddress(address) {
+            return /^0x[0-9a-fA-F]{40}$/.test(address);
+        }
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    signer = await provider.getSigner();
+                    account = await signer.getAddress();
+                    document.getElementById("walletStatus").innerText = `Connected: ${account}`;
+                    document.getElementById("walletStatus").className = "success";
+                    factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
+
+                    document.getElementById("deploySection").style.display = "block";
+                    document.getElementById("stakeSection").style.display = "block";
+                    document.getElementById("unstakeSection").style.display = "block";
+
+                    let isPoolOwner = false;
+                    try {
+                        const pools = await factoryContract.getPools();
+                        for (const poolAddr of pools) {
+                            try {
+                                const poolContract = new ethers.Contract(poolAddr, poolABI, provider);
+                                const owner = await poolContract.owner();
+                                if (owner.toLowerCase() === account.toLowerCase()) {
+                                    isPoolOwner = true;
+                                    break;
+                                }
+                            } catch (e) {
+                                console.warn(`Error checking owner for pool ${poolAddr}: ${e.message}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`Error fetching pools for ownership check: ${error.message}`);
+                    }
+
+                    if (isPoolOwner) {
+                        document.getElementById("manageSection").style.display = "block";
+                        document.getElementById("endedPoolsSection").style.display = "block";
+                    }
+
+                    await loadPools();
+                    await loadMyPools();
+                } catch (error) {
+                    console.error('Connect wallet error:', error);
+                    document.getElementById("walletStatus").innerText = `Error: ${error.message}`;
+                    document.getElementById("walletStatus").className = "error";
+                }
+            } else {
+                document.getElementById("walletStatus").innerText = "Please install MetaMask";
+                document.getElementById("walletStatus").className = "error";
+            }
+        }
+
+        async function loadPools() {
+            try {
+                const pools = await factoryContract.getPools();
+                const poolsDiv = document.getElementById("pools");
+                const endedPoolsDiv = document.getElementById("endedPools");
+                poolsDiv.innerHTML = pools.length === 0 ? "<p>No active pools available</p>" : "";
+                endedPoolsDiv.innerHTML = "";
+                const select = document.getElementById("selectedPool");
+                select.innerHTML = '<option value="">Select a Pool</option>';
+                const now = Math.floor(Date.now() / 1000);
+                let activeCount = 0;
+                let hasEndedPools = false;
+                for (const poolAddr of pools) {
+                    try {
+                        const poolContract = new ethers.Contract(poolAddr, poolABI, provider);
+                        const owner = await poolContract.owner();
+                        const name = await poolContract.name();
+                        const startTime = await poolContract.startTime();
+                        const endTime = await poolContract.endTime();
+                        const totalRewards = await poolContract.totalRewards();
+                        const nftAddr = await poolContract.nft();
+                        const startDate = new Date(Number(startTime) * 1000).toLocaleString();
+                        const endDate = new Date(Number(endTime) * 1000).toLocaleString();
+                        const rewardsFormatted = ethers.formatUnits(totalRewards, 18);
+                        console.log(`Pool ${poolAddr}: name=${name}, rewards=${rewardsFormatted}`);
+                        const isEnded = Number(endTime) <= now;
+                        const isOwner = owner.toLowerCase() === account.toLowerCase();
+                        const targetDiv = isEnded ? endedPoolsDiv : poolsDiv;
+                        if (!isEnded) {
+                            activeCount++;
+                            targetDiv.innerHTML += `
+                                <div class="pool-tile">
+                                    <img src="${imageStorage[poolAddr] || await getDefaultNFTImage(nftAddr)}" alt="${name}">
+                                    <div class="text-content">
+                                        <p><strong>${name}</strong></p>
+                                        <p>Start: ${startDate}</p>
+                                        <p>End: ${endDate}</p>
+                                        <p>Rewards: ${rewardsFormatted}</p>
+                                    </div>
+                                </div>`;
+                            select.innerHTML += `<option value="${poolAddr}">${name}</option>`;
+                        } else if (isOwner) {
+                            hasEndedPools = true;
+                            targetDiv.innerHTML += `
+                                <div class="pool-tile">
+                                    <img src="${imageStorage[poolAddr] || await getDefaultNFTImage(nftAddr)}" alt="${name}">
+                                    <div class="text-content">
+                                        <p><strong>${name}</strong></p>
+                                        <p>Start: ${startDate}</p>
+                                        <p>End: ${endDate}</p>
+                                        <p>Rewards: ${rewardsFormatted}</p>
+                                        <p class="status-ended">Status: Ended</p>
+                                    </div>
+                                </div>`;
+                        }
+                    } catch (e) {
+                        console.warn(`Error processing pool ${poolAddr}: ${e.message}`);
+                    }
+                }
+                if (poolsDiv.innerHTML === "") {
+                    poolsDiv.innerHTML = "<p>No active pools available</p>";
+                }
+                if (endedPoolsDiv.innerHTML === "" && hasEndedPools) {
+                    endedPoolsDiv.innerHTML = "<p>No ended pools owned</p>";
+                }
+                if (!hasEndedPools) {
+                    document.getElementById("endedPoolsSection").style.display = "none";
+                }
+            } catch (error) {
+                console.error('Load pools error:', error);
+                document.getElementById("pools").innerHTML = `<p class="error">Error loading pools: ${error.message}</p>`;
+                document.getElementById("endedPools").innerHTML = `<p class="error">Error loading ended pools: ${error.message}</p>`;
+            }
+        }
+
+        async function loadMyPools() {
+            try {
+                const pools = await factoryContract.getPools();
+                const myPoolsDiv = document.getElementById("myPools");
+                const manageSelect = document.getElementById("managePool");
+                myPoolsDiv.innerHTML = "";
+                manageSelect.innerHTML = '<option value="">Select a Pool</option>';
+                const now = Math.floor(Date.now() / 1000);
+                for (const poolAddr of pools) {
+                    try {
+                        const poolContract = new ethers.Contract(poolAddr, poolABI, provider);
+                        const owner = await poolContract.owner();
+                        if (owner.toLowerCase() === account.toLowerCase()) {
+                            const name = await poolContract.name();
+                            const endTime = await poolContract.endTime();
+                            const isEnded = Number(endTime) <= now;
+                            myPoolsDiv.innerHTML += `
+                                <div>
+                                    <strong>${name}</strong> (${poolAddr})${isEnded ? ' (Ended)' : ''}
+                                </div>`;
+                            if (!isEnded) {
+                                manageSelect.innerHTML += `<option value="${poolAddr}">${name}</option>`;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`Error processing my pool ${poolAddr}: ${e.message}`);
+                    }
+                }
+                if (myPoolsDiv.innerHTML === "") {
+                    myPoolsDiv.innerHTML = "<p>No pools owned</p>";
+                }
+            } catch (error) {
+                console.error('Load my pools error:', error);
+                document.getElementById("myPools").innerHTML = `<p class="error">Error loading my pools: ${error.message}</p>`;
+            }
+        }
+
+        async function loadNFTs() {
+            const poolAddr = document.getElementById("selectedPool").value;
+            if (!poolAddr) {
+                document.getElementById("pendingRewards").innerHTML = "";
+                return;
+            }
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("nfts").innerHTML = "";
+            document.getElementById("stakedNFTs").innerHTML = "";
+            document.getElementById("pendingRewards").innerHTML = "";
+            try {
+                const poolContract = new ethers.Contract(poolAddr, poolABI, provider);
+                const endTime = await poolContract.endTime();
+                const now = Math.floor(Date.now() / 1000);
+                if (Number(endTime) <= now) {
+                    document.getElementById("nfts").innerHTML = `<p class="error">Selected pool has ended</p>`;
+                    document.getElementById("stakeNFTs").disabled = true;
+                    document.getElementById("offChainStake").disabled = true;
+                    return;
+                }
+                const pending = await poolContract.earned(account);
+                const pendingFormatted = ethers.formatUnits(pending, 18);
+                document.getElementById("pendingRewards").innerHTML = `Pending Rewards: ${pendingFormatted}`;
+                const nftAddr = await poolContract.nft();
+                const nftContract = new ethers.Contract(nftAddr, erc721ABI, provider);
+
+                let isERC721 = false;
+                try {
+                    isERC721 = await nftContract.supportsInterface("0x80ac58cd");
+                } catch (e) {
+                    console.warn(`Error checking ERC-721 interface for NFT ${nftAddr}: ${e.message}`);
+                }
+                if (!isERC721) {
+                    document.getElementById("nfts").innerHTML = `<p class="error">NFT contract at ${nftAddr} does not support ERC-721</p>`;
+                    document.getElementById("stakeNFTs").disabled = true;
+                    document.getElementById("offChainStake").disabled = true;
+                    return;
+                }
+
+                let maxId = 10000;
+                try {
+                    const totalSupply = await nftContract.totalSupply();
+                    maxId = Number(totalSupply);
+                    if (maxId === 0) maxId = 10000;
+                } catch (e) {
+                    console.warn(`Error fetching totalSupply for NFT ${nftAddr}, using maxId=${maxId}: ${e.message}`);
+                }
+
+                const nfts = [];
+                for (let i = 1; i <= maxId; i++) {
+                    try {
+                        const owner = await nftContract.ownerOf(i);
+                        if (owner.toLowerCase() === account.toLowerCase()) {
+                            let tokenURI = "";
+                            try {
+                                tokenURI = await nftContract.tokenURI(i);
+                                if (!tokenURI || (!tokenURI.startsWith("http") && !tokenURI.startsWith("ipfs://"))) {
+                                    throw new Error(`Invalid tokenURI for token ${i}`);
+                                }
+                            } catch (e) {
+                                console.warn(`Failed to load tokenURI for token ${i}: ${e.message}`);
+                            }
+                            nfts.push({ id: i, uri: tokenURI });
+                        }
+                    } catch (e) {
+                        console.warn(`Error checking ownerOf for token ${i} at ${nftAddr}: ${e.message}`);
+                        continue;
+                    }
+                }
+
+                const stakedTokens = await poolContract.getUserStakedTokens(account);
+                for (const nft of nfts) {
+                    let imageURL = 'https://placehold.co/100x100';
+                    if (nft.uri) {
+                        try {
+                            const metadataRes = await fetch(
+                                nft.uri.startsWith("ipfs://")
+                                    ? `https://ipfs.io/ipfs/${nft.uri.slice(7)}`
+                                    : nft.uri
+                            );
+                            const metadata = await metadataRes.json();
+                            imageURL = metadata.image.startsWith("ipfs://")
+                                ? `https://ipfs.io/ipfs/${metadata.image.slice(7)}`
+                                : metadata.image;
+                        } catch (e) {
+                            console.warn(`Failed to fetch metadata for token ${nft.id}: ${e.message}`);
+                        }
+                    }
+                    document.getElementById("nfts").innerHTML += `
+                        <div class="nft-item">
+                            <input type="checkbox" class="nft-checkbox" data-id="${nft.id}">
+                            <img src="${imageURL}" alt="NFT ${nft.id}">
+                            <p>Token ID: ${nft.id}</p>
+                        </div>`;
+                }
+                for (const tokenId of stakedTokens) {
+                    let tokenURI = "";
+                    try {
+                        tokenURI = await nftContract.tokenURI(tokenId);
+                        if (!tokenURI || (!tokenURI.startsWith("http") && !tokenURI.startsWith("ipfs://"))) {
+                            throw new Error(`Invalid tokenURI for staked token ${tokenId}`);
+                        }
+                    } catch (e) {
+                        console.warn(`Failed to load tokenURI for staked token ${tokenId}: ${e.message}`);
+                    }
+                    let imageURL = 'https://placehold.co/100x100';
+                    if (tokenURI) {
+                        try {
+                            const metadataRes = await fetch(
+                                tokenURI.startsWith("ipfs://")
+                                    ? `https://ipfs.io/ipfs/${tokenURI.slice(7)}`
+                                    : tokenURI
+                            );
+                            const metadata = await metadataRes.json();
+                            imageURL = metadata.image.startsWith("ipfs://")
+                                ? `https://ipfs.io/ipfs/${metadata.image.slice(7)}`
+                                : metadata.image;
+                        } catch (e) {
+                            console.warn(`Failed to fetch metadata for staked token ${tokenId}: ${e.message}`);
+                        }
+                    }
+                    document.getElementById("stakedNFTs").innerHTML += `
+                        <div class="nft-item">
+                            <input type="checkbox" class="staked-nft-checkbox" data-id="${tokenId}">
+                            <img src="${imageURL}" alt="Staked NFT ${tokenId}">
+                            <p>Token ID: ${tokenId}</p>
+                        </div>`;
+                }
+                document.getElementById("stakeNFTs").disabled = nfts.length === 0;
+                document.getElementById("offChainStake").disabled = nfts.length === 0;
+                document.getElementById("unstakeNFTs").disabled = stakedTokens.length === 0;
+                document.getElementById("claimRewards").disabled = stakedTokens.length === 0;
+            } catch (error) {
+                console.error('Load NFTs error:', error);
+                document.getElementById("nfts").innerHTML = `<p class="error">Error loading NFTs: ${error.message}</p>`;
+            } finally {
+                document.getElementById("loading").style.display = "none";
+            }
+        }
+
+        async function deployPool() {
+            try {
+                const nftAddr = document.getElementById("nftAddress").value;
+                const rewardToken = document.getElementById("rewardToken").value;
+                const startTime = Math.floor(new Date(document.getElementById("startTime").value).getTime() / 1000);
+                const endTime = Math.floor(new Date(document.getElementById("endTime").value).getTime() / 1000);
+                const totalRewards = ethers.parseUnits(document.getElementById("totalRewards").value, 18);
+                const poolName = document.getElementById("poolName").value;
+                const metadataURI = document.getElementById("metadataURI").value;
+                const poolImage = document.getElementById("poolImage").files[0];
+
+                if (!isValidAddress(nftAddr) || !isValidAddress(rewardToken)) {
+                    throw new Error("Invalid NFT or reward token address");
+                }
+                if (startTime <= Math.floor(Date.now() / 1000) || endTime <= startTime) {
+                    throw new Error("Invalid start or end time");
+                }
+                if (totalRewards <= 0) {
+                    throw new Error("Total rewards must be greater than 0");
+                }
+                if (!poolName) {
+                    throw new Error("Pool name is required");
+                }
+                if (metadataURI && !metadataURI.startsWith("http") && !metadataURI.startsWith("ipfs://")) {
+                    throw new Error("Invalid metadata URI");
+                }
+
+                const rewardContract = new ethers.Contract(rewardToken, erc20ABI, signer);
+                console.log(`Approving ${totalRewards} tokens for factory ${factoryAddress}`);
+                await (await rewardContract.approve(factoryAddress, totalRewards)).wait();
+                console.log(`Deploying pool with name=${poolName}`);
+                const tx = await factoryContract.createPool(nftAddr, rewardToken, startTime, endTime, totalRewards, poolName, metadataURI);
+                const receipt = await tx.wait();
+                const poolCreatedEvent = receipt.logs
+                    .map(log => {
+                        try {
+                            return factoryContract.interface.parseLog(log);
+                        } catch (e) {
+                            return null;
+                        }
+                    })
+                    .find(event => event && event.name === 'PoolCreated');
+                
+                if (!poolCreatedEvent) {
+                    throw new Error("PoolCreated event not found in transaction receipt");
+                }
+                
+                const poolAddr = poolCreatedEvent.args.pool;
+                console.log(`Pool created at address: ${poolAddr}`);
+
+                if (poolImage) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        imageStorage[poolAddr] = reader.result;
+                        console.log(`Image stored for pool ${poolAddr}`);
+                        loadPools();
+                    };
+                    reader.readAsDataURL(poolImage);
+                } else {
+                    imageStorage[poolAddr] = await getDefaultNFTImage(nftAddr);
+                    console.log(`Default image set for pool ${poolAddr}`);
+                }
+
+                document.getElementById("deployStatus").innerText = `Pool deployed successfully at ${poolAddr}!`;
+                document.getElementById("deployStatus").className = "success";
+                document.getElementById("manageSection").style.display = "block";
+                document.getElementById("endedPoolsSection").style.display = "block";
+                await loadPools();
+                await loadMyPools();
+            } catch (error) {
+                console.error('Deploy pool error:', error);
+                document.getElementById("deployStatus").innerText = `Failed to deploy pool: ${error.message}`;
+                document.getElementById("deployStatus").className = "error";
+            }
+        }
+
+        async function setPoolImage() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const poolImage = document.getElementById("newPoolImage").files[0];
+                const poolContract = new ethers.Contract(poolAddr, poolABI, provider);
+                const nftAddr = await poolContract.nft();
+                if (poolImage) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        imageStorage[poolAddr] = reader.result;
+                        document.getElementById("manageStatus").innerText = "Pool image set successfully!";
+                        document.getElementById("manageStatus").className = "success";
+                        loadPools();
+                    };
+                    reader.readAsDataURL(poolImage);
+                } else {
+                    imageStorage[poolAddr] = await getDefaultNFTImage(nftAddr);
+                    document.getElementById("manageStatus").innerText = "Pool image set to default NFT image!";
+                    document.getElementById("manageStatus").className = "success";
+                    await loadPools();
+                }
+            } catch (error) {
+                console.error('Set pool image error:', error);
+                document.getElementById("manageStatus").innerText = `Error setting pool image: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function stakeNFTs() {
+            try {
+                const poolAddr = document.getElementById("selectedPool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const checkboxes = document.getElementsByClassName("nft-checkbox");
+                const tokenIds = [];
+                for (const checkbox of checkboxes) {
+                    if (checkbox.checked) {
+                        tokenIds.push(ethers.toBigInt(checkbox.dataset.id));
+                    }
+                }
+                if (tokenIds.length === 0) throw new Error("No NFTs selected");
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.stake(tokenIds);
+                await tx.wait();
+                document.getElementById("stakeStatus").innerText = "NFTs staked successfully!";
+                document.getElementById("stakeStatus").className = "success";
+                await loadNFTs();
+            } catch (error) {
+                console.error('Stake NFTs error:', error);
+                document.getElementById("stakeStatus").innerText = `Error staking NFTs: ${error.message}`;
+                document.getElementById("stakeStatus").className = "error";
+            }
+        }
+
+        async function offChainStake() {
+            try {
+                const poolAddr = document.getElementById("selectedPool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const checkboxes = document.getElementsByClassName("nft-checkbox");
+                let tokenId;
+                for (const checkbox of checkboxes) {
+                    if (checkbox.checked) {
+                        tokenId = ethers.toBigInt(checkbox.dataset.id);
+                        break;
+                    }
+                }
+                if (!tokenId) throw new Error("No NFT selected");
+                const poolContract = new ethers.Contract(poolAddr, poolABI, provider);
+                const nonce = await poolContract.nonces(account);
+                const deadline = Math.floor(Date.now() / 1000) + 3600;
+                const domain = {
+                    name: "StakingPool",
+                    version: "1",
+                    chainId: (await provider.getNetwork()).chainId,
+                    verifyingContract: poolAddr
+                };
+                const types = {
+                    Stake: [
+                        { name: "staker", type: "address" },
+                        { name: "tokenId", type: "uint256" },
+                        { name: "nonce", type: "uint256" },
+                        { name: "deadline", type: "uint256" }
+                    ]
+                };
+                const value = { staker: account, tokenId, nonce, deadline };
+                const signature = await signer.signTypedData(domain, types, value);
+                const { v, r, s } = ethers.Signature.from(signature);
+                const tx = await poolContract.connect(signer).offChainStake(tokenId, deadline, v, r, s);
+                await tx.wait();
+                document.getElementById("stakeStatus").innerText = "NFT staked off-chain successfully!";
+                document.getElementById("stakeStatus").className = "success";
+                await loadNFTs();
+            } catch (error) {
+                console.error('Off-chain stake error:', error);
+                document.getElementById("stakeStatus").innerText = `Error off-chain staking: ${error.message}`;
+                document.getElementById("stakeStatus").className = "error";
+            }
+        }
+
+        async function unstakeNFTs() {
+            try {
+                const poolAddr = document.getElementById("selectedPool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const checkboxes = document.getElementsByClassName("staked-nft-checkbox");
+                const tokenIds = [];
+                for (const checkbox of checkboxes) {
+                    if (checkbox.checked) {
+                        tokenIds.push(ethers.toBigInt(checkbox.dataset.id));
+                    }
+                }
+                if (tokenIds.length === 0) throw new Error("No NFTs selected");
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.unstake(tokenIds);
+                await tx.wait();
+                document.getElementById("unstakeStatus").innerText = "NFTs unstaked successfully!";
+                document.getElementById("unstakeStatus").className = "success";
+                await loadNFTs();
+            } catch (error) {
+                console.error('Unstake NFTs error:', error);
+                document.getElementById("unstakeStatus").innerText = `Error unstaking NFTs: ${error.message}`;
+                document.getElementById("unstakeStatus").className = "error";
+            }
+        }
+
+        async function claimRewards() {
+            try {
+                const poolAddr = document.getElementById("selectedPool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const checkboxes = document.getElementsByClassName("staked-nft-checkbox");
+                const tokenIds = [];
+                for (const checkbox of checkboxes) {
+                    if (checkbox.checked) {
+                        tokenIds.push(ethers.toBigInt(checkbox.dataset.id));
+                    }
+                }
+                if (tokenIds.length === 0) throw new Error("No NFTs selected");
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.claim(tokenIds);
+                await tx.wait();
+                document.getElementById("unstakeStatus").innerText = "Rewards claimed successfully!";
+                document.getElementById("unstakeStatus").className = "success";
+                await loadNFTs();
+            } catch (error) {
+                console.error('Claim rewards error:', error);
+                document.getElementById("unstakeStatus").innerText = `Error claiming rewards: ${error.message}`;
+                document.getElementById("unstakeStatus").className = "error";
+            }
+        }
+
+        async function setEndTime() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const newEndTime = Math.floor(new Date(document.getElementById("newEndTime").value).getTime() / 1000);
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.setEndTime(newEndTime);
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "End time set successfully!";
+                document.getElementById("manageStatus").className = "success";
+                await loadPools();
+                await loadMyPools();
+            } catch (error) {
+                console.error('Set end time error:', error);
+                document.getElementById("manageStatus").innerText = `Error setting end time: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function setMetadata() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const metadataURI = document.getElementById("newMetadataURI").value;
+                if (metadataURI && !metadataURI.startsWith("http") && !metadataURI.startsWith("ipfs://")) {
+                    throw new Error("Invalid metadata URI");
+                }
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.setMetadataURI(metadataURI);
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "Metadata URI set successfully!";
+                document.getElementById("manageStatus").className = "success";
+                await loadPools();
+                await loadMyPools();
+            } catch (error) {
+                console.error('Set metadata error:', error);
+                document.getElementById("manageStatus").innerText = `Error setting metadata URI: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function addRewards() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const amount = ethers.parseUnits(document.getElementById("addRewardAmount").value, 18);
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const rewardTokenAddr = await poolContract.rewardToken();
+                const rewardContract = new ethers.Contract(rewardTokenAddr, erc20ABI, signer);
+                await (await rewardContract.approve(poolAddr, amount)).wait();
+                const tx = await poolContract.addRewards(amount);
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "Rewards added successfully!";
+                document.getElementById("manageStatus").className = "success";
+                await loadPools();
+            } catch (error) {
+                console.error('Add rewards error:', error);
+                document.getElementById("manageStatus").innerText = `Error adding rewards: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function withdrawExcess() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const amount = ethers.parseUnits(document.getElementById("withdrawAmount").value, 18);
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.withdrawExcessRewards(amount);
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "Excess rewards withdrawn successfully!";
+                document.getElementById("manageStatus").className = "success";
+            } catch (error) {
+                console.error('Withdraw excess error:', error);
+                document.getElementById("manageStatus").innerText = `Error withdrawing excess rewards: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function endPool() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.endPoolNow();
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "Pool ended successfully!";
+                document.getElementById("manageStatus").className = "success";
+                await loadPools();
+                await loadMyPools();
+            } catch (error) {
+                console.error('End pool error:', error);
+                document.getElementById("manageStatus").innerText = `Error ending pool: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function withdrawRemaining() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.withdrawRemaining();
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "Remaining rewards withdrawn successfully!";
+                document.getElementById("manageStatus").className = "success";
+            } catch (error) {
+                console.error('Withdraw remaining error:', error);
+                document.getElementById("manageStatus").innerText = `Error withdrawing remaining rewards: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        async function setTraitMultiplier() {
+            try {
+                const poolAddr = document.getElementById("managePool").value;
+                if (!poolAddr) throw new Error("No pool selected");
+                const tokenId = ethers.toBigInt(document.getElementById("traitTokenId").value);
+                const multiplier = ethers.parseUnits(document.getElementById("traitMultiplier").value, 18);
+                const poolContract = new ethers.Contract(poolAddr, poolABI, signer);
+                const tx = await poolContract.setTraitMultiplier(tokenId, multiplier);
+                await tx.wait();
+                document.getElementById("manageStatus").innerText = "Trait multiplier set successfully!";
+                document.getElementById("manageStatus").className = "success";
+            } catch (error) {
+                console.error('Set trait multiplier error:', error);
+                document.getElementById("manageStatus").innerText = `Error setting trait multiplier: ${error.message}`;
+                document.getElementById("manageStatus").className = "error";
+            }
+        }
+
+        function toggleSection(contentId, buttonId) {
+            const content = document.getElementById(contentId);
+            const button = document.getElementById(buttonId);
+            let sectionName;
+            switch (contentId) {
+                case 'deployContent': sectionName = 'Deploy Content'; break;
+                case 'myPoolsContent': sectionName = 'My Pools Content'; break;
+                case 'stakeContent': sectionName = 'Stake Content'; break;
+                case 'unstakeContent': sectionName = 'Unstake Content'; break;
+                case 'manageContent': sectionName = 'Manage Content'; break;
+                case 'poolsContent': sectionName = 'Available Pools Content'; break;
+                case 'endedPoolsContent': sectionName = 'Ended Pools Content'; break;
+                default: sectionName = contentId;
+            }
+            if (content.style.display === "none") {
+                content.style.display = contentId === 'poolsContent' || contentId === 'endedPoolsContent' ? "block" : "block";
+                button.innerText = `Collapse ${sectionName}`;
+                button.classList.remove("collapsed");
+            } else {
+                content.style.display = "none";
+                button.innerText = `Expand ${sectionName}`;
+                button.classList.add("collapsed");
+            }
+        }
+
+        function copyWallet() {
+            const wallet = document.getElementById("walletAddress").innerText;
+            navigator.clipboard.writeText(wallet).then(() => {
+                alert("Wallet address copied to clipboard!");
+            });
+        }
+
+        document.getElementById("connectWallet").onclick = connectWallet;
+        document.getElementById("howToUse").onclick = () => document.getElementById("howToUseModal").style.display = 'flex';
+        document.getElementById("loadPools").onclick = loadPools;
+        document.getElementById("loadMyPools").onclick = loadMyPools;
+        document.getElementById("deployPool").onclick = deployPool;
+        document.getElementById("selectedPool").onchange = loadNFTs;
+        document.getElementById("stakeNFTs").onclick = stakeNFTs;
+        document.getElementById("offChainStake").onclick = offChainStake;
+        document.getElementById("unstakeNFTs").onclick = unstakeNFTs;
+        document.getElementById("claimRewards").onclick = claimRewards;
+        document.getElementById("setEndTime").onclick = setEndTime;
+        document.getElementById("setMetadata").onclick = setMetadata;
+        document.getElementById("setPoolImage").onclick = setPoolImage;
+        document.getElementById("addRewards").onclick = addRewards;
+        document.getElementById("withdrawExcess").onclick = withdrawExcess;
+        document.getElementById("endPool").onclick = endPool;
+        document.getElementById("withdrawRemaining").onclick = withdrawRemaining;
+        document.getElementById("setTraitMultiplier").onclick = setTraitMultiplier;
+        document.getElementById("selectAllStake").onclick = function() {
+            const checkboxes = document.getElementsByClassName("nft-checkbox");
+            for (const cb of checkboxes) {
+                cb.checked = true;
+            }
+        };
+        document.getElementById("selectAllUnstake").onclick = function() {
+            const checkboxes = document.getElementsByClassName("staked-nft-checkbox");
+            for (const cb of checkboxes) {
+                cb.checked = true;
+            }
+        };
+        document.getElementById("toggleDeploySection").onclick = () => toggleSection("deployContent", "toggleDeploySection");
+        document.getElementById("toggleMyPools").onclick = () => toggleSection("myPoolsContent", "toggleMyPools");
+        document.getElementById("toggleStakeSection").onclick = () => toggleSection("stakeContent", "toggleStakeSection");
+        document.getElementById("toggleUnstakeSection").onclick = () => toggleSection("unstakeContent", "toggleUnstakeSection");
+        document.getElementById("toggleManageSection").onclick = () => toggleSection("manageContent", "toggleManageSection");
+        document.getElementById("toggleAvailablePools").onclick = () => toggleSection("poolsContent", "toggleAvailablePools");
+        document.getElementById("toggleEndedPools").onclick = () => toggleSection("endedPoolsContent", "toggleEndedPools");
+    </script>
+</body>
+</html>
