@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Claim Your Prize!</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -13,27 +13,51 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Sedgwick Ave', cursive;
       overflow-x: hidden;
+      width: 100%;
     }
     .container {
       text-align: center;
-      color: white;
-      max-width: 95%;
+      color: rgb(255, 255, 255);
+      width: 100%;
       padding: clamp(10px, 3vw, 15px);
       box-sizing: border-box;
       flex-grow: 1;
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
+      min-height: calc(100vh - 50px); /* Adjust based on footer height */
     }
     .initial-screen, .reveal-screen, .try-again-screen, .final-screen {
       display: none;
+      background-color: rgba(121, 121, 121, 0.389);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      width: 100vw; /* Ensure full viewport width */
+      height: 100vh; /* Ensure full viewport height */
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
     }
     .initial-screen.active, .reveal-screen.active, .try-again-screen.active, .final-screen.active {
       display: block;
+    }
+    .initial-screen {
+      background-image: url('./assets/banner.jpg');
+    }
+    .reveal-screen {
+      background-image: url('./assets/MudMavericksBehindBars.png');
+    }
+    .try-again-screen {
+      background-image: url('./assets/MudMavericksBehindBars.png');
+    }
+    .final-screen {
+      background-image: url('./assets/MudMavericksBehindBars.png');
     }
     h1 {
       font-size: clamp(1.5rem, 6vw, 2.5rem);
@@ -56,10 +80,14 @@
       display: inline-block;
     }
     .video-box {
-      background: rgba(0, 0, 0, 0.8);
-      padding: clamp(10px, 4vw, 15px);
+      position: absolute;
+      background: rgba(121, 121, 121, 0.389);
+      padding: clamp(10px, 5vw, 20px);
+      left: 50%;
+      top: 25%;
+      transform: translateX(-50%);
       border-radius: 10px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.062);
       animation: slideIn 1s ease-out;
       width: 100%;
       max-width: 500px;
@@ -129,6 +157,10 @@
       font-size: clamp(0.8rem, 2.5vw, 0.9rem);
       width: 100%;
       box-sizing: border-box;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      z-index: 10;
     }
     footer a {
       color: #ffcc00;
@@ -160,6 +192,15 @@
         padding: 8px;
         font-size: clamp(0.7rem, 2vw, 0.85rem);
       }
+      .initial-screen, .reveal-screen, .try-again-screen, .final-screen {
+        background-size: contain;
+      }
+    }
+    @media (min-width: 601px) {
+      .initial-screen, .reveal-screen, .try-again-screen, .final-screen {
+        background-size: cover;
+        background-attachment: fixed;
+      }
     }
     @media (max-width: 400px) {
       .video-box {
@@ -179,7 +220,7 @@
     <div class="initial-screen active">
       <div class="video-box">
         <h1>Congratulations! <span class="emoji">🎉</span></h1>
-        <p>You've won a mystery prize! <br> Enter your X username to claim it now!</p>
+        <p>You've won a NFT prize! <br> Enter your X username to claim it now!</p>
         <input type="text" class="input-field" id="username" placeholder="Your X username" required>
         <br>
         <button class="btn" onclick="revealMessage()">Claim Your Prize!</button>
@@ -188,7 +229,8 @@
     <div class="reveal-screen">
       <div class="video-box">
         <h1>I Told You Not to Click Links! <span class="emoji">😜</span></h1>
-        <p>Oops! Gotcha, <span id="display-username"></span>! <br> Clicking unknown links can lead to malware or phishing scams. Stay safe by using tools like <a href="https://www.virustotal.com" target="_blank">VirusTotal</a> or <a href="https://urlscan.io" target="_blank">urlscan.io</a> to scan links first. Want to try again?</p>
+        <p>Oops! Gotcha, <span id="display-username"></span>! <br> Screenshot this page and post to X and tag <a href="https://x.com/mudmavericks" target="_blank">Mud Mavericks</a> for change to win NFT! </p>
+        <p> Stay safe by using tools like <a href="https://www.virustotal.com" target="_blank">VirusTotal</a> or <a href="https://urlscan.io" target="_blank">urlscan.io</a> to scan links first. Want to try again?</p>
         <button class="btn" onclick="showTryAgain()">Try Again!</button>
       </div>
     </div>
