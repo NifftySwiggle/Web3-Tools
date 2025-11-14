@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SwiggleScan</title>
+
+  <!-- Preload critical CSS/JS -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" as="script">
+
+  <style>
+    :root { --primary: #007bff; --dark: #212529; }
+    body { background: #f8f9fa; font-family: system-ui, -apple-system, sans-serif; }
+    .header { background: var(--primary); color: white; padding: 1rem; border-radius: .5rem; text-align: center; }
+    .card { transition: transform .2s; }
+    .card:hover { transform: translateY(-2px); }
+    .table th { background: #e9ecef; font-weight: 600; }
+    .copy { cursor: pointer; opacity: .6; font-size: .8em; }
+    .copy:hover { opacity: 1; }
+    .address-display { cursor: pointer; transition: all 0.2s; }
+    .address-display:hover { background: #f8f9fa; border-radius: 3px; padding: 1px 3px; }
+    .address-expanded { font-family: monospace; word-break: break-all; }
+    .spinner { width: 2rem; height: 2rem; }
+    .age { white-space: nowrap; }
+    #searchInput { max-width: 600px; }
+    .badge-type { font-size: .7rem; }
+    .footer { margin-top: 3rem; font-size: .8rem; text-align: center; color: #6c757d; }
+  </style>
+</head>
+<body class="pb-5">
+
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="header mb-4">
+    <h1 class="h3 mb-0"> Swiggle Scan </h1>
+    <p class="mb-0"> • Remake of Classic Cronos Scan • </p>
+  </div>
+
+  <!-- Search -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="input-group" id="searchGroup">
+        <input type="text" class="form-control" id="searchInput" placeholder="Enter CRC-20 / CRC-721 Contract" value="0x93Fdd235576203c533269e2AcEB0674068DafA7D">
+        <button class="btn btn-primary" id="loadBtn">Search</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="text-center my-5" style="display:none">
+    <div class="spinner-border text-primary spinner" role="status"></div>
+    <p class="mt-2" id="loadingText">Fetching token data...</p>
+    <div class="progress mt-3" style="max-width: 400px; margin: 0 auto;">
+      <div class="progress-bar progress-bar-striped progress-bar-animated" id="loadingProgress" role="progressbar" style="width: 20%"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorAlert" class="alert alert-danger" style="display:none"></div>
+
+  <!-- Main Content -->
+  <div id="mainContent" style="display:none">
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="tokenTabs">
+      <li class="nav-item"><button class="nav-link active" data-bs-target="#overview">Overview</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-target="#transfers">Transfers</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-target="#holders">Holders</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-target="#contract">Contract</button></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- Overview -->
+      <div class="tab-pane fade show active" id="overview">
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between">
+                <span>Token Overview</span>
+                <span class="badge bg-primary badge-type" id="tokenType">CRC-20</span>
+              </div>
+              <div class="card-body">
+                <h5 id="tokenName">—</h5>
+                <p class="text-muted mb-1" id="tokenSymbol">—</p>
+                <hr>
+                <p><strong>Price:</strong> $<span id="tokenPrice">—</span></p>
+                <p><strong>Total Supply:</strong> <span id="totalSupply">—</span></p>
+                <p><strong>Total Holders:</strong> <span id="totalHolders">—</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-header">Market Data <small class="text-muted">(CoinGecko)</small></div>
+              <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                  <tr><td>Volume 24h</td><td class="text-end" id="volume24h">—</td></tr>
+                  <tr><td>Market Cap</td><td class="text-end" id="marketCap">—</td></tr>
+                  <tr><td>Circ. Supply</td><td class="text-end" id="circSupply">—</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transfers -->
+      <div class="tab-pane fade" id="transfers">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>All Transfers <span id="transfersCount" class="badge bg-secondary">0</span></span>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary" id="showMoreTransfers">Show More</button>
+              <a href="#" id="transfersAll" class="btn btn-sm btn-outline-primary">View on Explorer</a>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead><tr>
+                  <th>Txn Hash</th><th>Block</th><th class="age">Age</th><th>From</th><th>To</th><th>Value</th>
+                </tr></thead>
+                <tbody id="transfersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Holders -->
+      <div class="tab-pane fade" id="holders">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>All Holders <span id="holdersCount" class="badge bg-secondary">0</span></span>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary" id="showMoreHolders">Show More</button>
+              <a href="#" id="holdersCsv" class="btn btn-sm btn-outline-success">CSV Export</a>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead><tr><th>Rank</th><th>Address</th><th>Quantity</th><th>Percentage</th></tr></thead>
+                <tbody id="holdersBody"></tbody>
+              </table>
+            </div>
+            <div class="card-footer text-muted small">
+              Total Holders: <strong id="totalHoldersFooter">—</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contract -->
+      <div class="tab-pane fade" id="contract">
+        <div class="card">
+          <div class="card-header">Contract Information</div>
+          <div class="card-body">
+            <p><strong>Address:</strong> 
+              <code class="address-display" onclick="toggleAddress(this, contractAddr)" title="Click to expand full address" id="contractAddrDisplay">—</code> 
+              <span class="copy ms-1" onclick="copy(contractAddr)">Copy</span>
+            </p>
+            <p><strong>Creator:</strong> 
+              <span class="address-display" onclick="toggleAddress(this, document.getElementById('contractCreator').dataset.fullAddress)" title="Click to expand full address" id="contractCreator">—</span> 
+              <span class="copy ms-1" onclick="copy(document.getElementById('contractCreator').dataset.fullAddress)">Copy</span>
+            </p>
+            <p><strong>Contract Code:</strong> <a href="#" id="creationTxLink" target="_blank">View Source</a></p>
+            <p><strong>Verified:</strong> <span class="badge bg-success">Yes (via API)</span></p>
+            <a href="#" id="explorerLink" class="btn btn-primary mt-3" target="_blank">View on Explorer</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Made with ❤️ by <a href="https://x.com/pet_rescueNFT">@NifftySwiggle</a> • Data from Cronos Explorer API & CoinGecko • <span id="loadTime"></span></p>
+    <p class="mt-2">
+      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#donationModal">
+        ☕ Support Development
+      </button>
+    </p>
+  </div>
+</div>
+
+<!-- Donation Modal -->
+<div class="modal fade" id="donationModal" tabindex="-1" aria-labelledby="donationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="donationModalLabel">☕ Support Development</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <div class="bg-light rounded p-3 mb-3">
+            <h6 class="text-muted mb-2">Why Donations Help</h6>
+            <p class="mb-2">This tool is completely free and I don't get paid for maintaining it! 🚀</p>
+            <p class="mb-2">Donations help cover:</p>
+            <ul class="list-unstyled small">
+              <li>• Server costs & API usage</li>
+              <li>• Time spent on updates & bug fixes</li>
+              <li>• Adding new features you request</li>
+              <li>• Keeping the service running 24/7</li>
+            </ul>
+          </div>
+          
+          <div class="alert alert-info">
+            <strong>Any amount helps!</strong> Even $1 keeps me motivated to improve this tool ❤️
+          </div>
+          
+          <div class="bg-dark text-white rounded p-3 mb-3">
+            <small class="text-muted d-block mb-2">CRO Wallet Address:</small>
+            <code id="walletAddress" class="text-warning fs-6">0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f</code>
+            <br>
+            <button class="btn btn-sm btn-outline-light mt-2" onclick="copyWallet()">
+              📋 Copy Address
+            </button>
+          </div>
+          
+          <small class="text-muted">
+            You can send CRO, USDC, USDT, or any Cronos token to this address
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Maybe Later</button>
+        <!--<a href="https://explorer.cronos.org/address/0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f" 
+           target="_blank" class="btn btn-primary">View Wallet on Explorer</a>-->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script>
+  // Load Bootstrap after preload
+  const bsLink = document.createElement('link');
+  bsLink.rel = 'stylesheet';
+  bsLink.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+  document.head.appendChild(bsLink);
+
+  const bsScript = document.createElement('script');
+  bsScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
+  bsScript.async = true;
+  document.head.appendChild(bsScript);
+</script>
+
+<script>
+  const API = 'https://cronos.org/explorer/api';
+  const CG = 'https://api.coingecko.com/api/v3';
+  const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+  const CACHE_TTL = 5 * 60 * 1000; // 5 min
+  const BLOCK_RANGE = 50000; // ~1 day
+  const REQUEST_TIMEOUT = 8000; // 8 seconds timeout for all requests
+
+  const els = {
+    input: document.getElementById('searchInput'),
+    loadBtn: document.getElementById('loadBtn'),
+    loading: document.getElementById('loading'),
+    error: document.getElementById('errorAlert'),
+    content: document.getElementById('mainContent'),
+
+    loadingText: document.getElementById('loadingText'),
+    loadingProgress: document.getElementById('loadingProgress'),
+    // Overview
+    tokenName: document.getElementById('tokenName'),
+    tokenSymbol: document.getElementById('tokenSymbol'),
+    tokenType: document.getElementById('tokenType'),
+    tokenPrice: document.getElementById('tokenPrice'),
+    totalSupply: document.getElementById('totalSupply'),
+    totalHolders: document.getElementById('totalHolders'),
+    volume24h: document.getElementById('volume24h'),
+    marketCap: document.getElementById('marketCap'),
+    circSupply: document.getElementById('circSupply'),
+    totalHoldersFooter: document.getElementById('totalHoldersFooter'),
+    // Transfers
+    transfersBody: document.getElementById('transfersBody'),
+    transfersAll: document.getElementById('transfersAll'),
+    // Holders
+    holdersBody: document.getElementById('holdersBody'),
+    holdersCsv: document.getElementById('holdersCsv'),
+    holdersCount: document.getElementById('holdersCount'),
+    showMoreHolders: document.getElementById('showMoreHolders'),
+    transfersCount: document.getElementById('transfersCount'),
+    showMoreTransfers: document.getElementById('showMoreTransfers'),
+    // Contract
+    contractAddrDisplay: document.getElementById('contractAddrDisplay'),
+    contractCreator: document.getElementById('contractCreator'),
+    creationTxLink: document.getElementById('creationTxLink'),
+    explorerLink: document.getElementById('explorerLink'),
+    loadTime: document.getElementById('loadTime')
+  };
+
+  let contractAddr = '';
+  let debugMode = true; // Always enabled for background troubleshooting
+  let allHolders = [];
+  let allTransfers = [];
+  let holdersDisplayCount = 50;
+  let transfersDisplayCount = 100;
+
+  // Debug mode is always enabled in the background for troubleshooting
+  // (no user toggle needed)
+
+  // Show more buttons
+  document.getElementById('showMoreHolders').addEventListener('click', () => {
+    holdersDisplayCount += 100;
+    renderHolders();
+  });
+
+  document.getElementById('showMoreTransfers').addEventListener('click', () => {
+    transfersDisplayCount += 100;
+    renderTransfers();
+  });
+
+  // Init tabs
+  document.querySelectorAll('#tokenTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tokenTabs button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
+      btn.classList.add('active');
+      document.querySelector(btn.dataset.bsTarget).classList.add('show', 'active');
+    });
+  });
+
+  // Copy to clipboard
+  window.copy = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      const toast = document.createElement('div');
+      toast.className = 'position-fixed bottom-0 end-0 p-3';
+      toast.style.zIndex = 11;
+      toast.innerHTML = `<div class="toast show"><div class="toast-body">Copied!</div></div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 1500);
+    });
+  };
+
+  // Copy wallet address with special message
+  window.copyWallet = () => {
+    const walletAddr = '0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f';
+    navigator.clipboard.writeText(walletAddr).then(() => {
+      const toast = document.createElement('div');
+      toast.className = 'position-fixed bottom-0 end-0 p-3';
+      toast.style.zIndex = 11;
+      toast.innerHTML = `<div class="toast show bg-success text-white"><div class="toast-body">Wallet address copied! Thank you for considering a donation ❤️</div></div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    });
+  };
+
+  // Format address for display (first 4 + last 4 digits)
+  const formatAddress = (address) => {
+    if (!address || address === '—' || address.length < 10) return address;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  // Toggle address display between short and full
+  window.toggleAddress = (element, fullAddress) => {
+    const isExpanded = element.classList.contains('address-expanded');
+    if (isExpanded) {
+      element.textContent = formatAddress(fullAddress);
+      element.classList.remove('address-expanded');
+      element.title = 'Click to expand full address';
+    } else {
+      element.textContent = fullAddress;
+      element.classList.add('address-expanded');
+      element.title = 'Click to collapse address';
+    }
+  };
+
+  // Format age
+  const formatAge = (ts) => {
+    const diff = Date.now() / 1000 - parseInt(ts);
+    if (diff < 60) return `${Math.floor(diff)}s ago`;
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return `${Math.floor(diff/86400)}d ago`;
+  };
+
+  // Helper function for fetch with timeout
+  const fetchWithTimeout = (url, timeout = REQUEST_TIMEOUT) => {
+    return fetch(url, { 
+      signal: AbortSignal.timeout(timeout),
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+  };
+
+  // Render transfers table
+  const renderTransfers = () => {
+    const { decimals, isNFT } = window.currentTokenData || {};
+    let txHtml = '';
+    
+    if (allTransfers.length === 0) {
+      txHtml = '<tr><td colspan="6" class="text-center text-muted">No recent transfers found</td></tr>';
+    } else {
+      const transfersToShow = allTransfers.slice(0, transfersDisplayCount);
+      transfersToShow.forEach(log => {
+        try {
+          // Handle multiple data formats: event logs, token transfers, NFT transfers, and regular transactions
+          let from, to, value, txHash, blockNum, timestamp;
+          
+          if (log.topics) {
+            // Event log format from logs API
+            from = log.topics[1] ? '0x' + log.topics[1].slice(-40) : '—';
+            to = log.topics[2] ? '0x' + log.topics[2].slice(-40) : '—';
+            
+            if (isNFT && log.topics[3]) {
+              value = `#${parseInt(log.topics[3], 16)}`;
+            } else if (!isNFT && log.data && log.data !== '0x') {
+              try {
+                value = Number(BigInt(log.data) / BigInt(10**decimals)).toFixed(4);
+              } catch (e) {
+                value = 'N/A';
+              }
+            } else {
+              value = '—';
+            }
+            
+            txHash = log.transactionHash || log.hash || '—';
+            blockNum = log.blockNumber || '—';
+            timestamp = log.timeStamp || log.timestamp || '0';
+          } else if (log.from || log.to) {
+            // Token transfer format from tokentx/tokennfttx API
+            from = log.from || '—';
+            to = log.to || '—';
+            
+            if (isNFT) {
+              // NFT transfer - show token ID and name if available
+              if (log.tokenID) {
+                value = log.tokenName ? `${log.tokenName} #${log.tokenID}` : `#${log.tokenID}`;
+              } else if (log.tokenName) {
+                value = log.tokenName;
+              } else {
+                value = '1 NFT';
+              }
+            } else if (log.value && log.value !== '0') {
+              // ERC-20 transfer
+              try {
+                const rawValue = BigInt(log.value);
+                const divisor = BigInt(10 ** decimals);
+                value = Number(rawValue / divisor).toFixed(4);
+              } catch (e) {
+                value = log.value;
+              }
+            } else {
+              value = '0';
+            }
+            
+            txHash = log.hash || '—';
+            blockNum = log.blockNumber || '—';
+            timestamp = log.timeStamp || '0';
+          } else {
+            // Regular transaction format (last resort)
+            from = log.from || '—';
+            to = log.to || '—';
+            
+            if (log.value && log.value !== '0') {
+              // Might be ETH transfer or contract interaction
+              try {
+                const ethValue = Number(BigInt(log.value) / BigInt(10**18));
+                value = ethValue > 0 ? `${ethValue.toFixed(6)} CRO` : 'Contract Call';
+              } catch (e) {
+                value = 'Transaction';
+              }
+            } else {
+              value = 'Contract Call';
+            }
+            
+            txHash = log.hash || '—';
+            blockNum = log.blockNumber || '—';
+            timestamp = log.timeStamp || '0';
+          }
+          
+            txHtml += `<tr>
+            <td><a href="https://explorer.cronos.org/tx/${txHash}" target="_blank">${txHash.slice(0,10)}...</a></td>
+            <td>${blockNum}</td>
+            <td class="age">${formatAge(timestamp)}</td>
+            <td>
+              <span class="address-display" onclick="toggleAddress(this, '${from}')" title="Click to expand full address">${formatAddress(from)}</span>
+              <span class="copy ms-1" onclick="copy('${from}')">Copy</span>
+            </td>
+            <td>
+              <span class="address-display" onclick="toggleAddress(this, '${to}')" title="Click to expand full address">${formatAddress(to)}</span>
+              <span class="copy ms-1" onclick="copy('${to}')">Copy</span>
+            </td>
+            <td>${value}</td>
+          </tr>`;
+        } catch (e) {
+          console.log('Error rendering transfer:', log, e);
+        }
+      });
+    }
+    
+    els.transfersBody.innerHTML = txHtml;
+    els.transfersCount.textContent = allTransfers.length.toLocaleString();
+    
+    // Show/hide show more button
+    if (transfersDisplayCount >= allTransfers.length) {
+      els.showMoreTransfers.style.display = 'none';
+    } else {
+      els.showMoreTransfers.style.display = 'inline-block';
+      els.showMoreTransfers.textContent = `Show More (${(allTransfers.length - transfersDisplayCount).toLocaleString()} remaining)`;
+    }
+  };
+
+  // Fetch all holders with pagination (handles both CRC-20 and CRC-721)
+  const fetchAllHolders = async (contractAddr, isNFT) => {
+    const allHolders = [];
+    let page = 1;
+    const maxPages = 20;
+    
+    while (page <= maxPages) {
+      try {
+        // Update progress for each page
+        els.loadingText.textContent = `Loading holders... (page ${page}, found ${allHolders.length.toLocaleString()})`;
+        
+        // For NFTs, we might need different parameters
+        const offset = isNFT ? 10000 : 5000; // NFTs can have more holders per page
+        const response = await fetchWithTimeout(`${API}?module=token&action=getTokenHolders&contractaddress=${contractAddr}&page=${page}&offset=${offset}`);
+        
+        if (!response.ok) {
+          if (debugMode) console.log(`Holders API failed on page ${page}:`, response.status);
+          break;
+        }
+        
+        const data = await response.json();
+        if (data.status !== '1' || !data.result || data.result.length === 0) {
+          if (debugMode) console.log(`No more holder data on page ${page}:`, data.message || data.result);
+          break;
+        }
+        
+        allHolders.push(...data.result);
+        if (debugMode) console.log(`Fetched holders page ${page}: ${data.result.length} holders (total: ${allHolders.length})`);
+        
+        // If we got less than expected, this is the last page
+        if (data.result.length < offset) break;
+        page++;
+      } catch (e) {
+        if (debugMode) console.log(`Error fetching holders page ${page}:`, e);
+        break;
+      }
+    }
+    
+    if (debugMode) {
+      console.log(`Total holders fetched: ${allHolders.length}`);
+      if (allHolders.length > 0) {
+        console.log('Sample holder data:', allHolders[0]);
+      }
+    }
+    return allHolders;
+  };
+
+  // Fetch all transfers with pagination
+  const fetchAllTransfers = async (contractAddr, currentBlock, isNFT) => {
+    let allTransfers = [];
+    
+    // Method 1: Direct token transfers from Cronos Explorer (most reliable)
+    try {
+      let page = 1;
+      const maxPages = 15; // Increased for NFTs which might have more transfers
+      
+      while (page <= maxPages) {
+        els.loadingText.textContent = `Loading transfers... (page ${page}, found ${allTransfers.length.toLocaleString()})`;
+        
+        // Use tokentx for ERC-20 tokens and tokennfttx for ERC-721 tokens
+        const action = isNFT ? 'tokennfttx' : 'tokentx';
+        const response = await fetchWithTimeout(`${API}?module=account&action=${action}&contractaddress=${contractAddr}&page=${page}&offset=1000&sort=desc`);
+        
+        if (!response.ok) {
+          if (debugMode) console.log(`${action} API failed on page ${page}:`, response.status);
+          break;
+        }
+        
+        const data = await response.json();
+        if (data.status !== '1' || !data.result || data.result.length === 0) {
+          if (debugMode) console.log(`No more ${action} data on page ${page}:`, data.message || data.result);
+          break;
+        }
+        
+        allTransfers.push(...data.result);
+        if (debugMode) console.log(`Fetched ${action} page ${page}: ${data.result.length} transfers (total: ${allTransfers.length})`);
+        
+        // If we got less than 1000, this is the last page
+        if (data.result.length < 1000) break;
+        page++;
+      }
+      
+      // For NFTs, also try fetching without specifying contract address to get all NFT transfers
+      if (isNFT && allTransfers.length === 0) {
+        try {
+          els.loadingText.textContent = `Loading NFT transfers... (alternative method)`;
+          
+          const response = await fetchWithTimeout(`${API}?module=account&action=tokennfttx&address=${contractAddr}&page=1&offset=1000&sort=desc`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === '1' && data.result) {
+              // Filter by our contract address
+              const filteredTransfers = data.result.filter(tx => 
+                tx.contractAddress && tx.contractAddress.toLowerCase() === contractAddr.toLowerCase()
+              );
+              allTransfers.push(...filteredTransfers);
+              if (debugMode) console.log(`Fetched ${filteredTransfers.length} NFT transfers via alternative method`);
+            }
+          }
+        } catch (e) {
+          if (debugMode) console.log('Alternative NFT transfer method failed:', e);
+        }
+      }
+    } catch (e) {
+      if (debugMode) console.log('Direct token transfers method failed:', e);
+    }
+    
+    // Method 2: Event logs as backup (if direct method failed)
+    if (allTransfers.length === 0) {
+      try {
+        let page = 1;
+        const maxPages = 8; // Increased for better coverage
+        
+        // Use a broader block range for event logs
+        const fromBlock = Math.max(1, currentBlock - 200000); // Last week for better NFT coverage
+        
+        while (page <= maxPages) {
+          els.loadingText.textContent = `Loading transfers via logs... (page ${page}, found ${allTransfers.length.toLocaleString()})`;
+          
+          const response = await fetchWithTimeout(`${API}?module=logs&action=getLogs&address=${contractAddr}&fromBlock=${fromBlock}&toBlock=latest&topic0=${TRANSFER_TOPIC}&page=${page}&offset=1000`);
+          if (!response.ok) {
+            if (debugMode) console.log(`Transfer logs API failed on page ${page}:`, response.status);
+            break;
+          }
+          
+          const data = await response.json();
+          if (data.status !== '1' || !data.result || data.result.length === 0) {
+            if (debugMode) console.log(`No more transfer log data on page ${page}:`, data.message || data.result);
+            break;
+          }
+          
+          allTransfers.push(...data.result);
+          if (debugMode) console.log(`Fetched transfer logs page ${page}: ${data.result.length} transfers (total: ${allTransfers.length})`);
+          
+          // If we got less than 1000, this is the last page
+          if (data.result.length < 1000) break;
+          page++;
+        }
+      } catch (e) {
+        if (debugMode) console.log('Transfer logs backup method failed:', e);
+      }
+    }
+    
+    // Method 3: Internal transactions (might catch missed transfers)
+    if (allTransfers.length === 0) {
+      try {
+        els.loadingText.textContent = `Loading internal transfers...`;
+        
+        const response = await fetchWithTimeout(`${API}?module=account&action=txlistinternal&address=${contractAddr}&startblock=0&endblock=99999999&page=1&offset=1000&sort=desc`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === '1' && data.result) {
+            allTransfers = data.result;
+            if (debugMode) console.log(`Fetched ${allTransfers.length} internal transactions`);
+          }
+        }
+      } catch (e) {
+        if (debugMode) console.log('Internal transfers method failed:', e);
+      }
+    }
+    
+    // Method 4: Generic account transactions as last resort
+    if (allTransfers.length === 0) {
+      try {
+        els.loadingText.textContent = `Loading transfers... (last resort method)`;
+        
+        const response = await fetchWithTimeout(`${API}?module=account&action=txlist&address=${contractAddr}&startblock=0&endblock=99999999&page=1&offset=1000&sort=desc`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === '1' && data.result) {
+            // Filter only successful transactions that might be transfers
+            const filteredTxs = data.result.filter(tx => 
+              tx.isError === '0' && 
+              (tx.input !== '0x' || tx.value !== '0')
+            );
+            allTransfers = filteredTxs;
+            if (debugMode) console.log(`Fetched ${allTransfers.length} transactions via last resort method`);
+          }
+        }
+      } catch (e) {
+        if (debugMode) console.log('Last resort transfer method also failed:', e);
+      }
+    }
+    
+    // Sort transfers by timestamp (newest first)
+    allTransfers.sort((a, b) => parseInt(b.timeStamp || b.timestamp || 0) - parseInt(a.timeStamp || a.timestamp || 0));
+    
+    if (debugMode) {
+      console.log(`Total transfers fetched: ${allTransfers.length}`);
+      if (allTransfers.length > 0) {
+        console.log('Sample transfer data:', allTransfers[0]);
+      }
+    }
+    
+    return allTransfers;
+  };
+
+  // Show error
+  const showError = (msg) => {
+    els.error.textContent = msg;
+    els.error.style.display = 'block';
+    els.loading.style.display = 'none';
+  };
+
+  // Render holders table
+  const renderHolders = () => {
+    const { decimals, isNFT, totalSupplyRaw } = window.currentTokenData || {};
+    let holdersHtml = '';
+    
+    if (allHolders.length === 0) {
+      holdersHtml = '<tr><td colspan="4" class="text-center text-muted">No holders data available</td></tr>';
+    } else {
+      const holdersToShow = allHolders.slice(0, holdersDisplayCount);
+      holdersToShow.forEach((h, i) => {
+        try {
+          const holderAddr = h.address || h.holder || '—';
+          const balance = h.value || h.balance || '0';
+          
+          let qty = '—';
+          let pct = '—';
+          
+          if (balance !== '0' && balance !== '—') {
+            if (isNFT) {
+              // For NFTs, the balance represents the number of NFTs owned
+              const nftCount = Number(balance);
+              qty = nftCount === 1 ? '1 NFT' : `${nftCount.toLocaleString()} NFTs`;
+            } else {
+              try {
+                qty = Number(BigInt(balance) / BigInt(10**decimals)).toLocaleString();
+              } catch (e) {
+                qty = balance;
+              }
+            }
+            
+            if (totalSupplyRaw && totalSupplyRaw !== '0') {
+              try {
+                // For NFTs, calculate percentage based on raw numbers (no decimal adjustment)
+                const holderAmount = isNFT ? Number(balance) : Number(balance);
+                const totalAmount = isNFT ? Number(totalSupplyRaw) : Number(totalSupplyRaw);
+                pct = ((holderAmount / totalAmount) * 100).toFixed(2) + '%';
+              } catch (e) {
+                pct = '—';
+              }
+            }
+          }
+          
+          holdersHtml += `<tr>
+            <td>${i+1}</td>
+            <td>
+              <span class="address-display" onclick="toggleAddress(this, '${holderAddr}')" title="Click to expand full address">${formatAddress(holderAddr)}</span>
+              <span class="copy ms-1" onclick="copy('${holderAddr}')">Copy</span>
+            </td>
+            <td>${qty}</td>
+            <td>${pct}</td>
+          </tr>`;
+        } catch (e) {
+          console.log('Error rendering holder:', h, e);
+        }
+      });
+    }
+    
+    els.holdersBody.innerHTML = holdersHtml;
+    els.holdersCount.textContent = allHolders.length.toLocaleString();
+    
+    // Show/hide show more button
+    if (holdersDisplayCount >= allHolders.length) {
+      els.showMoreHolders.style.display = 'none';
+    } else {
+      els.showMoreHolders.style.display = 'inline-block';
+      els.showMoreHolders.textContent = `Show More (${(allHolders.length - holdersDisplayCount).toLocaleString()} remaining)`;
+    }
+  };
+
+  // Main loader
+  const loadToken = async () => {
+    contractAddr = els.input.value.trim().toLowerCase();
+    if (!/^0x[a-f0-9]{40}$/.test(contractAddr)) return showError('Invalid contract address format');
+
+    // Removed caching to ensure all data loads completely every time
+
+    els.loading.style.display = 'block';
+    els.content.style.display = 'none';
+    els.error.style.display = 'none';
+    els.loadBtn.disabled = true; // Prevent double-clicks
+
+    const start = performance.now();
+
+    try {
+      // Fetch token data first (this is essential)
+      els.loadingText.textContent = 'Fetching token info...';
+      els.loadingProgress.style.width = '20%';
+      
+      const tokenRes = await fetchWithTimeout(`${API}?module=token&action=getToken&contractaddress=${contractAddr}`);
+      if (!tokenRes.ok) throw new Error(`Token not found (${tokenRes.status})`);
+      
+      const tokenData = await tokenRes.json();
+      if (tokenData.status !== '1') throw new Error(tokenData.result || 'Invalid token or not found on Cronos network');
+
+      const token = tokenData.result;
+      const decimals = parseInt(token.decimals || '0');
+      const isNFT = token.type === 'ERC-721';
+      const totalSupplyRaw = token.totalSupply || '0';
+      
+      // For NFTs, totalSupply is the number of tokens, not adjusted by decimals
+      let totalSupply;
+      if (isNFT) {
+        totalSupply = totalSupplyRaw !== '0' ? Number(totalSupplyRaw).toLocaleString() + ' NFTs' : 'Unknown';
+      } else {
+        totalSupply = Number(BigInt(totalSupplyRaw) / BigInt(10**decimals)).toLocaleString();
+      }
+
+      // First get basic data in parallel
+      els.loadingText.textContent = 'Loading basic data...';
+      els.loadingProgress.style.width = '40%';
+      const [cgRes, currentBlockRes, txRes] = await Promise.allSettled([
+        fetchWithTimeout(`${CG}/coins/cronos/contract/${contractAddr}`, 5000), // Shorter timeout for CoinGecko
+        fetchWithTimeout(`${API}?module=block&action=getblocknobytime&timestamp=${Math.floor(Date.now()/1000)}&closest=before`), // Fixed block endpoint
+        fetchWithTimeout(`${API}?module=account&action=txlist&address=${contractAddr}&startblock=0&endblock=99999999&sort=asc&page=1&offset=1`)
+      ]);
+
+      // Market data with fallback
+      let market = { price: 'N/A', mcap: 'N/A', vol: 'N/A', circ: 'N/A' };
+      if (cgRes.status === 'fulfilled' && cgRes.value.ok) {
+        try {
+          const cg = await cgRes.value.json();
+          if (cg.market_data) {
+            market.price = cg.market_data.current_price?.usd?.toFixed(6) || 'N/A';
+            market.mcap = cg.market_data.market_cap?.usd ? `$${cg.market_data.market_cap.usd.toLocaleString()}` : 'N/A';
+            market.vol = cg.market_data.total_volume?.usd ? `$${cg.market_data.total_volume.usd.toLocaleString()}` : 'N/A';
+            market.circ = cg.market_data.circulating_supply?.toLocaleString() || 'N/A';
+          }
+        } catch (e) {
+          console.log('CoinGecko data parsing failed:', e);
+        }
+      }
+
+      // Current block with fallback
+      let currentBlock = 50000000; // Fallback block number
+      if (currentBlockRes.status === 'fulfilled' && currentBlockRes.value.ok) {
+        try {
+          const blockData = await currentBlockRes.value.json();
+          if (blockData.status === '1' && blockData.result && blockData.result.blockNumber) {
+            currentBlock = parseInt(blockData.result.blockNumber);
+          }
+        } catch (e) {
+          if (debugMode) console.log('Block data failed:', e);
+        }
+      }
+
+      // Fetch ALL holders
+      els.loadingText.textContent = 'Loading all holders...';
+      els.loadingProgress.style.width = '65%';
+      allHolders = await fetchAllHolders(contractAddr, isNFT);
+      const totalHolders = allHolders.length > 0 ? allHolders.length.toString() : '—';
+      
+      // Fetch ALL transfers
+      els.loadingText.textContent = 'Loading all transfers...';
+      els.loadingProgress.style.width = '80%';
+      allTransfers = await fetchAllTransfers(contractAddr, currentBlock, isNFT);
+
+      // Process creator data
+      let creator = '—';
+      let creationHash = '';
+      if (txRes.status === 'fulfilled' && txRes.value.ok) {
+        try {
+          const txData = await txRes.value.json();
+          if (txData.status === '1' && txData.result?.[0]) {
+            const creatorTx = txData.result[0];
+            creator = creatorTx.from || '—';
+            creationHash = creatorTx.hash || '';
+          }
+        } catch (e) {
+          console.log('Creator data failed:', e);
+        }
+      }
+
+      // Build result
+      els.loadingText.textContent = 'Finalizing...';
+      els.loadingProgress.style.width = '90%';
+      
+      const result = {
+        token, decimals, isNFT, totalSupply, totalSupplyRaw, market, totalHolders,
+        transfers: allTransfers, holders: allHolders, creator, creationHash, currentBlock
+      };
+
+      // Removed caching to ensure complete data loading every time
+      
+      els.loadingProgress.style.width = '100%';
+      
+      // Store token data globally for render functions
+      window.currentTokenData = { token, decimals, isNFT, totalSupplyRaw };
+      
+      render(result);
+
+      const loadMs = Math.round(performance.now() - start);
+      
+      // Add data status info
+      const dataStatus = [];
+      if (market.price !== 'N/A') dataStatus.push('Market Data');
+      if (allTransfers.length > 0) dataStatus.push(`${allTransfers.length.toLocaleString()} Transfers`);
+      if (allHolders.length > 0) dataStatus.push(`${allHolders.length.toLocaleString()} Holders`);
+      if (creator !== '—') dataStatus.push('Contract Info');
+      
+      els.loadTime.textContent = `Loaded in ${loadMs}ms • ${dataStatus.join(', ') || 'Basic info only'}`;
+    } catch (err) {
+      console.error('Load error:', err);
+      if (err.name === 'TimeoutError') {
+        showError('Request timeout - The Cronos API might be slow. Please try again.');
+      } else if (err.message.includes('Token not found')) {
+        showError('Token not found on Cronos network. Please check the contract address.');
+      } else {
+        showError(`Failed to load token: ${err.message}`);
+      }
+    } finally {
+      els.loading.style.display = 'none';
+      els.loadBtn.disabled = false; // Re-enable button
+    }
+  };
+
+  // Render
+  const render = (d) => {
+    const { token, decimals, isNFT, totalSupply, totalSupplyRaw, market, totalHolders, creator, creationHash } = d;
+
+    // Store data globally for render functions
+    window.currentTokenData = { token, decimals, isNFT, totalSupply, totalSupplyRaw, market };
+
+    // Reset display counts
+    holdersDisplayCount = 50;
+    transfersDisplayCount = 100;
+
+    // Overview
+    els.tokenName.textContent = token.name || 'Unknown';
+    els.tokenSymbol.textContent = token.symbol || '';
+    els.tokenType.textContent = isNFT ? 'CRC-721' : 'CRC-20';
+    els.tokenType.className = `badge ${isNFT ? 'bg-info' : 'bg-primary'} badge-type`;
+    els.tokenPrice.textContent = market.price;
+    els.totalSupply.textContent = totalSupply;
+    els.totalHolders.textContent = totalHolders === '—' ? '—' : Number(totalHolders).toLocaleString();
+    els.totalHoldersFooter.textContent = totalHolders === '—' ? '—' : Number(totalHolders).toLocaleString();
+    els.volume24h.textContent = market.vol;
+    els.marketCap.textContent = market.mcap;
+    els.circSupply.textContent = market.circ;
+
+    // Render transfers and holders using new functions
+    renderTransfers();
+    renderHolders();
+
+    // Update transfer links
+    els.transfersAll.href = `https://explorer.cronos.org/address/${contractAddr}#tokentxns`;
+    els.holdersCsv.href = `${API}?module=token&action=getTokenHolders&contractaddress=${contractAddr}&page=1&offset=10000`;
+
+    // Contract
+    els.contractAddrDisplay.textContent = formatAddress(contractAddr);
+    els.contractAddrDisplay.classList.remove('address-expanded');
+    els.contractCreator.textContent = creator === '—' ? '—' : formatAddress(creator);
+    els.contractCreator.dataset.fullAddress = creator;
+    els.contractCreator.classList.remove('address-expanded');
+    els.creationTxLink.href = `https://explorer.cronos.org/token/${contractAddr}#code`;
+    els.explorerLink.href = `https://explorer.cronos.org/address/${contractAddr}`;
+
+    els.content.style.display = 'block';
+  };
+
+  // Events
+  els.loadBtn.addEventListener('click', loadToken);
+  els.input.addEventListener('keypress', e => e.key === 'Enter' && loadToken());
+
+  // Auto-load
+  window.addEventListener('load', () => {
+    if (els.input.value) loadToken();
+  });
+</script>
+</body>
+</html>
