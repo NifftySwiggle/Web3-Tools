@@ -507,6 +507,55 @@
             margin-right: auto;
         }
 
+        .hero-search-container {
+            max-width: 500px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .hero-search-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius);
+            color: white;
+            font-size: 1.125rem;
+            transition: var(--transition);
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-search-input:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .hero-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--surface-medium);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .search-container.header-hidden {
+            display: none;
+        }
+
         .steps-grid {
             display: flex;
             flex-wrap: wrap;
@@ -1466,7 +1515,7 @@
                 <span>SwiggleScan</span>
             </a>
             
-            <div class="search-container">
+            <div class="search-container header-hidden" id="headerSearchContainer">
                 <input 
                     type="text" 
                     class="search-input" 
@@ -1536,11 +1585,22 @@
                 <h2>Welcome to SwiggleScan</h2>
                 <p>Your NFT portfolio explorer. Discover, filter, and download NFT collections from Crypto.com with ease.</p>
                 
+                <div class="hero-search-container" id="heroSearchContainer">
+                    <input 
+                        type="text" 
+                        class="hero-search-input" 
+                        id="heroSearchInput" 
+                        placeholder="🔍 Search Username to Get Started"
+                        autocomplete="off"
+                    >
+                    <div class="hero-suggestions" id="heroSuggestions"></div>
+                </div>
+                
                 <div class="steps-grid">
                     <div class="step-card" onclick="focusSearchInput()" style="cursor: pointer;">
                         <div class="step-number">1</div>
                         <div class="step-title">🔍 Search Profile</div>
-                        <div class="step-description">Type a username in the search bar above to find any Crypto.com NFT profile</div>
+                        <div class="step-description">Type a username in the search bar to find any Crypto.com NFT profile</div>
                     </div>
                     
                     <div class="step-card">
@@ -1863,6 +1923,10 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
         const elements = {
             searchInput: document.getElementById('searchInput'),
             suggestions: document.getElementById('suggestions'),
+            heroSearchInput: document.getElementById('heroSearchInput'),
+            heroSuggestions: document.getElementById('heroSuggestions'),
+            headerSearchContainer: document.getElementById('headerSearchContainer'),
+            heroSearchContainer: document.getElementById('heroSearchContainer'),
             themeToggle: document.getElementById('themeToggle'),
             themeIcon: document.getElementById('themeIcon'),
             howToUse: document.getElementById('howToUse'),
@@ -1970,15 +2034,17 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             }
         }
 
-        async function searchProfiles(query) {
+        async function searchProfiles(query, isHeroSearch = false) {
+            const suggestionsContainer = isHeroSearch ? elements.heroSuggestions : elements.suggestions;
+            
             if (!query || query.length < 3) {
-                elements.suggestions.style.display = 'none';
+                suggestionsContainer.style.display = 'none';
                 console.log('Query too short, clearing suggestions');
                 return;
             }
 
-            elements.suggestions.innerHTML = '<div class="suggestion-item">Searching...</div>';
-            elements.suggestions.style.display = 'block';
+            suggestionsContainer.innerHTML = '<div class="suggestion-item">Searching...</div>';
+            suggestionsContainer.style.display = 'block';
 
             if (state.abortController) {
                 state.abortController.abort();
@@ -2013,7 +2079,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                     return;
                 }
 
-                elements.suggestions.innerHTML = '';
+                suggestionsContainer.innerHTML = '';
                 if (profileData && profileData.username) {
                     const suggestionItem = document.createElement('div');
                     suggestionItem.className = 'suggestion-item';
@@ -2025,21 +2091,21 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                         </div>
                     `;
                     suggestionItem.addEventListener('click', () => {
-                        selectProfile(profileData);
+                        selectProfile(profileData, isHeroSearch);
                     });
-                    elements.suggestions.appendChild(suggestionItem);
-                    elements.suggestions.style.display = 'block';
+                    suggestionsContainer.appendChild(suggestionItem);
+                    suggestionsContainer.style.display = 'block';
                 } else {
-                    elements.suggestions.innerHTML = '<div class="suggestion-item">No profiles found</div>';
-                    elements.suggestions.style.display = 'block';
+                    suggestionsContainer.innerHTML = '<div class="suggestion-item">No profiles found</div>';
+                    suggestionsContainer.style.display = 'block';
                 }
             } catch (error) {
                 if (error.message !== 'Search cancelled') {
                     console.error('Search error:', error);
-                    elements.suggestions.innerHTML = '<div class="suggestion-item">Search failed</div>';
-                    elements.suggestions.style.display = 'block';
+                    suggestionsContainer.innerHTML = '<div class="suggestion-item">Search failed</div>';
+                    suggestionsContainer.style.display = 'block';
                     setTimeout(() => {
-                        elements.suggestions.style.display = 'none';
+                        suggestionsContainer.style.display = 'none';
                     }, 2000);
                 }
             } finally {
@@ -2118,9 +2184,20 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
         }
 
         // Profile Functions
-        async function selectProfile(profile) {
+        async function selectProfile(profile, fromHeroSearch = false) {
+            if (fromHeroSearch) {
+                // Hide hero search and show header search
+                elements.heroSearchContainer.style.display = 'none';
+                elements.headerSearchContainer.classList.remove('header-hidden');
+                elements.heroSuggestions.style.display = 'none';
+            }
+            
             elements.searchInput.value = profile.username;
+            if (elements.heroSearchInput) {
+                elements.heroSearchInput.value = profile.username;
+            }
             elements.suggestions.style.display = 'none';
+            elements.heroSuggestions.style.display = 'none';
             await loadProfile(profile);
         }
 
@@ -3038,15 +3115,26 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
 
         // Event Listeners
         function initializeEventListeners() {
-            // Search
+            // Header Search
             elements.searchInput.addEventListener('input', debounce((e) => {
-                searchProfiles(sanitizeInput(e.target.value));
+                searchProfiles(sanitizeInput(e.target.value), false);
             }, 300));
+            
+            // Hero Search
+            if (elements.heroSearchInput) {
+                elements.heroSearchInput.addEventListener('input', debounce((e) => {
+                    searchProfiles(sanitizeInput(e.target.value), true);
+                }, 300));
+            }
             
             // Hide suggestions when clicking outside
             document.addEventListener('click', (e) => {
                 if (!elements.searchInput.contains(e.target) && !elements.suggestions.contains(e.target)) {
                     elements.suggestions.style.display = 'none';
+                }
+                if (elements.heroSearchInput && elements.heroSuggestions && 
+                    !elements.heroSearchInput.contains(e.target) && !elements.heroSuggestions.contains(e.target)) {
+                    elements.heroSuggestions.style.display = 'none';
                 }
             });
             
@@ -3312,10 +3400,20 @@ Create your own: nifftyswiggle.pw/cdcswigglescan`;
 
         // Focus search input handler
         function focusSearchInput() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.focus();
-                searchInput.scrollIntoView({ 
+            const heroSearchInput = document.getElementById('heroSearchInput');
+            const headerSearchInput = document.getElementById('searchInput');
+            const howToUse = document.getElementById('howToUse');
+            
+            // If how-to section is visible, focus on hero search
+            if (howToUse && !howToUse.classList.contains('hidden') && heroSearchInput) {
+                heroSearchInput.focus();
+                heroSearchInput.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            } else if (headerSearchInput) {
+                headerSearchInput.focus();
+                headerSearchInput.scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'center' 
                 });
