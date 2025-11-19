@@ -230,7 +230,7 @@
             background: var(--surface-light);
             border: none;
             border-radius: var(--border-radius-sm);
-            color: var(--text-primary);
+            color: var(--primary-color);
             cursor: pointer;
             transition: var(--transition);
             width: 2.5rem;
@@ -1509,7 +1509,7 @@
                 <p>Your NFT portfolio explorer. Discover, filter, and download NFT collections from Crypto.com with ease.</p>
                 
                 <div class="steps-grid">
-                    <div class="step-card">
+                    <div class="step-card" onclick="focusSearchInput()" style="cursor: pointer;">
                         <div class="step-number">1</div>
                         <div class="step-title">🔍 Search Profile</div>
                         <div class="step-description">Type a username in the search bar above to find any Crypto.com NFT profile</div>
@@ -2848,7 +2848,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 title.style.cssText = `
                     font-size: 24px;
                     font-weight: 700;
-                    color: ${getComputedStyle(document.documentElement).getPropertyValue('--text-primary')};
+                    color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color')};
                     text-align: center;
                 `;
 
@@ -3262,6 +3262,18 @@ Create your own: nifftyswiggle.pw/cdcswigglescan`;
             }
         }
 
+        // Focus search input handler
+        function focusSearchInput() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+        }
+
         // Global functions for inline event handlers
         window.downloadSingleNFT = downloadSingleNFT;
         window.openNFTPage = openNFTPage;
@@ -3274,6 +3286,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan`;
         window.toggleNavDropdown = toggleNavDropdown;
         window.hideNavDropdown = hideNavDropdown;
         window.handleLogoClick = handleLogoClick;
+        window.focusSearchInput = focusSearchInput;
     </script>
 </body>
 </html>
