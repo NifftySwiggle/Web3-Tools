@@ -567,6 +567,165 @@
             display: none;
         }
 
+        /* Recent Collages Styles */
+        .recent-collages {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .recent-collages h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .collages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .collage-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .collage-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .collage-preview {
+            width: 100%;
+            height: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .collage-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+        }
+
+        .collage-preview:hover img {
+            transform: scale(1.05);
+        }
+
+        .collage-preview::after {
+            content: '🔍 Click to view full size';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            text-align: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .collage-preview:hover::after {
+            opacity: 1;
+        }
+
+        /* Collage viewer modal */
+        .collage-viewer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .collage-viewer-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .collage-viewer-image {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: var(--border-radius-md);
+        }
+
+        .collage-viewer-close {
+            position: absolute;
+            top: -3rem;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .collage-viewer-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .collage-viewer-info {
+            text-align: center;
+            margin-top: 1rem;
+            color: white;
+        }
+
+        .collage-info {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .collage-user {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .collage-count {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
         /* Collection Title */
         .collection-title {
             text-align: center;
@@ -1508,7 +1667,15 @@
                 <h2>Welcome to SwiggleScan</h2>
                 <p>Your NFT portfolio explorer. Discover, filter, and download NFT collections from Crypto.com with ease.</p>
                 
-                <div class="steps-grid">
+                <!-- Recent Collages Section -->
+                <div class="recent-collages" id="recentCollages">
+                    <h3>Recent Collages Created</h3>
+                    <div class="collages-grid" id="collagesGrid">
+                        <!-- Recent collages will be populated here -->
+                    </div>
+                </div>
+                
+                <!--<div class="steps-grid">
                     <div class="step-card" onclick="focusSearchInput()" style="cursor: pointer;">
                         <div class="step-number">1</div>
                         <div class="step-title">🔍 Search Profile</div>
@@ -1538,7 +1705,7 @@
                         <div class="step-title">📱 Share</div>
                         <div class="step-description">Create stunning NFT collages and share them on social media with built-in sharing tools</div>
                     </div>
-                </div>
+                </div>-->
             </div>
         </section>
 
@@ -2907,6 +3074,9 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
 
                 document.body.removeChild(collageContainer);
 
+                // Capture canvas image data before creating blob
+                const imageDataUrl = canvas.toDataURL('image/png', 0.8); // Reduced quality for storage efficiency
+
                 canvas.toBlob((blob) => {
                     if (blob) {
                         const url = URL.createObjectURL(blob);
@@ -2936,8 +3106,11 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                             hideModal();
                             window.isDownloading = false;
                             
-                            // Show share modal after collage is ready
+                            // Save recent collage with image data and show share modal
                             const profileName = state.currentProfile?.displayName || state.currentProfile?.username || '';
+                            const username = state.currentProfile?.username || 'Unknown';
+                            saveRecentCollage(username, loadedCards.length, imageDataUrl);
+                            
                             setTimeout(() => {
                                 showShareModal(profileName);
                             }, 500);
@@ -2992,7 +3165,11 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
         function initializeEventListeners() {
             // Search
             elements.searchInput.addEventListener('input', debounce((e) => {
-                searchProfiles(sanitizeInput(e.target.value));
+                const value = sanitizeInput(e.target.value);
+                if (value.length > 0) {
+                    hideRecentCollages();
+                }
+                searchProfiles(value);
             }, 300));
             
             // Hide suggestions when clicking outside
@@ -3043,6 +3220,9 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             
             // Initialize event listeners
             initializeEventListeners();
+            
+            // Display recent collages
+            displayRecentCollages();
             
             // Initial scroll button state
             updateScrollButton();
@@ -3274,6 +3454,136 @@ Create your own: nifftyswiggle.pw/cdcswigglescan`;
             }
         }
 
+        // Recent Collages Functions
+        function saveRecentCollage(username, nftCount, imageDataUrl = null) {
+            try {
+                let recentCollages = JSON.parse(localStorage.getItem('recentCollages') || '[]');
+                
+                // Add new collage at the beginning
+                const newCollage = {
+                    username: username,
+                    nftCount: nftCount,
+                    timestamp: Date.now(),
+                    imageData: imageDataUrl
+                };
+                
+                // Remove duplicates and keep only last 6
+                recentCollages = recentCollages.filter(c => c.username !== username);
+                recentCollages.unshift(newCollage);
+                recentCollages = recentCollages.slice(0, 6);
+                
+                // Check localStorage size and remove oldest if too large
+                const dataString = JSON.stringify(recentCollages);
+                if (dataString.length > 4000000) { // ~4MB limit
+                    recentCollages = recentCollages.slice(0, 3); // Keep only 3 most recent
+                }
+                
+                localStorage.setItem('recentCollages', JSON.stringify(recentCollages));
+                displayRecentCollages();
+            } catch (error) {
+                console.log('Could not save recent collage:', error);
+                // If storage fails, try with fewer collages
+                try {
+                    let smallerCollages = JSON.parse(localStorage.getItem('recentCollages') || '[]');
+                    smallerCollages = smallerCollages.slice(0, 2);
+                    localStorage.setItem('recentCollages', JSON.stringify(smallerCollages));
+                } catch (e) {
+                    console.log('Could not save even smaller collage list:', e);
+                }
+            }
+        }
+
+        function displayRecentCollages() {
+            try {
+                const recentCollages = JSON.parse(localStorage.getItem('recentCollages') || '[]');
+                const collagesGrid = document.getElementById('collagesGrid');
+                const recentCollagesSection = document.getElementById('recentCollages');
+                
+                if (recentCollages.length === 0) {
+                    recentCollagesSection.style.display = 'none';
+                    return;
+                }
+                
+                recentCollagesSection.style.display = 'block';
+                collagesGrid.innerHTML = '';
+                
+                recentCollages.forEach(collage => {
+                    const collageItem = document.createElement('div');
+                    collageItem.className = 'collage-item';
+                    
+                    // Create preview content
+                    let previewContent;
+                    if (collage.imageData) {
+                        previewContent = `<img src="${collage.imageData}" alt="Collage by @${collage.username}">`;
+                    } else {
+                        previewContent = '🖼️';
+                    }
+                    
+                    collageItem.innerHTML = `
+                        <div class="collage-preview" onclick="openCollageViewer('${collage.imageData}', '@${collage.username}', '${collage.nftCount} NFTs')">${previewContent}</div>
+                        <div class="collage-info">
+                            <div class="collage-user">@${collage.username}</div>
+                            <div class="collage-count">${collage.nftCount} NFTs</div>
+                        </div>
+                    `;
+                    collagesGrid.appendChild(collageItem);
+                });
+            } catch (error) {
+                console.log('Could not display recent collages:', error);
+            }
+        }
+
+        function hideRecentCollages() {
+            const recentCollagesSection = document.getElementById('recentCollages');
+            if (recentCollagesSection) {
+                recentCollagesSection.style.display = 'none';
+            }
+        }
+
+        function openCollageViewer(imageData, username, nftInfo) {
+            if (!imageData) return;
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'collage-viewer-modal';
+            modal.innerHTML = `
+                <div class="collage-viewer-content">
+                    <button class="collage-viewer-close" onclick="closeCollageViewer()">&times;</button>
+                    <img src="${imageData}" alt="Collage by ${username}" class="collage-viewer-image">
+                    <div class="collage-viewer-info">
+                        <div>${username}</div>
+                        <div>${nftInfo}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Add click outside to close
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    closeCollageViewer();
+                }
+            };
+            
+            // Add escape key to close
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    closeCollageViewer();
+                    document.removeEventListener('keydown', handleEscape);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+            
+            document.body.appendChild(modal);
+            window.currentCollageViewer = modal;
+        }
+
+        function closeCollageViewer() {
+            if (window.currentCollageViewer) {
+                document.body.removeChild(window.currentCollageViewer);
+                window.currentCollageViewer = null;
+            }
+        }
+
         // Global functions for inline event handlers
         window.downloadSingleNFT = downloadSingleNFT;
         window.openNFTPage = openNFTPage;
@@ -3287,6 +3597,9 @@ Create your own: nifftyswiggle.pw/cdcswigglescan`;
         window.hideNavDropdown = hideNavDropdown;
         window.handleLogoClick = handleLogoClick;
         window.focusSearchInput = focusSearchInput;
+        window.saveRecentCollage = saveRecentCollage;
+        window.displayRecentCollages = displayRecentCollages;
+        window.hideRecentCollages = hideRecentCollages;
     </script>
 </body>
 </html>
