@@ -224,6 +224,96 @@
             transform: scale(1.05);
         }
 
+        /* Hamburger Menu Styles */
+        .hamburger-menu {
+            display: flex;
+            background: var(--surface-light);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1.2rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hamburger-menu:hover {
+            background: var(--surface-medium);
+            transform: scale(1.05);
+        }
+
+        .nav-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--surface-medium);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            min-width: 280px;
+            z-index: 1002;
+            margin-top: 0.5rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .nav-dropdown.visible {
+            display: block;
+        }
+
+        .nav-section {
+            border-bottom: 1px solid var(--surface-light);
+        }
+
+        .nav-section:last-child {
+            border-bottom: none;
+        }
+
+        .nav-section-header {
+            padding: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--surface-light);
+        }
+
+        .nav-section-items {
+            padding: 0.5rem 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: var(--surface-light);
+            color: var(--primary-color);
+        }
+
+        /* Mobile responsive hamburger menu */
+        @media (max-width: 768px) {
+            .nav-dropdown {
+                right: 1rem;
+                left: 1rem;
+                min-width: auto;
+            }
+        }
+
         /* Main Content */
         .main-container {
             max-width: 1400px;
@@ -365,6 +455,116 @@
         .filter-select option {
             background: var(--bg-secondary);
             color: var(--text-primary);
+        }
+
+        /* How to Use Section */
+        .how-to-use {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--border-radius);
+            padding: 3rem 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .how-to-use::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                        linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%), 
+                        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            pointer-events: none;
+        }
+
+        .how-to-use-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .how-to-use h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .how-to-use p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .steps-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+            justify-content: center;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .step-card {
+            flex: 0 0 250px;
+            min-width: 250px;
+            max-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .step-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .step-number {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .step-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .how-to-use.hidden {
+            display: none;
         }
 
         /* Collection Title */
@@ -688,6 +888,23 @@
                 padding: 1rem;
             }
 
+            .how-to-use {
+                padding: 2rem 1rem;
+            }
+
+            .how-to-use h2 {
+                font-size: 2rem;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .step-card {
+                padding: 1rem;
+            }
+
             .profile-header {
                 flex-direction: column;
                 text-align: center;
@@ -738,6 +955,449 @@
             animation: pulse 2s infinite;
         }
 
+        /* Footer Styles */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--surface-medium);
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .footer-brand a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .footer-brand a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .donate-btn {
+            padding: 0.5rem 1rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .donate-btn:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Donation Modal */
+        .donation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .donation-modal.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .donation-modal-content {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .donation-modal.visible .donation-modal-content {
+            transform: scale(1);
+        }
+
+        .donation-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--surface-medium);
+        }
+
+        .donation-modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+            line-height: 1;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: var(--surface-light);
+            color: var(--text-primary);
+        }
+
+        .donation-modal-body {
+            color: var(--text-primary);
+        }
+
+        .donation-modal-body p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .donation-modal-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .donation-modal-body li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: var(--surface-light);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary);
+        }
+
+        .wallet-address {
+            margin: 1.5rem 0;
+        }
+
+        .wallet-address label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .address-container {
+            background: var(--surface-medium);
+            border: 1px solid var(--surface-dark);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            position: relative;
+        }
+
+        .address-container input {
+            width: 100%;
+            background: var(--surface-light);
+            border: 1px solid var(--surface-medium);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            word-break: break-all;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .address-container input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1.75rem;
+            right: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .donation-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--surface-light);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .donation-note p {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Share Modal */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .share-modal.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .share-modal-content {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .share-modal.visible .share-modal-content {
+            transform: scale(1);
+        }
+
+        .share-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--surface-medium);
+        }
+
+        .share-modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+        .share-modal-body {
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .share-modal-body p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .share-instructions {
+            margin: 1.5rem 0;
+            background: var(--surface-light);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .instruction-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+
+        .share-preview {
+            background: var(--surface-light);
+            border: 1px solid var(--surface-medium);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        .share-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .share-btn.twitter {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .share-btn.twitter:hover {
+            background: #1991da;
+            transform: translateY(-1px);
+        }
+
+        .share-btn.secondary {
+            background: var(--surface-light);
+            color: var(--text-primary);
+            border: 1px solid var(--surface-medium);
+        }
+
+        .share-btn.secondary:hover {
+            background: var(--surface-medium);
+        }
+
+        /* Share Modal Scrollbar Styling */
+        .share-modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .share-modal-content::-webkit-scrollbar-track {
+            background: var(--surface-light);
+            border-radius: 3px;
+        }
+
+        .share-modal-content::-webkit-scrollbar-thumb {
+            background: var(--surface-medium);
+            border-radius: 3px;
+        }
+
+        .share-modal-content::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Share Modal Responsive Design */
+        @media (max-width: 768px) {
+            .share-modal-content {
+                width: 95%;
+                padding: 1.5rem;
+                max-height: 85vh;
+                margin: 1rem;
+            }
+
+            .share-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .share-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 1rem 1.5rem;
+            }
+        }
+
         /* Scroll to top button */
         .scroll-top {
             position: fixed;
@@ -773,7 +1433,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-container">
-            <a href="#" class="logo">
+            <a href="#" class="logo" onclick="handleLogoClick(event)">
                 <div class="logo-icon"><img src="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" alt="Logo" style="width: 100%; height: 100%; border-radius: var(--border-radius-sm);"></div>
                 <span>SwiggleScan</span>
             </a>
@@ -783,22 +1443,105 @@
                     type="text" 
                     class="search-input" 
                     id="searchInput" 
-                    placeholder="🔍 Search for NFT profiles..."
+                    placeholder="🔍 Search Username"
                     autocomplete="off"
                 >
                 <div class="suggestions" id="suggestions"></div>
             </div>
             
             <div class="header-actions">
+                <button class="hamburger-menu" id="hamburgerMenu" title="Navigation menu">
+                    ☰
+                </button>
                 <button class="theme-toggle" id="themeToggle" title="Toggle theme">
                     <span id="themeIcon">🌙</span>
                 </button>
+                
+                <!-- Navigation Dropdown -->
+                <div class="nav-dropdown" id="navDropdown">
+                    <div class="nav-section">
+                        <div class="nav-section-header">Strategic Play</div>
+                        <div class="nav-section-items">
+                            <a href="https://www.strategicplay.xyz#origins" class="nav-item">Origins</a>
+                            <a href="https://www.strategicplay.xyz#passes" class="nav-item">Passes</a>
+                            <a href="https://www.strategicplay.xyz/#mint" class="nav-item">Mint</a>
+                            <a href="https://www.strategicplay.xyz" class="nav-item">Roadmap (soon)</a>
+                            <a href="https://www.strategicplay.xyz" class="nav-item">Vision (soon)</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-header">GameHub</div>
+                        <div class="nav-section-items">
+                            <a href="../Strategic-Play-main/chess.html" class="nav-item" target="_blank">Chess</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-header">Web3 Tools</div>
+                        <div class="nav-section-items">
+                            <a href="https://www.nifftyswiggle.pw/swigglescan" class="nav-item" target="_blank">SwiggleScan</a>
+                            <a href="https://www.gaiaecosystem.com/stake.html" class="nav-item" target="_blank">Noncustodial Stake</a>
+                            <a href="https://www.nifftyswiggle.pw/airdrop" class="nav-item" target="_blank">Token Airdrop</a>
+                            <a href="https://www.nifftyswiggle.pw/updatemetadata" class="nav-item" target="_blank">Metadata Generator</a>
+                            <a href="https://www.nifftyswiggle.pw/nftgenerator" class="nav-item" target="_blank">NFT Generator</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-header">Discover More</div>
+                        <div class="nav-section-items">
+                            <a href="https://www.nifftyswiggle.pw/pixeldraw" class="nav-item" target="_blank">Pixel Art</a>
+                            <a href="https://www.nifftyswiggle.pw/mpc" class="nav-item" target="_blank">MPC</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="main-container">
+        <!-- How to Use Section -->
+        <section class="how-to-use" id="howToUse">
+            <div class="how-to-use-content">
+                <h2>Welcome to SwiggleScan</h2>
+                <p>Your NFT portfolio explorer. Discover, filter, and download NFT collections from Crypto.com with ease.</p>
+                
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-title">🔍 Search Profile</div>
+                        <div class="step-description">Type a username in the search bar above to find any Crypto.com NFT profile</div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-title">🎛️ Filter & Sort</div>
+                        <div class="step-description">Use advanced filters to browse by artist, collection, chain, or curation status</div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-title">📦 Download</div>
+                        <div class="step-description">Download individual NFTs, entire collections as ZIP, or create beautiful collages</div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-title">🎯 Explore</div>
+                        <div class="step-description">View detailed stats, switch between grid sizes, and discover amazing digital art</div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">5</div>
+                        <div class="step-title">📱 Share</div>
+                        <div class="step-description">Create stunning NFT collages and share them on social media with built-in sharing tools</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Profile Section -->
         <section class="profile-section" id="profileSection">
             <div class="profile-header">
@@ -908,6 +1651,20 @@
         </div>
     </main>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                Created by <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer">NifftySwiggle</a>
+            </div>
+            <div class="footer-actions">
+                <button class="donate-btn" onclick="showDonationModal()">
+                    ☕ Support Development
+                </button>
+            </div>
+        </div>
+    </footer>
+
     <!-- Progress Modal -->
     <div class="modal" id="progressModal">
         <div class="modal-content">
@@ -920,6 +1677,82 @@
             </div>
             <div class="modal-actions">
                 <button class="modal-btn secondary" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donation Modal -->
+    <div class="donation-modal" id="donationModal">
+        <div class="donation-modal-content">
+            <div class="donation-modal-header">
+                <h3>Support SwiggleScan Development ☕</h3>
+                <button class="close-btn" onclick="hideDonationModal()">&times;</button>
+            </div>
+            <div class="donation-modal-body">
+                <p>Help keep SwiggleScan free and awesome! Your donations support:</p>
+                <ul>
+                    <li>🚀 New features and improvements</li>
+                    <li>🛠️ Bug fixes and maintenance</li>
+                    <li>⚡ Server costs and performance</li>
+                    <li>🎨 UI/UX enhancements</li>
+                </ul>
+                <div class="wallet-address">
+                    <label>Ethereum Address:</label>
+                    <div class="address-container">
+                        <input type="text" id="walletAddress" value="0x71074075bA6FFE0BF39aCb6EDEF09b3b6be3AB6f" readonly>
+                        <button class="copy-btn" onclick="copyWalletAddress()">📋 Copy</button>
+                    </div>
+                </div>
+                <div class="donation-note">
+                    <p>💝 Every contribution helps make SwiggleScan better for everyone!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <h3>🎉 Share Your NFT Collage!</h3>
+                <button class="close-btn" onclick="hideShareModal()">&times;</button>
+            </div>
+            <div class="share-modal-body">
+                <p>Your collage is ready! Share it with the world and show off your collection!</p>
+                
+                <div class="share-instructions">
+                    <div class="instruction-step">
+                        <span class="step-number">1️⃣</span>
+                        <span>Click "Share on Twitter" to open Twitter with your post ready</span>
+                    </div>
+                    <div class="instruction-step">
+                        <span class="step-number">2️⃣</span>
+                        <span>Attach your downloaded collage image to the tweet</span>
+                    </div>
+                    <div class="instruction-step">
+                        <span class="step-number">3️⃣</span>
+                        <span>Tweet and tag @pet_rescueNFT for a potential retweet! 🚀</span>
+                    </div>
+                </div>
+                
+                <div class="share-preview" id="sharePreview">
+Just created my NFT collage with SwiggleScan!
+
+Built with @pet_rescueNFT SwiggleScan 🚀
+
+Create your own: nifftyswiggle.pw/cdcswigglescan
+</div>
+                <div class="share-actions">
+                    <a href="#" class="share-btn twitter" id="twitterShareBtn" target="_blank" rel="noopener noreferrer">
+                        🐦 Share on Twitter
+                    </a>
+                    <button class="share-btn secondary" id="copyTextBtn" onclick="copyShareText()">
+                        📋 Copy Text
+                    </button>
+                    <button class="share-btn secondary" onclick="hideShareModal()">
+                        Maybe Later
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1004,6 +1837,7 @@
             suggestions: document.getElementById('suggestions'),
             themeToggle: document.getElementById('themeToggle'),
             themeIcon: document.getElementById('themeIcon'),
+            howToUse: document.getElementById('howToUse'),
             profileSection: document.getElementById('profileSection'),
             profileAvatar: document.getElementById('profileAvatar'),
             profileName: document.getElementById('profileName'),
@@ -1267,6 +2101,11 @@
             
             state.isLoading = true;
             state.currentProfile = profile;
+            
+            // Hide how-to-use section when a profile is loaded
+            if (elements.howToUse) {
+                elements.howToUse.classList.add('hidden');
+            }
             
             // Clear previous data
             state.allNFTs = [];
@@ -1973,23 +2812,75 @@
                 const cols = Math.ceil(Math.sqrt(imageCount));
                 const rows = Math.ceil(imageCount / cols);
                 const cardSize = Math.min(200, Math.floor(1200 / cols));
+                const headerHeight = 80; // Height for title header
+                const collageWidth = cols * cardSize + (cols - 1) * 4 + 40;
+                const collageHeight = rows * cardSize + (rows - 1) * 4 + 40;
 
+                // Main container with flexbox layout
                 collageContainer.style.cssText = `
                     position: absolute;
                     top: -9999px;
                     left: -9999px;
+                    display: flex;
+                    flex-direction: column;
+                    background: ${getComputedStyle(document.documentElement).getPropertyValue('--bg-primary')};
+                    padding: 20px;
+                    width: ${collageWidth}px;
+                    height: ${collageHeight + headerHeight}px;
+                `;
+                document.body.appendChild(collageContainer);
+
+                // Create header with title and count
+                const header = document.createElement('div');
+                header.style.cssText = `
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    position: relative;
+                    height: ${headerHeight}px;
+                    margin-bottom: 20px;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                `;
+
+                // Title in center
+                const title = document.createElement('div');
+                title.textContent = 'Created with SwiggleScan';
+                title.style.cssText = `
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: ${getComputedStyle(document.documentElement).getPropertyValue('--text-primary')};
+                    text-align: center;
+                `;
+
+                // Count on the right
+                const count = document.createElement('div');
+                count.textContent = `${loadedCards.length} NFTs`;
+                count.style.cssText = `
+                    position: absolute;
+                    right: 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color')};
+                    background: ${getComputedStyle(document.documentElement).getPropertyValue('--surface-light')};
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                `;
+
+                header.appendChild(title);
+                header.appendChild(count);
+                collageContainer.appendChild(header);
+
+                // Create grid container for images
+                const gridContainer = document.createElement('div');
+                gridContainer.style.cssText = `
                     display: grid;
                     grid-template-columns: repeat(${cols}, ${cardSize}px);
                     grid-template-rows: repeat(${rows}, ${cardSize}px);
                     gap: 4px;
-                    background: ${getComputedStyle(document.documentElement).getPropertyValue('--bg-primary')};
-                    padding: 20px;
-                    width: ${cols * cardSize + (cols - 1) * 4 + 40}px;
-                    height: ${rows * cardSize + (rows - 1) * 4 + 40}px;
                 `;
-                document.body.appendChild(collageContainer);
+                collageContainer.appendChild(gridContainer);
 
-                // Add images to container
+                // Add images to grid container
                 loadedCards.forEach((card, index) => {
                     const img = document.createElement('img');
                     img.src = card.src;
@@ -1999,7 +2890,7 @@
                         object-fit: cover;
                         border-radius: 8px;
                     `;
-                    collageContainer.appendChild(img);
+                    gridContainer.appendChild(img);
                 });
 
                 // Wait for images to load
@@ -2044,6 +2935,12 @@
                         setTimeout(() => {
                             hideModal();
                             window.isDownloading = false;
+                            
+                            // Show share modal after collage is ready
+                            const profileName = state.currentProfile?.displayName || state.currentProfile?.username || '';
+                            setTimeout(() => {
+                                showShareModal(profileName);
+                            }, 500);
                         }, 1500);
                     } else {
                         throw new Error('Failed to create blob from canvas');
@@ -2156,9 +3053,227 @@
         // Start the application
         document.addEventListener('DOMContentLoaded', initializeApp);
 
+        // Donation modal functions
+        function showDonationModal() {
+            const modal = document.getElementById('donationModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('visible');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideDonationModal() {
+            const modal = document.getElementById('donationModal');
+            modal.classList.remove('visible');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+            document.body.style.overflow = 'auto';
+        }
+
+        async function copyWalletAddress() {
+            const addressInput = document.getElementById('walletAddress');
+            const copyBtn = document.querySelector('.copy-btn');
+            
+            try {
+                await navigator.clipboard.writeText(addressInput.value);
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.style.background = '#4CAF50';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy';
+                    copyBtn.style.background = '';
+                }, 2000);
+            } catch (err) {
+                // Fallback for older browsers
+                addressInput.select();
+                document.execCommand('copy');
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.style.background = '#4CAF50';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy';
+                    copyBtn.style.background = '';
+                }, 2000);
+            }
+        }
+
+        // Share modal functions
+        function showShareModal(profileName = '') {
+            const modal = document.getElementById('shareModal');
+            const sharePreview = document.getElementById('sharePreview');
+            const twitterBtn = document.getElementById('twitterShareBtn');
+            
+            // Update the share text with profile name if available
+            const shareText = profileName ? 
+                `Just created my NFT collage with SwiggleScan!
+
+Built with @pet_rescueNFT SwiggleScan 🚀
+
+Create your own: nifftyswiggle.pw/cdcswigglescan` :
+                `Just created my NFT collage with SwiggleScan!
+
+Built with @pet_rescueNFT SwiggleScan 🚀
+
+Create your own: nifftyswiggle.pw/cdcswigglescan`;
+            
+            sharePreview.textContent = shareText;
+            
+            // Update Twitter share URL
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            twitterBtn.href = twitterUrl;
+            
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('visible');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('visible');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+            document.body.style.overflow = 'auto';
+        }
+
+        async function copyShareText() {
+            const sharePreview = document.getElementById('sharePreview');
+            const copyBtn = document.getElementById('copyTextBtn');
+            
+            try {
+                await navigator.clipboard.writeText(sharePreview.textContent);
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.style.background = '#22c55e';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy Text';
+                    copyBtn.style.background = '';
+                }, 2000);
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = sharePreview.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.style.background = '#22c55e';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy Text';
+                    copyBtn.style.background = '';
+                }, 2000);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            const donationModal = document.getElementById('donationModal');
+            const shareModal = document.getElementById('shareModal');
+            
+            if (e.target === donationModal) {
+                hideDonationModal();
+            }
+            if (e.target === shareModal) {
+                hideShareModal();
+            }
+        });
+
+        // Hamburger Menu Functions
+        function toggleNavDropdown() {
+            const dropdown = document.getElementById('navDropdown');
+            const hamburger = document.getElementById('hamburgerMenu');
+            
+            dropdown.classList.toggle('visible');
+            
+            if (dropdown.classList.contains('visible')) {
+                hamburger.style.background = 'var(--primary-color)';
+                hamburger.style.color = 'white';
+            } else {
+                hamburger.style.background = 'var(--surface-light)';
+                hamburger.style.color = 'var(--text-primary)';
+            }
+        }
+
+        function hideNavDropdown() {
+            const dropdown = document.getElementById('navDropdown');
+            const hamburger = document.getElementById('hamburgerMenu');
+            
+            dropdown.classList.remove('visible');
+            hamburger.style.background = 'var(--surface-light)';
+            hamburger.style.color = 'var(--text-primary)';
+        }
+
+        // Initialize hamburger menu event listeners
+        function initializeHamburgerMenu() {
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const navDropdown = document.getElementById('navDropdown');
+            
+            if (hamburgerMenu) {
+                hamburgerMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNavDropdown();
+                });
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!navDropdown.contains(e.target) && !hamburgerMenu.contains(e.target)) {
+                    hideNavDropdown();
+                }
+            });
+            
+            // Close dropdown when clicking on navigation items
+            const navItems = navDropdown.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    hideNavDropdown();
+                });
+            });
+            
+            // Close dropdown on window resize
+            window.addEventListener('resize', () => {
+                hideNavDropdown();
+            });
+        }
+
+        // Initialize hamburger menu when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeHamburgerMenu();
+        });
+
+        // Logo click handler
+        function handleLogoClick(event) {
+            event.preventDefault();
+            
+            const confirmed = confirm(
+                'You are about to leave SwiggleScan and go to NifftySwiggle.pw\n\n' +
+                'Are you sure you want to continue?'
+            );
+            
+            if (confirmed) {
+                window.open('https://nifftyswiggle.pw', '_blank');
+            }
+        }
+
         // Global functions for inline event handlers
         window.downloadSingleNFT = downloadSingleNFT;
         window.openNFTPage = openNFTPage;
+        window.showDonationModal = showDonationModal;
+        window.hideDonationModal = hideDonationModal;
+        window.copyWalletAddress = copyWalletAddress;
+        window.showShareModal = showShareModal;
+        window.hideShareModal = hideShareModal;
+        window.copyShareText = copyShareText;
+        window.toggleNavDropdown = toggleNavDropdown;
+        window.hideNavDropdown = hideNavDropdown;
+        window.handleLogoClick = handleLogoClick;
     </script>
 </body>
 </html>
