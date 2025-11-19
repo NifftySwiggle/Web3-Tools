@@ -674,6 +674,34 @@
             color: rgba(255, 255, 255, 0.8);
         }
 
+        .nft-price {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #22c55e;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: 2px solid rgba(34, 197, 94, 0.5);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            transition: var(--transition);
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            line-height: 1.4;
+            min-width: 120px;
+        }
+
+        .nft-card:hover .nft-price {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
         .nft-actions {
             position: absolute;
             top: 0.75rem;
@@ -2531,6 +2559,25 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             const title = nft.name || `NFT #${nft.id || index + 1}`;
             const collection = nft.collection?.name || 'Unknown Collection';
             
+            // Extract price information
+            const lastSoldPrice = nft.latestPurchasedEdition?.priceUSD;
+            const currentListingPrice = nft.defaultListingV2?.salePriceDecimalUSD;
+            
+            // Format price display
+            let priceDisplay = '';
+            const priceLines = [];
+            
+            if (lastSoldPrice && lastSoldPrice > 0) {
+                priceLines.push(`Last: $${parseFloat(lastSoldPrice).toFixed(2)}`);
+            }
+            if (currentListingPrice && currentListingPrice > 0) {
+                priceLines.push(`Listed: $${parseFloat(currentListingPrice).toFixed(2)}`);
+            }
+            
+            if (priceLines.length > 0) {
+                priceDisplay = priceLines.join('<br>');
+            }
+            
             const mediaElement = imageUrl.endsWith('.mp4') ? 'video' : 'img';
             const mediaProps = mediaElement === 'video' ? 'muted loop playsinline' : '';
             
@@ -2540,6 +2587,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                     <div class="nft-title">${title}</div>
                     <div class="nft-collection">${collection}</div>
                 </div>
+                ${priceDisplay ? `<div class="nft-price">${priceDisplay}</div>` : ''}
                 <div class="nft-actions">
                     <button class="nft-action-btn" onclick="downloadSingleNFT('${imageUrl}', '${title}', ${index})" title="Download">
                         📥
