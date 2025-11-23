@@ -378,10 +378,76 @@
             margin-bottom: 1rem;
         }
 
+
+
         .profile-stats {
             display: flex;
             gap: 2rem;
             flex-wrap: wrap;
+        }
+
+        .profile-toggles {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface-medium);
+            transition: var(--transition);
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
         }
 
         .stat-item {
@@ -556,6 +622,205 @@
             display: none;
         }
 
+        /* Monthly Poster Section */
+        .monthly-poster {
+            max-width: 800px;
+            margin: 3rem auto 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .monthly-poster:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .poster-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .poster-badge {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .poster-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .poster-content {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .poster-image-container {
+            flex-shrink: 0;
+            width: 200px;
+            height: 200px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .poster-image-container:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-color);
+        }
+
+        .poster-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .poster-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .poster-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .poster-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .poster-username {
+            font-weight: 600;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .poster-handle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+
+        .poster-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .poster-stats {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .poster-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+        }
+
+        .poster-stat-icon {
+            font-size: 1rem;
+        }
+
+        .poster-stat-value {
+            font-weight: 600;
+            color: white;
+        }
+
+        .poster-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: var(--border-radius-sm);
+            color: white;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .poster-link:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .poster-cta {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            border-left: 3px solid var(--accent-color);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.4;
+        }
+
+        .poster-cta strong {
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .monthly-poster {
+                padding: 1rem;
+                margin: 2rem 1rem 1.5rem;
+            }
+
+            .poster-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .poster-image-container {
+                width: 100%;
+                max-width: 300px;
+                height: auto;
+                aspect-ratio: 1;
+            }
+
+            .poster-stats {
+                justify-content: center;
+            }
+
+            .poster-user {
+                justify-content: center;
+            }
+        }
+
         .steps-grid {
             display: flex;
             flex-wrap: wrap;
@@ -723,6 +988,27 @@
             color: rgba(255, 255, 255, 0.8);
         }
 
+        .nft-rank-badge {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: rgba(245, 158, 11, 0.9);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .nft-card:hover .nft-rank-badge {
+            opacity: 1;
+        }
+
         .nft-price {
             position: absolute;
             top: 50%;
@@ -825,6 +1111,129 @@
 
         .download-btn.secondary:hover {
             background: #059669;
+        }
+
+        .download-btn.accent {
+            background: var(--accent-color);
+        }
+
+        .download-btn.accent:hover {
+            background: #d97706;
+        }
+
+        /* Custom Collage Selection */
+        .nft-card.selectable {
+            cursor: pointer;
+        }
+
+        .nft-card.selected {
+            outline: 4px solid var(--accent-color);
+            outline-offset: -4px;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+
+        .nft-card.selected::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(245, 158, 11, 0.2);
+            pointer-events: none;
+        }
+
+        .selection-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--accent-color);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid white;
+        }
+
+        .selection-info {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1500;
+            display: none;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .selection-info.visible {
+            display: flex;
+        }
+
+        .selection-count {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .selection-count .number {
+            color: var(--accent-color);
+            font-size: 1.25rem;
+        }
+
+        .selection-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .selection-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .selection-btn.create {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .selection-btn.create:hover {
+            background: #d97706;
+        }
+
+        .selection-btn.cancel {
+            background: var(--surface-light);
+            color: var(--text-primary);
+            border: 1px solid var(--surface-medium);
+        }
+
+        .selection-btn.cancel:hover {
+            background: var(--surface-medium);
+        }
+
+        .selection-btn.clear {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .selection-btn.clear:hover {
+            background: #dc2626;
         }
 
         /* Modal Styles */
@@ -1596,7 +2005,48 @@
                     <div class="hero-suggestions" id="heroSuggestions"></div>
                 </div>
                 
-                <div class="steps-grid">
+                <!-- Monthly Poster -->
+                <div class="monthly-poster">
+                    <div class="poster-header">
+                        <span class="poster-badge">🏆 Featured Post</span>
+                        <span class="poster-title">Monthly Community Highlight</span>
+                    </div>
+                    <div class="poster-content">
+                        <div class="poster-image-container">
+                            <img id="posterImage" src="" alt="Featured NFT Collage" class="poster-image">
+                        </div>
+                        <div class="poster-info">
+                            <div class="poster-user">
+                                <img id="posterAvatar" src="" alt="User Avatar" class="poster-avatar">
+                                <div>
+                                    <div class="poster-username">Kwanza Lil Tunech</div>
+                                    <div class="poster-handle">@KwanzaLilTunech</div>
+                                </div>
+                            </div>
+                            <div class="poster-text">
+                                Check out my NFT collection! Created with SwiggleScan 🎨✨
+                            </div>
+                            <div class="poster-stats">
+                                <div class="poster-stat">
+                                    <span class="poster-stat-icon">❤️</span>
+                                    <span class="poster-stat-value" id="posterLikes">Loading...</span>
+                                </div>
+                                <div class="poster-stat">
+                                    <span class="poster-stat-icon">🔄</span>
+                                    <span class="poster-stat-value" id="posterRetweets">Loading...</span>
+                                </div>
+                            </div>
+                            <a href="https://x.com/KwanzaLilTunech/status/1990411520207966506" target="_blank" rel="noopener noreferrer" class="poster-link">
+                                🐦 View on Twitter
+                            </a>
+                            <div class="poster-cta">
+                                📢 Post your collage tag <strong>@pet_rescueNFT</strong> and <strong>#SwiggleScan</strong> for a chance at featured post!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!--<div class="steps-grid">
                     <div class="step-card" onclick="focusSearchInput()" style="cursor: pointer;">
                         <div class="step-number">1</div>
                         <div class="step-title">🔍 Search Profile</div>
@@ -1626,7 +2076,7 @@
                         <div class="step-title">📱 Share</div>
                         <div class="step-description">Create stunning NFT collages and share them on social media with built-in sharing tools</div>
                     </div>
-                </div>
+                </div>-->
             </div>
         </section>
 
@@ -1656,6 +2106,22 @@
                             <div class="stat-label">Artists</div>
                         </div>
                     </div>
+                    <div class="profile-toggles">
+                        <div class="toggle-item">
+                            <span class="toggle-label">Show Prices</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="togglePrices" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-item">
+                            <span class="toggle-label">Show Ranks</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggleRanks" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1681,6 +2147,8 @@
                         <option value="">All Chains</option>
                         <option value="CRONOS">Cronos</option>
                         <option value="CRONOS_POS">Cronos POS</option>
+                        <option value="ETHEREUM">Ethereum</option>
+                        <option value="POLYGON">Polygon</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -1688,7 +2156,7 @@
                     <select class="filter-select" id="statusFilter">
                         <option value="">All Status</option>
                         <option value="curated">Curated</option>
-                        <option value="regular">Regular</option>
+                        <option value="regular">Non Curated</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -1704,7 +2172,12 @@
                     <select class="filter-select" id="sortFilter">
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
-                        <option value="rank">By Rarity</option>
+                        <option value="rank">By Rank (Low to High)</option>
+                        <option value="rank-high">By Rank (High to Low)</option>
+                        <option value="price-listed">Price Listed (Low to High)</option>
+                        <option value="price-listed-high">Price Listed (High to Low)</option>
+                        <option value="price-last">Last Sale (Low to High)</option>
+                        <option value="price-last-high">Last Sale (High to Low)</option>
                     </select>
                 </div>
             </div>
@@ -1736,6 +2209,27 @@
             <button class="download-btn secondary" id="downloadCollageBtn">
                 🖼️ Create Collage
             </button>
+            <button class="download-btn accent" id="customizeCollageBtn">
+                ✨ Customize Collage
+            </button>
+        </div>
+
+        <!-- Selection Info Bar -->
+        <div class="selection-info" id="selectionInfo">
+            <div class="selection-count">
+                Selected: <span class="number" id="selectionCount">0</span> NFTs
+            </div>
+            <div class="selection-actions">
+                <button class="selection-btn create" onclick="createCustomCollage()">
+                    🖼️ Create Collage
+                </button>
+                <button class="selection-btn clear" onclick="clearSelection()">
+                    🗑️ Clear
+                </button>
+                <button class="selection-btn cancel" onclick="exitCustomCollageMode()">
+                    ✖️ Cancel
+                </button>
+            </div>
         </div>
     </main>
 
@@ -1819,14 +2313,14 @@
                     </div>
                     <div class="instruction-step">
                         <span class="step-number">3️⃣</span>
-                        <span>Tweet and tag @pet_rescueNFT for a potential retweet! 🚀</span>
+                        <span>Tweet and tag @pet_rescueNFT & #swigglescan for a potential retweet! 🚀</span>
                     </div>
                 </div>
                 
                 <div class="share-preview" id="sharePreview">
-Just created my NFT collage with SwiggleScan!
+Just created my NFT collage with #SwiggleScan!
 
-Built with @pet_rescueNFT SwiggleScan 🚀
+Built by @pet_rescueNFT 🚀
 
 Create your own: nifftyswiggle.pw/cdcswigglescan
 </div>
@@ -1858,7 +2352,11 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             searchTimeout: null,
             abortController: null,
             isDownloadCancelled: false,
-            activeSearch: null
+            activeSearch: null,
+            showPrices: true,
+            showRanks: true,
+            customCollageMode: false,
+            selectedNFTs: []
         };
 
         // Constants
@@ -1909,6 +2407,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                             salePriceDecimalUSD
                         }
                         latestPurchasedEdition {
+                            id
                             priceUSD
                         }
                         createdAt
@@ -1953,12 +2452,17 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             noResults: document.getElementById('noResults'),
             downloadAssetsBtn: document.getElementById('downloadAssetsBtn'),
             downloadCollageBtn: document.getElementById('downloadCollageBtn'),
+            customizeCollageBtn: document.getElementById('customizeCollageBtn'),
+            selectionInfo: document.getElementById('selectionInfo'),
+            selectionCount: document.getElementById('selectionCount'),
             progressModal: document.getElementById('progressModal'),
             modalTitle: document.getElementById('modalTitle'),
             progressFill: document.getElementById('progressFill'),
             progressText: document.getElementById('progressText'),
             cancelBtn: document.getElementById('cancelBtn'),
-            scrollTop: document.getElementById('scrollTop')
+            scrollTop: document.getElementById('scrollTop'),
+            togglePrices: document.getElementById('togglePrices'),
+            toggleRanks: document.getElementById('toggleRanks')
         };
 
         // Utility Functions
@@ -2478,28 +2982,16 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             // Populate the collection filter based on the current creator filter
             populateCollectionFilter(creatorValue ? state.allNFTs.filter(nft => nft.collection?.creator?.id === creatorValue) : state.allNFTs);
 
-            // Update chain and status filters based on the filtered NFTs
-            let allCurated = true, allNonCurated = true, allCronos = true, allCronosPos = true;
-            filteredNFTs.forEach(nft => {
-                const isCurated = nft.isCurated !== undefined ? nft.isCurated : false;
-                const isExternalNft = nft.isExternalNft;
-                const network = nft.externalNftMetadata?.network?.toUpperCase() || '';
-                if (!isCurated) allCurated = false;
-                if (isCurated) allNonCurated = false;
-                if (isExternalNft !== true || network !== 'CRONOS') allCronos = false;
-                if (isExternalNft !== false) allCronosPos = false;
-            });
-
-            elements.statusFilter.value = allCurated ? 'curated' : allNonCurated ? 'regular' : '';
-            elements.statusFilter.disabled = allCurated || allNonCurated;
-            elements.chainFilter.value = allCronos ? 'CRONOS' : allCronosPos ? 'CRONOS_POS' : '';
-            elements.chainFilter.disabled = allCronos || allCronosPos;
-
-            // Ensure filters are enabled if any NFTs exist
+            // Keep chain and status filters enabled - don't auto-change them when collections are selected
+            // Only ensure filters are enabled if any NFTs exist
             const hasCollections = state.allNFTs.some(nft => nft.collection?.name || nft.collection);
             const hasCreators = state.allNFTs.some(nft => nft.collection?.creator?.id);
             elements.collectionFilter.disabled = !hasCollections;
             elements.creatorFilter.disabled = !hasCreators;
+            
+            // Always keep chain and status filters enabled (unless no NFTs at all)
+            elements.chainFilter.disabled = state.allNFTs.length === 0;
+            elements.statusFilter.disabled = state.allNFTs.length === 0;
             console.log('Filter states:', {
                 collectionDisabled: elements.collectionFilter.disabled,
                 creatorDisabled: elements.creatorFilter.disabled,
@@ -2514,11 +3006,22 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 filteredNFTs = filteredNFTs.filter(nft => {
                     const isExternalNft = nft.isExternalNft;
                     const network = nft.externalNftMetadata?.network?.toUpperCase() || '';
+                    
                     if (elements.chainFilter.value === 'CRONOS') {
-                        return isExternalNft === true && network === 'CRONOS';
+                        // CRONOS = internal NFTs (original Cronos chain)
+                        return isExternalNft === false;
                     }
                     if (elements.chainFilter.value === 'CRONOS_POS') {
-                        return isExternalNft === false;
+                        // CRONOS_POS = external NFTs on Cronos POS
+                        return isExternalNft === true && (network === 'CRONOS_POS' || network === 'CRONOS' || network === '');
+                    }
+                    if (elements.chainFilter.value === 'ETHEREUM') {
+                        // ETHEREUM = external NFTs on Ethereum network
+                        return isExternalNft === true && (network === 'ETHEREUM' || network === 'ETH');
+                    }
+                    if (elements.chainFilter.value === 'POLYGON') {
+                        // POLYGON = external NFTs on Polygon network
+                        return isExternalNft === true && (network === 'POLYGON' || network === 'MATIC');
                     }
                     return true;
                 });
@@ -2538,7 +3041,42 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             const sortValue = elements.sortFilter.value || 'newest';
             filteredNFTs.sort((a, b) => {
                 if (sortValue === 'rank') {
+                    // Low to High (1, 2, 3...) - items without rank go to end
                     return (a.defaultRarityRank || Infinity) - (b.defaultRarityRank || Infinity);
+                } else if (sortValue === 'rank-high') {
+                    // High to Low - items without rank go to end
+                    const rankA = a.defaultRarityRank || -Infinity;
+                    const rankB = b.defaultRarityRank || -Infinity;
+                    if (rankA === -Infinity && rankB === -Infinity) return 0;
+                    if (rankA === -Infinity) return 1;
+                    if (rankB === -Infinity) return -1;
+                    return rankB - rankA;
+                } else if (sortValue === 'price-listed') {
+                    // Low to High - items without price go to end
+                    const priceA = parseFloat(a.defaultListingV2?.salePriceDecimalUSD) || Infinity;
+                    const priceB = parseFloat(b.defaultListingV2?.salePriceDecimalUSD) || Infinity;
+                    return priceA - priceB;
+                } else if (sortValue === 'price-listed-high') {
+                    // High to Low - items without price go to end
+                    const priceA = parseFloat(a.defaultListingV2?.salePriceDecimalUSD) || -Infinity;
+                    const priceB = parseFloat(b.defaultListingV2?.salePriceDecimalUSD) || -Infinity;
+                    if (priceA === -Infinity && priceB === -Infinity) return 0;
+                    if (priceA === -Infinity) return 1;
+                    if (priceB === -Infinity) return -1;
+                    return priceB - priceA;
+                } else if (sortValue === 'price-last') {
+                    // Low to High - items without price go to end
+                    const priceA = parseFloat(a.latestPurchasedEdition?.priceUSD) || Infinity;
+                    const priceB = parseFloat(b.latestPurchasedEdition?.priceUSD) || Infinity;
+                    return priceA - priceB;
+                } else if (sortValue === 'price-last-high') {
+                    // High to Low - items without price go to end
+                    const priceA = parseFloat(a.latestPurchasedEdition?.priceUSD) || -Infinity;
+                    const priceB = parseFloat(b.latestPurchasedEdition?.priceUSD) || -Infinity;
+                    if (priceA === -Infinity && priceB === -Infinity) return 0;
+                    if (priceA === -Infinity) return 1;
+                    if (priceB === -Infinity) return -1;
+                    return priceB - priceA;
                 } else if (sortValue === 'oldest') {
                     return new Date(a.createdAt) - new Date(b.createdAt);
                 }
@@ -2616,6 +3154,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             // Show download buttons
             elements.downloadAssetsBtn.classList.add('visible');
             elements.downloadCollageBtn.classList.add('visible');
+            elements.customizeCollageBtn.classList.add('visible');
             elements.downloadAssetsBtn.textContent = `📦 Download ${uniqueAssets.length} Assets`;
 
             // Create NFT cards
@@ -2658,18 +3197,35 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             const mediaElement = imageUrl.endsWith('.mp4') ? 'video' : 'img';
             const mediaProps = mediaElement === 'video' ? 'muted loop playsinline' : '';
             
+            // Get rank info (only show if rank exists and is greater than 0)
+            const rank = (nft.defaultRarityRank && nft.defaultRarityRank > 0) ? `#${nft.defaultRarityRank}` : '';
+            
+            // Check if this NFT is selected for custom collage
+            const selectionIndex = state.selectedNFTs.findIndex(selected => selected.index === index);
+            const isSelected = selectionIndex !== -1;
+            
+            if (isSelected) {
+                card.classList.add('selected');
+            }
+            
+            if (state.customCollageMode) {
+                card.classList.add('selectable');
+            }
+            
             card.innerHTML = `
                 <${mediaElement} src="${imageUrl}" alt="${title}" ${mediaProps} loading="lazy">
+                ${rank && state.showRanks ? `<div class="nft-rank-badge">${rank}</div>` : ''}
+                ${isSelected ? `<div class="selection-badge">${selectionIndex + 1}</div>` : ''}
                 <div class="nft-overlay">
                     <div class="nft-title">${title}</div>
                     <div class="nft-collection">${collection}</div>
                 </div>
-                ${priceDisplay ? `<div class="nft-price">${priceDisplay}</div>` : ''}
+                ${priceDisplay && state.showPrices ? `<div class="nft-price">${priceDisplay}</div>` : ''}
                 <div class="nft-actions">
                     <button class="nft-action-btn" onclick="downloadSingleNFT('${imageUrl}', '${title}', ${index})" title="Download">
                         📥
                     </button>
-                    ${nft.id ? `<button class="nft-action-btn" onclick="openNFTPage('${nft.id}')" title="View on Crypto.com">🔗</button>` : ''}
+                    ${nft.id ? `<button class="nft-action-btn" onclick="openNFTPage('${nft.id}', '${nft.latestPurchasedEdition?.id || ''}', '${state.currentProfile?.username || ''}')" title="View on Crypto.com">🔗</button>` : ''}
                 </div>
             `;
 
@@ -2678,6 +3234,13 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 const video = card.querySelector('video');
                 card.addEventListener('mouseenter', () => video.play());
                 card.addEventListener('mouseleave', () => video.pause());
+            }
+
+            // Add click handler for custom collage mode
+            if (state.customCollageMode) {
+                card.addEventListener('click', () => {
+                    toggleNFTSelection(nft, index);
+                });
             }
 
             return card;
@@ -2825,6 +3388,103 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             }
         }
 
+        // Custom Collage Functions
+        function enterCustomCollageMode() {
+            state.customCollageMode = true;
+            state.selectedNFTs = [];
+            
+            // Show selection info bar
+            elements.selectionInfo.classList.add('visible');
+            elements.customizeCollageBtn.style.display = 'none';
+            
+            // Redisplay NFTs with selection mode
+            displayNFTs(state.filteredNFTs);
+            
+            // Scroll to collection title area (near the NFT grid)
+            const collectionTitle = document.getElementById('collectionTitle');
+            if (collectionTitle) {
+                collectionTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Fallback to NFT grid if title is not visible
+                const nftGrid = document.getElementById('nftGrid');
+                if (nftGrid) {
+                    nftGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        function exitCustomCollageMode() {
+            state.customCollageMode = false;
+            state.selectedNFTs = [];
+            
+            // Hide selection info bar
+            elements.selectionInfo.classList.remove('visible');
+            elements.customizeCollageBtn.style.display = 'block';
+            
+            // Redisplay NFTs without selection mode
+            displayNFTs(state.filteredNFTs);
+        }
+
+        function toggleNFTSelection(nft, index) {
+            const selectionIndex = state.selectedNFTs.findIndex(selected => selected.index === index);
+            
+            if (selectionIndex !== -1) {
+                // Remove from selection
+                state.selectedNFTs.splice(selectionIndex, 1);
+            } else {
+                // Add to selection
+                state.selectedNFTs.push({ nft, index });
+            }
+            
+            // Update selection count
+            elements.selectionCount.textContent = state.selectedNFTs.length;
+            
+            // Redisplay NFTs to update selection badges
+            displayNFTs(state.filteredNFTs);
+        }
+
+        function clearSelection() {
+            state.selectedNFTs = [];
+            elements.selectionCount.textContent = '0';
+            displayNFTs(state.filteredNFTs);
+        }
+
+        async function createCustomCollage() {
+            if (state.selectedNFTs.length === 0) {
+                showError('Please select at least one NFT to create a custom collage.');
+                return;
+            }
+
+            if (window.isDownloading) {
+                console.log('Download already in progress, ignoring new attempt.');
+                return;
+            }
+
+            window.isDownloading = true;
+
+            // Use selected NFTs in the order they were selected
+            const validCards = state.selectedNFTs
+                .map(({ nft, index }) => ({
+                    src: nft.cover?.url || '',
+                    title: nft.name || `NFT ${index + 1}`,
+                    index,
+                    isVideo: nft.cover?.url?.endsWith('.mp4') || false
+                }))
+                .filter(card => card.src && card.src !== 'https://via.placeholder.com/150' && !card.isVideo);
+
+            if (validCards.length === 0) {
+                showError('No valid image assets selected. Please select images (not videos).');
+                window.isDownloading = false;
+                return;
+            }
+
+            // Exit custom collage mode
+            exitCustomCollageMode();
+
+            // Use the same collage creation logic
+            await createCollageFromCards(validCards, 'Custom Collage');
+        }
+
         async function createCollage() {
             // Silently ignore if a download is already in progress
             if (window.isDownloading) {
@@ -2850,6 +3510,10 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 return;
             }
 
+            await createCollageFromCards(validCards, 'NFT Collage');
+        }
+
+        async function createCollageFromCards(validCards, collageName) {
             console.log(`Valid cards for collage: ${validCards.length}`, validCards.map(card => ({
                 title: card.title,
                 index: card.index,
@@ -2957,42 +3621,50 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
 
                 // Create header with title and count
                 const header = document.createElement('div');
+                const isSmallCollage = collageWidth < 400; // Detect small collages
+                
                 header.style.cssText = `
                     display: flex;
-                    justify-content: center;
+                    ${isSmallCollage ? 'flex-direction: column' : 'justify-content: space-between'};
                     align-items: center;
-                    position: relative;
-                    height: ${headerHeight}px;
+                    ${isSmallCollage ? 'gap: 8px' : ''};
+                    height: ${isSmallCollage ? headerHeight + 20 : headerHeight}px;
                     margin-bottom: 20px;
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
                 `;
 
-                // Title in center
+                // Title
                 const title = document.createElement('div');
                 title.textContent = 'Created with SwiggleScan';
                 title.style.cssText = `
-                    font-size: 24px;
+                    font-size: ${isSmallCollage ? '18px' : '24px'};
                     font-weight: 700;
                     color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color')};
                     text-align: center;
+                    ${isSmallCollage ? 'order: 1' : ''};
                 `;
 
-                // Count on the right
+                // Count
                 const count = document.createElement('div');
                 count.textContent = `${loadedCards.length} NFTs`;
                 count.style.cssText = `
-                    position: absolute;
-                    right: 0;
-                    font-size: 16px;
+                    font-size: ${isSmallCollage ? '14px' : '16px'};
                     font-weight: 600;
                     color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color')};
                     background: ${getComputedStyle(document.documentElement).getPropertyValue('--surface-light')};
-                    padding: 8px 16px;
+                    padding: ${isSmallCollage ? '6px 12px' : '8px 16px'};
                     border-radius: 20px;
+                    ${isSmallCollage ? 'order: 2' : ''};
                 `;
 
                 header.appendChild(title);
                 header.appendChild(count);
+                
+                // Adjust collage container height for small collages
+                if (isSmallCollage) {
+                    collageContainer.style.height = `${collageHeight + headerHeight + 40}px`;
+                }
+                
                 collageContainer.appendChild(header);
 
                 // Create grid container for images
@@ -3022,13 +3694,35 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 updateProgress(90, 'Rendering collage...');
 
-                // Generate canvas and download
-                const canvas = await html2canvas(collageContainer, {
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-primary'),
-                    scale: 1,
-                    logging: false,
-                    useCORS: true
-                });
+                // Generate canvas and download with mobile-specific options
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                let canvas;
+                
+                try {
+                    canvas = await html2canvas(collageContainer, {
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-primary'),
+                        scale: isMobile ? 1 : 1,
+                        logging: false,
+                        useCORS: true,
+                        allowTaint: true,
+                        foreignObjectRendering: false,
+                        imageTimeout: 15000,
+                        removeContainer: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: collageWidth,
+                        windowHeight: collageHeight + headerHeight + (isSmallCollage ? 40 : 0)
+                    });
+                } catch (html2canvasError) {
+                    console.warn('html2canvas failed, trying fallback method:', html2canvasError);
+                    
+                    // Fallback: Create a simpler canvas manually for mobile
+                    if (isMobile) {
+                        canvas = await createMobileCollageCanvas(loadedCards, cols, rows, cardSize, headerHeight, isSmallCollage);
+                    } else {
+                        throw html2canvasError;
+                    }
+                }
 
                 document.body.removeChild(collageContainer);
 
@@ -3038,18 +3732,23 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                         const a = document.createElement('a');
                         a.href = url;
 
-                        // Generate file name parts
-                        const cleanUsername = state.currentProfile?.username ? state.currentProfile.username.replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase() : '';
-                        const creatorFilter = elements.creatorFilter;
-                        const cleanCreator = (creatorFilter?.value || 'UNKNOWN').replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase();
-                        const cleanCollectionText = (elements.collectionFilter.value || 'ALL_COLLECTIONS').replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase();
+                        // Generate file name based on collage name
+                        if (collageName === 'Custom Collage') {
+                            a.download = `CUSTOM_COLLAGE_${Date.now()}.png`;
+                        } else {
+                            // Generate file name parts
+                            const cleanUsername = state.currentProfile?.username ? state.currentProfile.username.replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase() : '';
+                            const creatorFilter = elements.creatorFilter;
+                            const cleanCreator = (creatorFilter?.value || 'UNKNOWN').replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase();
+                            const cleanCollectionText = (elements.collectionFilter.value || 'ALL_COLLECTIONS').replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase();
 
-                        // Build filename omitting cleanUsername if empty
-                        const fileNameParts = [];
-                        if (cleanUsername) fileNameParts.push(cleanUsername);
-                        if (cleanCreator !== 'UNKNOWN') fileNameParts.push(cleanCreator);
-                        fileNameParts.push(cleanCollectionText);
-                        a.download = fileNameParts.join('_') + '.png';
+                            // Build filename omitting cleanUsername if empty
+                            const fileNameParts = [];
+                            if (cleanUsername) fileNameParts.push(cleanUsername);
+                            if (cleanCreator !== 'UNKNOWN') fileNameParts.push(cleanCreator);
+                            fileNameParts.push(cleanCollectionText);
+                            a.download = fileNameParts.join('_') + '.png';
+                        }
 
                         document.body.appendChild(a);
                         a.click();
@@ -3089,8 +3788,74 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             }
         }
 
-        function openNFTPage(nftId) {
-            window.open(`https://crypto.com/nft/asset/${nftId}`, '_blank');
+        // Fallback function to create collage canvas manually for mobile devices
+        async function createMobileCollageCanvas(loadedCards, cols, rows, cardSize, headerHeight, isSmallCollage) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const collageWidth = cols * cardSize + (cols - 1) * 4 + 40;
+            const collageHeight = rows * cardSize + (rows - 1) * 4 + 40;
+            const totalHeight = collageHeight + headerHeight + (isSmallCollage ? 40 : 0);
+            
+            canvas.width = collageWidth;
+            canvas.height = totalHeight;
+            
+            // Fill background
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary') || '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw header
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#6366f1';
+            ctx.font = `bold ${isSmallCollage ? '18' : '24'}px Inter, Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            
+            // Title
+            const titleY = isSmallCollage ? 30 : 35;
+            ctx.fillText('Created with SwiggleScan', canvas.width / 2, titleY);
+            
+            // Count
+            ctx.font = `600 ${isSmallCollage ? '14' : '16'}px Inter, Arial, sans-serif`;
+            const countY = isSmallCollage ? titleY + 25 : titleY;
+            const countX = isSmallCollage ? canvas.width / 2 : canvas.width - 100;
+            ctx.fillText(`${loadedCards.length} NFTs`, countX, countY);
+            
+            // Load and draw images
+            const imagePromises = loadedCards.map((card, index) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        const row = Math.floor(index / cols);
+                        const col = index % cols;
+                        const x = 20 + col * (cardSize + 4);
+                        const y = headerHeight + (isSmallCollage ? 40 : 0) + 20 + row * (cardSize + 4);
+                        
+                        // Draw rounded rectangle (simplified)
+                        ctx.drawImage(img, x, y, cardSize, cardSize);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.warn('Failed to load image for canvas:', card.src);
+                        resolve();
+                    };
+                    img.src = card.src;
+                });
+            });
+            
+            await Promise.all(imagePromises);
+            return canvas;
+        }
+
+        function openNFTPage(nftId, editionId, username) {
+            // Construct the proper URL with profile context if available
+            let url;
+            if (username && editionId) {
+                url = `https://crypto.com/nft/profile/${username}?tab=collected&asset=${nftId}&edition=${editionId}&detail-page=PROFILE&event=${username}`;
+            } else {
+                // Fallback to basic asset URL
+                url = `https://crypto.com/nft/asset/${nftId}`;
+            }
+            window.open(url, '_blank');
         }
 
         // Theme Functions
@@ -3157,10 +3922,26 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             // Download buttons
             elements.downloadAssetsBtn.addEventListener('click', downloadAllAssets);
             elements.downloadCollageBtn.addEventListener('click', createCollage);
+            elements.customizeCollageBtn.addEventListener('click', enterCustomCollageMode);
             
             // Scroll
             window.addEventListener('scroll', updateScrollButton);
             elements.scrollTop.addEventListener('click', scrollToTop);
+            
+            // Toggle switches
+            if (elements.togglePrices) {
+                elements.togglePrices.addEventListener('change', (e) => {
+                    state.showPrices = e.target.checked;
+                    displayNFTs(state.filteredNFTs);
+                });
+            }
+
+            if (elements.toggleRanks) {
+                elements.toggleRanks.addEventListener('change', (e) => {
+                    state.showRanks = e.target.checked;
+                    displayNFTs(state.filteredNFTs);
+                });
+            }
             
             // Close modal on outside click
             elements.progressModal.addEventListener('click', (e) => {
@@ -3183,7 +3964,89 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             // Initial scroll button state
             updateScrollButton();
             
+            // Load poster stats
+            loadPosterStats();
+            
             console.log('NFT Explorer Pro initialized');
+        }
+
+        // Load poster engagement stats and images
+        async function loadPosterStats() {
+            // Featured post configuration
+            const featuredPost = {
+                tweetId: '1990411520207966506',
+                username: 'KwanzaLilTunech',
+                displayName: 'Kwanza',
+                handle: '@KwanzaLilTunech',
+                text: 'Thanks! @pet_rescueNFT for making me this collage of my @LoadedLions_CDC 🚀🚀🚀',
+                // Load images from local assets folder
+                profileImage: './assets/featurepfp.png',
+                postImage: './assets/featureimage.png',
+                // Engagement stats (update these manually)
+                likes: 63,
+                retweets: 18
+            };
+
+            // Update profile image
+            const posterAvatar = document.querySelector('.poster-avatar');
+            if (posterAvatar) {
+                posterAvatar.src = featuredPost.profileImage;
+                posterAvatar.onerror = function() {
+                    console.error('Profile image not found in assets folder:', featuredPost.profileImage);
+                };
+            }
+
+            // Update post image
+            const posterImage = document.querySelector('.poster-image');
+            if (posterImage) {
+                posterImage.src = featuredPost.postImage;
+                posterImage.onerror = function() {
+                    console.error('Post image not found in assets folder:', featuredPost.postImage);
+                };
+            }
+
+            // Update user info
+            const posterUsername = document.querySelector('.poster-username');
+            const posterHandle = document.querySelector('.poster-handle');
+            const posterText = document.querySelector('.poster-text');
+            
+            if (posterUsername) posterUsername.textContent = featuredPost.displayName;
+            if (posterHandle) posterHandle.textContent = featuredPost.handle;
+            if (posterText) posterText.textContent = featuredPost.text;
+
+            // Try to fetch live engagement data from Twitter's oEmbed API
+            try {
+                const oembedUrl = `https://publish.twitter.com/oembed?url=https://twitter.com/${featuredPost.username}/status/${featuredPost.tweetId}&omit_script=true`;
+                const response = await fetch(oembedUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // oEmbed doesn't provide engagement stats directly
+                    // So we'll use the fallback values
+                    updateEngagementStats(featuredPost.likes, featuredPost.retweets);
+                } else {
+                    // Use fallback stats
+                    updateEngagementStats(featuredPost.likes, featuredPost.retweets);
+                }
+            } catch (error) {
+                console.log('Using fallback engagement stats');
+                updateEngagementStats(featuredPost.likes, featuredPost.retweets);
+            }
+        }
+
+        // Update engagement statistics display
+        function updateEngagementStats(likes, retweets) {
+            const likesElement = document.getElementById('posterLikes');
+            const retweetsElement = document.getElementById('posterRetweets');
+            
+            if (likesElement) {
+                likesElement.textContent = likes >= 1000 ? 
+                    (likes / 1000).toFixed(1) + 'K' : likes.toString();
+            }
+            if (retweetsElement) {
+                retweetsElement.textContent = retweets >= 1000 ? 
+                    (retweets / 1000).toFixed(1) + 'K' : retweets.toString();
+            }
         }
 
         // Start the application
@@ -3243,14 +4106,14 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             
             // Update the share text with profile name if available
             const shareText = profileName ? 
-                `Just created my NFT collage with SwiggleScan!
+                `Just created my NFT collage with #SwiggleScan!
 
-Built with @pet_rescueNFT SwiggleScan 🚀
+Built by @pet_rescueNFT 🚀
 
 Create your own: nifftyswiggle.pw/cdcswigglescan` :
-                `Just created my NFT collage with SwiggleScan!
+                `Just created my NFT collage with #SwiggleScan!
 
-Built with @pet_rescueNFT SwiggleScan 🚀
+Built by @pet_rescueNFT 🚀
 
 Create your own: nifftyswiggle.pw/cdcswigglescan`;
             
@@ -3433,6 +4296,11 @@ Create your own: nifftyswiggle.pw/cdcswigglescan`;
         window.hideNavDropdown = hideNavDropdown;
         window.handleLogoClick = handleLogoClick;
         window.focusSearchInput = focusSearchInput;
+        window.enterCustomCollageMode = enterCustomCollageMode;
+        window.exitCustomCollageMode = exitCustomCollageMode;
+        window.toggleNFTSelection = toggleNFTSelection;
+        window.clearSelection = clearSelection;
+        window.createCustomCollage = createCustomCollage;
     </script>
 </body>
 </html>
