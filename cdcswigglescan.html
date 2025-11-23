@@ -3979,9 +3979,9 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 displayName: 'Kwanza',
                 handle: '@KwanzaLilTunech',
                 text: 'Thanks! @pet_rescueNFT for making me this collage of my @LoadedLions_CDC 🚀🚀🚀',
-                // Load images from local assets folder
-                profileImage: './assets/featurepfp.png',
-                postImage: './assets/featureimage.png',
+                // Load images from GitHub
+                profileImage: 'https://raw.githubusercontent.com/NifftySwiggle/Web3-Tools/main/assets/featurepfp.png',
+                postImage: 'https://raw.githubusercontent.com/NifftySwiggle/Web3-Tools/main/assets/featureimage.png',
                 // Engagement stats (update these manually)
                 likes: 63,
                 retweets: 18
@@ -3992,7 +3992,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             if (posterAvatar) {
                 posterAvatar.src = featuredPost.profileImage;
                 posterAvatar.onerror = function() {
-                    console.error('Profile image not found in assets folder:', featuredPost.profileImage);
+                    console.error('Profile image not found:', featuredPost.profileImage);
                 };
             }
 
@@ -4001,7 +4001,7 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
             if (posterImage) {
                 posterImage.src = featuredPost.postImage;
                 posterImage.onerror = function() {
-                    console.error('Post image not found in assets folder:', featuredPost.postImage);
+                    console.error('Post image not found:', featuredPost.postImage);
                 };
             }
 
