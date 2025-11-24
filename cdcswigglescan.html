@@ -1992,7 +1992,7 @@
         <section class="how-to-use" id="howToUse">
             <div class="how-to-use-content">
                 <h2>Welcome to SwiggleScan</h2>
-                <p>Your NFT portfolio explorer. Discover, filter, and download NFT collections from Crypto.com with ease.</p>
+                <p>Crypto.com NFT portfolio explorer. Discover, filter, and download NFT collections with ease.</p>
                 
                 <div class="hero-search-container" id="heroSearchContainer">
                     <input 
@@ -3699,7 +3699,8 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                 let canvas;
                 
                 try {
-                    canvas = await html2canvas(collageContainer, {
+                    // Add timeout protection for html2canvas
+                    const canvasPromise = html2canvas(collageContainer, {
                         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-primary'),
                         scale: isMobile ? 1 : 1,
                         logging: false,
@@ -3707,14 +3708,22 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                         allowTaint: true,
                         foreignObjectRendering: false,
                         imageTimeout: 15000,
-                        removeContainer: true,
+                        removeContainer: false,
                         scrollX: 0,
                         scrollY: 0,
                         windowWidth: collageWidth,
                         windowHeight: collageHeight + headerHeight + (isSmallCollage ? 40 : 0)
                     });
+                    
+                    // Race with timeout (20 seconds max)
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Canvas rendering timeout')), 20000)
+                    );
+                    
+                    canvas = await Promise.race([canvasPromise, timeoutPromise]);
                 } catch (html2canvasError) {
                     console.warn('html2canvas failed, trying fallback method:', html2canvasError);
+                    updateProgress(92, 'Using fallback renderer...');
                     
                     // Fallback: Create a simpler canvas manually for mobile
                     if (isMobile) {
@@ -3724,17 +3733,41 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                     }
                 }
 
-                document.body.removeChild(collageContainer);
+                // Ensure container is removed
+                if (collageContainer && document.body.contains(collageContainer)) {
+                    document.body.removeChild(collageContainer);
+                }
 
-                canvas.toBlob((blob) => {
+                updateProgress(95, 'Preparing download...');
+
+                // Convert canvas to blob with better mobile handling and timeout
+                try {
+                    const blobPromise = new Promise((resolve, reject) => {
+                        try {
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    resolve(blob);
+                                } else {
+                                    reject(new Error('Failed to create blob from canvas'));
+                                }
+                            }, 'image/png', 1.0);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                    
+                    // Add timeout for blob creation (10 seconds)
+                    const blobTimeout = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Blob creation timeout')), 10000)
+                    );
+                    
+                    const blob = await Promise.race([blobPromise, blobTimeout]);
+                    
                     if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-
                         // Generate file name based on collage name
+                        let fileName;
                         if (collageName === 'Custom Collage') {
-                            a.download = `CUSTOM_COLLAGE_${Date.now()}.png`;
+                            fileName = `CUSTOM_COLLAGE_${Date.now()}.png`;
                         } else {
                             // Generate file name parts
                             const cleanUsername = state.currentProfile?.username ? state.currentProfile.username.replace(/[^a-zA-Z0-9-_]/g, '').toUpperCase() : '';
@@ -3747,13 +3780,49 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                             if (cleanUsername) fileNameParts.push(cleanUsername);
                             if (cleanCreator !== 'UNKNOWN') fileNameParts.push(cleanCreator);
                             fileNameParts.push(cleanCollectionText);
-                            a.download = fileNameParts.join('_') + '.png';
+                            fileName = fileNameParts.join('_') + '.png';
                         }
 
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
+                        // Mobile-friendly download approach
+                        if (isMobile) {
+                            // For mobile, try multiple methods
+                            try {
+                                // Method 1: Try standard download
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = fileName;
+                                a.style.display = 'none';
+                                document.body.appendChild(a);
+                                
+                                // Force click with timeout
+                                setTimeout(() => {
+                                    a.click();
+                                    setTimeout(() => {
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                    }, 100);
+                                }, 100);
+                            } catch (mobileError) {
+                                console.error('Mobile download method 1 failed:', mobileError);
+                                // Method 2: Open in new window as fallback
+                                const url = URL.createObjectURL(blob);
+                                const newWindow = window.open(url, '_blank');
+                                if (newWindow) {
+                                    setTimeout(() => URL.revokeObjectURL(url), 5000);
+                                }
+                            }
+                        } else {
+                            // Desktop download
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = fileName;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        }
 
                         updateProgress(100, 'Collage download complete!');
                         setTimeout(() => {
@@ -3769,13 +3838,14 @@ Create your own: nifftyswiggle.pw/cdcswigglescan
                     } else {
                         throw new Error('Failed to create blob from canvas');
                     }
-
-                    // Clean up object URLs
-                    objectUrls.forEach(url => URL.revokeObjectURL(url));
-                },
-                'image/png',
-                1.0
-                );
+                } catch (blobError) {
+                    console.error('Blob creation failed:', blobError);
+                    throw new Error('Failed to create image file: ' + blobError.message);
+                }
+                
+                // Clean up object URLs
+                objectUrls.forEach(url => URL.revokeObjectURL(url));
+                
             } catch (error) {
                 console.error('Error creating collage:', error);
                 showError(`Failed to create collage: ${error.message}`);
