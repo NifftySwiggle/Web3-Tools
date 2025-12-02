@@ -1691,7 +1691,6 @@
 
     // Update transfer links
     els.transfersAll.href = `https://explorer.cronos.org/address/${address}`;
-    els.holdersCsv.href = `${API}?module=account&action=tokentx&address=${address}&page=1&offset=10000`;
 
     // Wallet info
     els.contractAddrDisplay.textContent = formatAddress(address);
@@ -1746,7 +1745,6 @@
 
     // Update transfer links
     els.transfersAll.href = `https://explorer.cronos.org/address/${contractAddr}#tokentxns`;
-    els.holdersCsv.href = `${API}?module=token&action=getTokenHolders&contractaddress=${contractAddr}&page=1&offset=10000`;
 
     // Contract info
     els.contractAddrDisplay.textContent = formatAddress(contractAddr);
@@ -1766,9 +1764,97 @@
     els.content.style.display = 'block';
   };
 
+  // CSV Export function
+  const exportHoldersToCSV = () => {
+    if (allHolders.length === 0) {
+      alert('No holder data available to export. Please load a contract first.');
+      return;
+    }
+
+    const { decimals, isNFT, totalSupplyRaw, token } = window.currentTokenData || {};
+    const tokenName = token?.name || 'Token';
+    const tokenSymbol = token?.symbol || '';
+
+    // CSV Headers
+    const headers = ['Rank', 'Address', 'Quantity', 'Percentage'];
+    
+    // Build CSV rows
+    const rows = allHolders.map((h, i) => {
+      const holderAddr = h.address || h.holder || '';
+      const balance = h.value || h.balance || '0';
+      
+      let qty = '';
+      let pct = '';
+      
+      if (balance !== '0' && balance !== '') {
+        if (isNFT) {
+          const nftCount = Number(balance);
+          qty = nftCount.toString();
+        } else {
+          try {
+            qty = (Number(BigInt(balance) / BigInt(10**decimals))).toString();
+          } catch (e) {
+            qty = balance;
+          }
+        }
+        
+        if (totalSupplyRaw && totalSupplyRaw !== '0') {
+          try {
+            const holderAmount = Number(balance);
+            const totalAmount = Number(totalSupplyRaw);
+            pct = ((holderAmount / totalAmount) * 100).toFixed(4);
+          } catch (e) {
+            pct = '0';
+          }
+        }
+      }
+      
+      return [
+        (i + 1).toString(),
+        holderAddr,
+        qty,
+        pct
+      ];
+    });
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => {
+        // Escape cells that contain commas or quotes
+        if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      }).join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    // Generate filename
+    const timestamp = new Date().toISOString().split('T')[0];
+    const cleanName = tokenName.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `${cleanName}_${tokenSymbol}_Holders_${timestamp}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Events
   els.loadBtn.addEventListener('click', loadToken);
   els.input.addEventListener('keypress', e => e.key === 'Enter' && loadToken());
+  els.holdersCsv.addEventListener('click', (e) => {
+    e.preventDefault();
+    exportHoldersToCSV();
+  });
 
   // Auto-load
   window.addEventListener('load', () => {
