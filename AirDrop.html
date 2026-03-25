@@ -13,29 +13,93 @@
   <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.21.5/dist/index.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700;800&display=swap');
+
+    :root {
+      --bg: #08131f;
+      --bg-2: #10243a;
+      --card: rgba(10, 24, 40, 0.78);
+      --card-strong: rgba(8, 20, 34, 0.92);
+      --border: rgba(120, 188, 255, 0.26);
+      --text: #e8f4ff;
+      --muted: #9ec0df;
+      --accent: #1cb7c5;
+      --accent-2: #ff9f43;
+      --danger: #f87171;
+      --ok: #34d399;
+      --shadow: 0 24px 60px rgba(1, 8, 20, 0.55);
+    }
+
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       min-height: 100vh;
       position: relative;
       overflow-x: hidden;
-      background: #4c1d95;
+      background:
+        radial-gradient(1200px 540px at 6% -15%, rgba(28, 183, 197, 0.36), transparent 58%),
+        radial-gradient(900px 520px at 95% 5%, rgba(255, 159, 67, 0.28), transparent 60%),
+        linear-gradient(140deg, var(--bg), var(--bg-2));
+      color: var(--text);
     }
+
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(44px);
+      opacity: 0.45;
+      border-radius: 999px;
+      animation: floatOrb 12s ease-in-out infinite;
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      right: -80px;
+      bottom: 24%;
+      background: rgba(28, 183, 197, 0.46);
+    }
+
+    body::after {
+      width: 260px;
+      height: 260px;
+      left: -80px;
+      top: 15%;
+      background: rgba(255, 159, 67, 0.36);
+      animation-delay: -4s;
+    }
+
+    @keyframes floatOrb {
+      0%,
+      100% {
+        transform: translateY(0px) scale(1);
+      }
+      50% {
+        transform: translateY(-18px) scale(1.05);
+      }
+    }
+
     .stars {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
       z-index: 0;
       overflow: hidden;
+      pointer-events: none;
     }
+
     .star {
       position: absolute;
-      background: white;
+      background: rgba(213, 241, 255, 0.9);
       border-radius: 50%;
       opacity: 0.5;
       animation: twinkle var(--twinkle-duration) infinite linear;
     }
+
     .star:nth-child(1) { width: 2px; height: 2px; top: 10%; left: 15%; --twinkle-duration: 5s; }
     .star:nth-child(2) { width: 3px; height: 3px; top: 20%; left: 80%; --twinkle-duration: 4s; animation-delay: -1s; }
     .star:nth-child(3) { width: 1px; height: 1px; top: 30%; left: 25%; --twinkle-duration: 6s; animation-delay: -2s; }
@@ -57,22 +121,88 @@
     .star:nth-child(19) { width: 2px; height: 2px; top: 40%; left: 30%; --twinkle-duration: 6s; animation-delay: -1s; }
     .star:nth-child(20) { width: 3px; height: 3px; top: 50%; left: 55%; --twinkle-duration: 5s; animation-delay: -2s; }
     @keyframes twinkle {
-      0% { opacity: 0.3; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.2); }
-      100% { opacity: 0.3; transform: scale(1); }
+      0% { opacity: 0.25; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.4); }
+      100% { opacity: 0.25; transform: scale(1); }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
     .container {
-      background: rgba(31, 41, 55, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 1rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      padding: 1.5rem;
-      z-index: 1;
+      position: relative;
+      background: linear-gradient(160deg, var(--card), var(--card-strong));
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      z-index: 3;
       width: 100%;
       max-width: 100%;
-      color: #e5e7eb;
       margin: 0 auto;
+      animation: panelIn 0.55s ease-out both;
     }
+
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.99);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .section-card {
+      background: rgba(9, 27, 44, 0.72);
+      border: 1px solid rgba(120, 188, 255, 0.18);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: inset 0 1px 0 rgba(199, 228, 255, 0.08);
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+
+    .section-card:hover {
+      border-color: rgba(120, 188, 255, 0.34);
+      transform: translateY(-2px);
+    }
+
+    .kpi-grid {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 1rem;
+    }
+
+    .kpi {
+      background: linear-gradient(145deg, rgba(10, 38, 62, 0.85), rgba(9, 23, 41, 0.9));
+      border: 1px solid rgba(120, 188, 255, 0.26);
+      border-radius: 0.85rem;
+      padding: 0.75rem;
+    }
+
+    .kpi h4 {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.25rem;
+    }
+
+    .kpi p {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f4fbff;
+    }
+
     @media (min-width: 768px) {
       .container {
         padding: 2rem;
@@ -99,6 +229,12 @@
       .container {
         padding: 1rem;
       }
+      input, select, textarea {
+        font-size: 16px;
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
       button, input, select {
         width: 100%;
         margin-top: 0.5rem;
@@ -116,6 +252,7 @@
       .modal {
         width: 95%;
         max-height: 90vh;
+        padding: 1rem;
       }
       .button-selection-group {
         display: flex;
@@ -144,7 +281,7 @@
       max-height: 300px;
       overflow-y: auto;
       scrollbar-width: thin;
-      scrollbar-color: #6b7280 #374151;
+      scrollbar-color: rgba(120, 188, 255, 0.4) rgba(12, 28, 45, 0.8);
     }
     .scrollable-status::-webkit-scrollbar,
     .scrollable-preview::-webkit-scrollbar,
@@ -154,33 +291,44 @@
     .scrollable-status::-webkit-scrollbar-track,
     .scrollable-preview::-webkit-scrollbar-track,
     .scrollable-history::-webkit-scrollbar-track {
-      background: #374151;
+      background: rgba(12, 28, 45, 0.8);
     }
     .scrollable-status::-webkit-scrollbar-thumb,
     .scrollable-preview::-webkit-scrollbar-thumb,
     .scrollable-history::-webkit-scrollbar-thumb {
-      background: #6b7280;
+      background: rgba(120, 188, 255, 0.5);
       border-radius: 4px;
     }
+
     .tooltip {
       position: relative;
     }
+
     .tooltip:hover::after {
       content: attr(data-tooltip);
       position: absolute;
       bottom: 100%;
       left: 50%;
       transform: translateX(-50%);
-      background: #111827;
-      color: #e5e7eb;
+      background: rgba(5, 18, 30, 0.95);
+      color: #e8f4ff;
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 12px;
-      white-space: nowrap;
+      white-space: normal;
+      max-width: min(78vw, 320px);
+      text-align: center;
       z-index: 10;
     }
+
+    /* Hover tooltips are not reliable on touch devices. */
+    @media (hover: none), (pointer: coarse) {
+      .tooltip:hover::after {
+        content: none;
+      }
+    }
     .modal {
-      background: rgba(31, 41, 55, 0.95);
+      background: rgba(8, 24, 40, 0.95);
       backdrop-filter: blur(10px);
       border-radius: 1rem;
       max-width: 90%;
@@ -202,36 +350,77 @@
       justify-content: center;
     }
     .input-error {
-      border-color: #ef4444;
+      border-color: var(--danger);
     }
+
     .error-text {
-      color: #ef4444;
+      color: #fda4af;
       font-size: 0.875rem;
     }
+
     button, input, select {
       transition: all 0.3s ease;
     }
+
+    textarea {
+      transition: all 0.3s ease;
+    }
+
     .selection-button {
       padding: 0.75rem;
       border-radius: 0.5rem;
-      font-weight: 500;
-      color: #ffffff;
+      font-weight: 600;
+      color: #f8fdff;
       width: 100%;
       text-align: center;
     }
+
     .selection-button-selected {
-      background-color: #1e40af;
+      background: linear-gradient(90deg, #0f7e93, #f58f3a);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
     }
+
     .selection-button-unselected {
-      background-color: #4b5563;
+      background-color: rgba(24, 45, 66, 0.88);
     }
+
     .selection-button-unselected:hover {
-      background-color: #6b7280;
+      background-color: rgba(38, 68, 95, 0.92);
     }
+
     .selection-button:disabled {
-      background-color: #6b7280;
+      background-color: rgba(58, 82, 104, 0.8);
       cursor: not-allowed;
     }
+
+    .primary-btn {
+      background: linear-gradient(90deg, #1190a2, #f58f3a);
+      color: #f4fbff;
+      border: 1px solid rgba(255, 211, 167, 0.45);
+      box-shadow: 0 10px 24px rgba(4, 17, 31, 0.45);
+    }
+
+    .primary-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .ghost-btn {
+      background: rgba(19, 47, 72, 0.92);
+      color: #d9edff;
+      border: 1px solid rgba(123, 183, 237, 0.3);
+    }
+
+    .ghost-btn:hover {
+      background: rgba(30, 66, 95, 0.95);
+    }
+
+    .tiny-btn {
+      font-size: 0.8rem;
+      padding: 0.5rem 0.7rem;
+      border-radius: 0.5rem;
+    }
+
     .history-table {
       width: 100%;
       border-collapse: collapse;
@@ -239,29 +428,365 @@
     .history-table th,
     .history-table td {
       padding: 0.75rem;
-      border: 1px solid #374151;
+      border: 1px solid rgba(120, 188, 255, 0.22);
       text-align: left;
       font-size: 0.875rem;
     }
+
     .history-table th {
-      background: #374151;
-      color: #e5e7eb;
+      background: rgba(18, 45, 70, 0.9);
+      color: #eff9ff;
       font-weight: 600;
     }
+
     .history-table td {
-      background: #1f2937;
-      color: #d1d5db;
+      background: rgba(11, 31, 50, 0.88);
+      color: #d7ecff;
     }
+
     .history-table a {
-      color: #60a5fa;
+      color: #67d4ff;
       text-decoration: none;
     }
+
     .history-table a:hover {
       text-decoration: underline;
+    }
+
+    .hero-title {
+      font-family: 'Sora', sans-serif;
+      letter-spacing: 0.02em;
+      font-weight: 800;
+      line-height: 1.12;
+    }
+
+    .status-log {
+      background: linear-gradient(160deg, rgba(4, 16, 28, 0.9), rgba(10, 30, 47, 0.92));
+      border: 1px solid rgba(120, 188, 255, 0.2);
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .pill-live {
+      background: rgba(52, 211, 153, 0.18);
+      color: #90f3ce;
+      border: 1px solid rgba(52, 211, 153, 0.35);
+    }
+
+    .pill-alert {
+      background: rgba(248, 113, 113, 0.14);
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    .fetch-progress-panel {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 0.85rem;
+      background: linear-gradient(160deg, rgba(8, 26, 44, 0.92), rgba(11, 38, 60, 0.9));
+      border: 1px solid rgba(120, 188, 255, 0.24);
+      box-shadow: inset 0 1px 0 rgba(206, 233, 255, 0.08);
+    }
+
+    .rocket-track {
+      position: relative;
+      height: 18px;
+      margin-top: 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(123, 183, 237, 0.26);
+      overflow: hidden;
+      background: rgba(5, 18, 32, 0.9);
+    }
+
+    .rocket-track::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        100deg,
+        rgba(120, 188, 255, 0.06) 0,
+        rgba(120, 188, 255, 0.06) 12px,
+        rgba(10, 24, 40, 0.14) 12px,
+        rgba(10, 24, 40, 0.14) 24px
+      );
+      animation: rocketTrackSlide 1.2s linear infinite;
+      pointer-events: none;
+    }
+
+    .rocket-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1cb7c5, #5dd8e4 45%, #ff9f43);
+      border-right: 1px solid rgba(255, 255, 255, 0.5);
+      transition: width 0.25s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes rocketTrackSlide {
+      from { background-position: 0 0; }
+      to { background-position: 24px 0; }
+    }
+
+    /* Top navigation */
+    .ad-topnav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      max-width: 1280px;
+      margin: 0 auto;
+      background: rgba(7, 20, 33, 0.78);
+      border: 1px solid rgba(120, 188, 255, 0.22);
+      border-radius: 1rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 34px rgba(2, 10, 20, 0.35);
+    }
+
+    .ad-topnav-inner {
+      min-height: 62px;
+      padding: 0.7rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.9rem;
+    }
+
+    .ad-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e8f4ff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .ad-brand img {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
+    }
+
+    .ad-menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 0.65rem;
+      border: 1px solid rgba(123, 183, 237, 0.35);
+      background: rgba(19, 47, 72, 0.92);
+      color: #e8f4ff;
+      font-size: 1.15rem;
+      line-height: 1;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .ad-nav-links {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ad-nav-links a {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.68rem;
+      border-radius: 0.6rem;
+      color: #d7ecff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .ad-nav-links a:hover {
+      background: rgba(19, 47, 72, 0.9);
+      border-color: rgba(123, 183, 237, 0.3);
+      color: #f4fbff;
+    }
+
+    .ad-nav-links a[aria-current="page"] {
+      background: linear-gradient(90deg, rgba(17, 144, 162, 0.9), rgba(245, 143, 58, 0.92));
+      color: #f4fbff;
+      border-color: rgba(255, 211, 167, 0.45);
+    }
+
+    .ad-nav-dropdown {
+      position: relative;
+    }
+
+    .ad-nav-dropdown-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      padding: 0.45rem 0.68rem;
+      border-radius: 0.6rem;
+      color: #d7ecff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .ad-nav-dropdown-trigger:hover {
+      background: rgba(19, 47, 72, 0.9);
+      border-color: rgba(123, 183, 237, 0.3);
+      color: #f4fbff;
+    }
+
+    .ad-nav-dropdown-menu {
+      list-style: none;
+      display: none;
+      position: absolute;
+      top: calc(100% + 0.45rem);
+      right: 0;
+      min-width: 220px;
+      max-width: min(92vw, 320px);
+      max-height: min(68vh, 520px);
+      overflow-y: auto;
+      background: rgba(7, 20, 33, 0.97);
+      border: 1px solid rgba(120, 188, 255, 0.22);
+      border-radius: 0.8rem;
+      box-shadow: 0 18px 42px rgba(2, 10, 20, 0.45);
+      margin: 0;
+      padding: 0.45rem;
+      flex-direction: column;
+      gap: 0.2rem;
+      z-index: 30;
+    }
+
+    .ad-nav-dropdown.open .ad-nav-dropdown-menu {
+      display: flex;
+    }
+
+    .ad-nav-dropdown-menu a {
+      display: block;
+      width: 100%;
+      padding: 0.45rem 0.68rem;
+      border-radius: 0.55rem;
+      color: #d7ecff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .ad-nav-dropdown-menu a:hover {
+      background: rgba(19, 47, 72, 0.9);
+      border-color: rgba(123, 183, 237, 0.3);
+      color: #f4fbff;
+    }
+
+    #root {
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 920px) {
+      .ad-menu-toggle {
+        display: inline-flex;
+      }
+
+      .ad-topnav-inner {
+        flex-wrap: wrap;
+      }
+
+      .ad-nav-links {
+        width: 100%;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+        padding-top: 0.25rem;
+      }
+
+      .ad-topnav.open .ad-nav-links {
+        display: flex;
+      }
+
+      .ad-nav-links a {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .ad-nav-dropdown {
+        width: 100%;
+      }
+
+      .ad-nav-dropdown-trigger {
+        width: 100%;
+      }
+
+      .ad-nav-dropdown-menu {
+        position: static;
+        min-width: 0;
+        max-width: 100%;
+        max-height: none;
+        overflow-y: visible;
+        box-shadow: none;
+        border-radius: 0.65rem;
+      }
     }
   </style>
 </head>
 <body class="min-h-screen p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+  <nav class="ad-topnav" aria-label="Primary navigation">
+    <div class="ad-topnav-inner">
+      <a href="index.html" class="ad-brand" aria-label="Back to NifftySwiggle Studio home">
+        <img src="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" alt="NifftySwiggle logo" />
+        <span>NifftySwiggle Studio</span>
+      </a>
+
+      <button class="ad-menu-toggle" id="ad-menu-toggle" aria-expanded="false" aria-controls="ad-nav-links" aria-label="Open menu" type="button">☰</button>
+
+      <ul class="ad-nav-links" id="ad-nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li class="ad-nav-dropdown">
+          <button type="button" class="ad-nav-dropdown-trigger" id="ad-websites-toggle" aria-expanded="false" aria-controls="ad-websites-menu">Projects ▾</button>
+          <ul class="ad-nav-dropdown-menu" id="ad-websites-menu">
+            <li><a href="/tempohub">Tempo Hub</a></li>
+            <li><a href="https://strategicplay.xyz" target="_blank" rel="noopener noreferrer">Strategic Play</a></li>
+            <li><a href="https://nomadshq.xyz" target="_blank" rel="noopener noreferrer">Nomads</a></li>
+            <li><a href="/swigglescan">Swiggle Scan</a></li>
+            <li><a href="/nftgenerator">NFT Generator</a></li>
+            <li><a href="https://www.gaiaecosystem.com/stake.html" target="_blank" rel="noopener noreferrer">Non-Custodial Stake</a></li>
+            <li><a href="/chess">Online Chess</a></li>
+            <li><a href="/airdrop" aria-current="page">Token Airdrop</a></li>
+            <li><a href="/gamehub">Game Hub</a></li>
+            <li><a href="/pixeldraw">Pixel Draw</a></li>
+            <li><a href="/updatemetadata">Update Metadata</a></li>
+            <li><a href="/mpc">MPC</a></li>
+            <li><a href="https://www.gaiaecosystem.com/" target="_blank" rel="noopener noreferrer">Gaia Ecosystem</a></li>
+            <li><a href="/cdcswigglescan">CDC Swiggle Scan</a></li>
+            <li><a href="https://allstake.io/launches/pitbits" target="_blank" rel="noopener noreferrer">PitBits</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
   <div class="stars">
     <div class="star"></div>
     <div class="star"></div>
@@ -285,8 +810,83 @@
     <div class="star"></div>
   </div>
   <div id="root" class="container"></div>
+
+  <script>
+    (function () {
+      const nav = document.querySelector('.ad-topnav');
+      const toggle = document.getElementById('ad-menu-toggle');
+      const links = document.getElementById('ad-nav-links');
+      const websitesDropdown = document.querySelector('.ad-nav-dropdown');
+      const websitesToggle = document.getElementById('ad-websites-toggle');
+      if (!nav || !toggle || !links) return;
+
+      const closeWebsitesDropdown = function () {
+        if (!websitesDropdown || !websitesToggle) return;
+        websitesDropdown.classList.remove('open');
+        websitesToggle.setAttribute('aria-expanded', 'false');
+      };
+
+      const closeNav = function () {
+        nav.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = '☰';
+        toggle.setAttribute('aria-label', 'Open menu');
+        closeWebsitesDropdown();
+      };
+
+      toggle.addEventListener('click', function () {
+        const isOpen = nav.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        toggle.textContent = isOpen ? '✕' : '☰';
+        toggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+      });
+
+      links.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          if (window.innerWidth <= 920) {
+            closeNav();
+          }
+        });
+      });
+
+      if (websitesToggle && websitesDropdown) {
+        websitesToggle.addEventListener('click', function (event) {
+          event.stopPropagation();
+          const isOpen = websitesDropdown.classList.toggle('open');
+          websitesToggle.setAttribute('aria-expanded', String(isOpen));
+        });
+      }
+
+      document.addEventListener('click', function (event) {
+        if (websitesDropdown && websitesDropdown.classList.contains('open') && !websitesDropdown.contains(event.target)) {
+          closeWebsitesDropdown();
+        }
+        if (window.innerWidth <= 920 && nav.classList.contains('open')) {
+          const clickedInsideNav = nav.contains(event.target);
+          if (!clickedInsideNav) closeNav();
+        }
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          closeWebsitesDropdown();
+        }
+        if (event.key === 'Escape' && nav.classList.contains('open')) {
+          closeNav();
+          toggle.focus();
+        }
+      });
+
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 920 && nav.classList.contains('open')) {
+          closeNav();
+        }
+      });
+    })();
+  </script>
+
   <script type="text/babel">
-    const { useState, useEffect, useCallback, useRef, Component } = React;
+    const { useState, useEffect, useCallback, useRef, useMemo, Component } = React;
     const { createRoot } = ReactDOM;
     const { ethers } = window;
 
@@ -320,7 +920,7 @@
       const [isLoading, setIsLoading] = useState(false);
       const [walletProvider, setWalletProvider] = useState('MetaMask');
       const [walletConnectModal, setWalletConnectModal] = useState(null);
-      const [buttonText, setButtonText] = useState('Connect via MetaMask');
+      const [buttonText, setButtonText] = useState('Connect Wallet');
       const [recipients, setRecipients] = useState('');
       const [amount, setAmount] = useState('');
       const [tokenContract, setTokenContract] = useState('');
@@ -336,13 +936,59 @@
       const [amountError, setAmountError] = useState('');
       const [showInstructions, setShowInstructions] = useState(false);
       const [copyTooltip, setCopyTooltip] = useState('Click to copy address');
+      const [holderSearch, setHolderSearch] = useState('');
+      const [draftMessage, setDraftMessage] = useState('');
+      const [isFetchVisualActive, setIsFetchVisualActive] = useState(false);
+      const [fetchProgress, setFetchProgress] = useState(0);
+      const [fetchFoundWallets, setFetchFoundWallets] = useState(0);
+      const [fetchStageLabel, setFetchStageLabel] = useState('Preparing scanner...');
+      const [nftSupplyLoading, setNftSupplyLoading] = useState(false);
+      const [nftSupplyResults, setNftSupplyResults] = useState([]);
+      const [nftSupplyScanError, setNftSupplyScanError] = useState('');
       const fileInputRef = useRef(null);
 
       const networks = [
         { chainId: '0x1', name: 'Ethereum Mainnet', rpcUrls: ['https://eth.llamarpc.com'], nativeCurrency: 'ETH', blockExplorerUrls: ['https://etherscan.io'] },
         { chainId: '0x89', name: 'Polygon Mainnet', rpcUrls: ['https://polygon-rpc.com'], nativeCurrency: 'MATIC', blockExplorerUrls: ['https://polygonscan.com'] },
-        { chainId: '0x19', name: 'Cronos Mainnet', rpcUrls: ['https://evm.cronos.org', 'https://cronos-rpc.publicnode.com'], nativeCurrency: 'CRO', blockExplorerUrls: ['https://cronoscan.com'] }
+        { chainId: '0x19', name: 'Cronos Mainnet', rpcUrls: ['https://evm.cronos.org', 'https://cronos-rpc.publicnode.com'], nativeCurrency: 'CRO', blockExplorerUrls: ['https://cronoscan.com'] },
+        { chainId: '0x8f', name: 'Monad Mainnet', rpcUrls: ['https://rpc.monad.xyz'], nativeCurrency: 'MON', blockExplorerUrls: ['https://monadvision.com'] }
       ];
+      const walletConnectProjectId = 'YOUR_WALLET_CONNECT_PROJECT_ID';
+
+      const normalizeChainId = (chainIdValue) => {
+        try {
+          if (typeof chainIdValue === 'string') {
+            return `0x${BigInt(chainIdValue).toString(16)}`;
+          }
+          if (typeof chainIdValue === 'number' || typeof chainIdValue === 'bigint') {
+            return `0x${BigInt(chainIdValue).toString(16)}`;
+          }
+        } catch (error) {
+          return '';
+        }
+        return '';
+      };
+
+      const getNetworkByChainId = (chainIdValue) => {
+        const normalized = normalizeChainId(chainIdValue);
+        if (!normalized) {
+          return null;
+        }
+        return networks.find(n => normalizeChainId(n.chainId) === normalized) || null;
+      };
+
+      // Configure per-chain batch contract addresses after deployment.
+      const batchContractByChain = {
+        '0x19': '0x99594c35f74eFE963C567434C530b1441EF7ff3e',
+        '0x8f': '0xC367A5f6455CA5a202dFb6e377119f4C6d8258a6'
+      };
+
+      const getBatchContractAddress = () => {
+        if (!selectedNetwork?.chainId) {
+          return '';
+        }
+        return batchContractByChain[selectedNetwork.chainId] || '';
+      };
 
       const erc20Abi = [
         {
@@ -462,32 +1108,294 @@
         }
       ];
 
+      const supportsInterfaceAbi = [
+        {
+          "constant": true,
+          "inputs": [{ "name": "interfaceId", "type": "bytes4" }],
+          "name": "supportsInterface",
+          "outputs": [{ "name": "", "type": "bool" }],
+          "type": "function"
+        }
+      ];
+
       useEffect(() => {
-        if (!window.React || !window.ReactDOM || !window.ethers || !window.WalletConnectModal || !window.EthereumProvider) {
-          setStatus(prev => `${prev}Error: Missing required dependencies (React, ReactDOM, Ethers.js, WalletConnect). Check console (F12) and Network tab.\n`);
+        if (!window.React || !window.ReactDOM || !window.ethers) {
+          setStatus(prev => `${prev}Error: Missing required dependencies (React, ReactDOM, Ethers.js). Check console (F12) and Network tab.\n`);
           return;
         }
-        const initWalletConnect = async () => {
-          const projectId = 'YOUR_WALLET_CONNECT_PROJECT_ID'; // Replace with your actual project ID
-          try {
-            const modal = new window.WalletConnectModal({
-              projectId: projectId,
-              themeMode: 'dark',
-              themeVariables: { '--wcm-z-index': '1000', '--wcm-accent-color': '#7e22ce' }
-            });
-            setWalletConnectModal(modal);
-            setStatus(prev => `${prev}WalletConnect initialized.\n`);
-          } catch (error) {
-            setStatus(prev => `${prev}Error initializing WalletConnect: ${error.message}. Please use MetaMask or refresh.\n`);
-          }
-        };
-        initWalletConnect();
-        setSelectedNetwork(networks.find(n => n.name === 'Cronos Mainnet'));
+        setSelectedNetwork(networks.find(n => n.name === 'Monad Mainnet') || networks[0]);
       }, []);
 
       useEffect(() => {
-        setButtonText(isConnected ? 'Disconnect' : `Connect via ${walletProvider}`);
-      }, [isConnected, walletProvider]);
+        let cancelled = false;
+        let debounceHandle;
+
+        const resetSupplyState = () => {
+          if (cancelled) return;
+          setNftSupplyLoading(false);
+          setNftSupplyResults([]);
+          setNftSupplyScanError('');
+        };
+
+        if (!ethers || !ethers.isAddress) {
+          resetSupplyState();
+          return () => {
+            cancelled = true;
+          };
+        }
+
+        if (!nftContract || !ethers.isAddress(nftContract)) {
+          resetSupplyState();
+          return () => {
+            cancelled = true;
+          };
+        }
+
+        debounceHandle = setTimeout(async () => {
+          try {
+            if (cancelled) return;
+            setNftSupplyLoading(true);
+            setNftSupplyResults([]);
+            setNftSupplyScanError('');
+
+            const scanJobs = networks.map(async (network) => {
+              try {
+                const readProvider = new ethers.JsonRpcProvider(network.rpcUrls[0]);
+                const code = await readProvider.getCode(nftContract);
+                if (!code || code === '0x') {
+                  return { networkName: network.name, found: false, supply: null, error: 'Contract not found' };
+                }
+
+                const readContract = new ethers.Contract(nftContract, erc721Abi, readProvider);
+                const supply = await readContract.totalSupply();
+                const parsedSupply = Number(supply);
+                if (!Number.isFinite(parsedSupply) || parsedSupply < 0) {
+                  return { networkName: network.name, found: true, supply: null, error: 'Could not parse totalSupply' };
+                }
+                return { networkName: network.name, found: true, supply: parsedSupply, error: '' };
+              } catch (error) {
+                return { networkName: network.name, found: true, supply: null, error: `totalSupply unavailable: ${error.message}` };
+              }
+            });
+
+            const scanResults = await Promise.all(scanJobs);
+            if (cancelled) return;
+
+            const successfulSupplyResults = scanResults.filter(item => item.supply !== null);
+            const foundContractResults = scanResults.filter(item => item.found);
+
+            setNftSupplyResults(successfulSupplyResults);
+
+            if (successfulSupplyResults.length > 0) {
+              setNftSupplyScanError('');
+            } else if (!scanResults.some(item => item.found)) {
+              setNftSupplyScanError('Contract not found on supported networks.');
+            } else {
+              const firstFailure = foundContractResults.find(item => item.error);
+              setNftSupplyScanError(firstFailure?.error || 'totalSupply unavailable on supported networks.');
+            }
+            setNftSupplyLoading(false);
+          } catch (error) {
+            if (cancelled) return;
+            setNftSupplyScanError(`Supply scan failed: ${error.message}`);
+            setNftSupplyLoading(false);
+          }
+        }, 500);
+
+        return () => {
+          cancelled = true;
+          if (debounceHandle) {
+            clearTimeout(debounceHandle);
+          }
+        };
+      }, [nftContract]);
+
+      useEffect(() => {
+        setButtonText(isConnected ? 'Disconnect' : 'Connect Wallet');
+      }, [isConnected]);
+
+      useEffect(() => {
+        try {
+          const storedDraft = localStorage.getItem('airdrop-tool-draft-v1');
+          if (!storedDraft) {
+            return;
+          }
+          const draft = JSON.parse(storedDraft);
+          setRecipients(draft.recipients || '');
+          setAmount(draft.amount || '');
+          setTokenContract(draft.tokenContract || '');
+          setTokenType(draft.tokenType || 'native');
+          setTransferMethod(draft.transferMethod || 'batch');
+          setNftContract(draft.nftContract || '');
+          setTokenIds(draft.tokenIds || '');
+          setFetchMethod(draft.fetchMethod || 'ownerOf');
+          setMultipleHoldings(Boolean(draft.multipleHoldings));
+          setDraftMessage('Draft restored from browser storage.');
+        } catch (error) {
+          setStatus(prev => `${prev}Could not restore draft: ${error.message}\n`);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (!draftMessage) {
+          return;
+        }
+        const timeout = setTimeout(() => setDraftMessage(''), 2400);
+        return () => clearTimeout(timeout);
+      }, [draftMessage]);
+
+      const splitRecipientInput = (input) => {
+        return input
+          .split(/[\n,;\s]+/)
+          .map(item => item.trim())
+          .filter(Boolean);
+      };
+
+      const manualRecipientList = useMemo(() => {
+        const seen = new Set();
+        const valid = [];
+        splitRecipientInput(recipients).forEach(address => {
+          if (ethers.isAddress(address)) {
+            const normalized = address.toLowerCase();
+            if (!seen.has(normalized)) {
+              seen.add(normalized);
+              valid.push(address);
+            }
+          }
+        });
+        return valid;
+      }, [recipients]);
+
+      const recipientInputCount = useMemo(() => splitRecipientInput(recipients).length, [recipients]);
+      const invalidRecipientCount = Math.max(0, recipientInputCount - manualRecipientList.length);
+
+      const projectedDistribution = useMemo(() => {
+        const perRecipient = Number(amount);
+        if (!Number.isFinite(perRecipient) || perRecipient <= 0) {
+          return {
+            uniqueRecipients: 0,
+            projectedUnits: 0,
+            estimatedTransactions: 0
+          };
+        }
+        const holderDrivenRecipients = holderPreview.length;
+        const uniqueRecipients = multipleHoldings
+          ? holderDrivenRecipients
+          : manualRecipientList.length;
+        const projectedUnits = multipleHoldings
+          ? holderPreview.reduce((sum, holder) => sum + (holder.count * perRecipient), 0)
+          : uniqueRecipients * perRecipient;
+        const estimatedTransactions = transferMethod === 'batch'
+          ? (uniqueRecipients > 0 ? 1 : 0)
+          : uniqueRecipients;
+        return {
+          uniqueRecipients,
+          projectedUnits,
+          estimatedTransactions
+        };
+      }, [amount, transferMethod, holderPreview, multipleHoldings, manualRecipientList]);
+
+      const filteredHolderPreview = useMemo(() => {
+        const query = holderSearch.trim().toLowerCase();
+        if (!query) {
+          return holderPreview;
+        }
+        return holderPreview.filter(holder => holder.address.toLowerCase().includes(query));
+      }, [holderPreview, holderSearch]);
+
+      const normalizeRecipientsInput = () => {
+        const normalized = manualRecipientList.join(',');
+        setRecipients(normalized);
+        setStatus(prev => `${prev}Normalized recipient list to ${manualRecipientList.length} unique valid addresses.\n`);
+      };
+
+      const clearStatusLog = () => {
+        setStatus('Status cleared.\n');
+      };
+
+      const clearTransactionHistory = () => {
+        setTxHistory([]);
+        setStatus(prev => `${prev}Transaction history cleared from this session.\n`);
+      };
+
+      const pasteRecipientsFromClipboard = async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (!text.trim()) {
+            setStatus(prev => `${prev}Clipboard is empty.\n`);
+            return;
+          }
+          setRecipients(prev => {
+            const separator = prev.trim() ? '\n' : '';
+            return `${prev}${separator}${text}`;
+          });
+          setStatus(prev => `${prev}Pasted recipients from clipboard.\n`);
+        } catch (error) {
+          setStatus(prev => `${prev}Could not read clipboard: ${error.message}\n`);
+        }
+      };
+
+      const useConnectedWalletAsRecipient = () => {
+        if (!account || !ethers.isAddress(account)) {
+          setStatus(prev => `${prev}Connect a wallet first to use your address as a recipient.\n`);
+          return;
+        }
+        setRecipients(account);
+        setStatus(prev => `${prev}Recipients set to connected wallet for testing.\n`);
+      };
+
+      const saveDraft = () => {
+        try {
+          localStorage.setItem('airdrop-tool-draft-v1', JSON.stringify({
+            recipients,
+            amount,
+            tokenContract,
+            tokenType,
+            transferMethod,
+            nftContract,
+            tokenIds,
+            fetchMethod,
+            multipleHoldings
+          }));
+          setDraftMessage('Draft saved.');
+          setStatus(prev => `${prev}Form draft saved locally in your browser.\n`);
+        } catch (error) {
+          setStatus(prev => `${prev}Failed to save draft: ${error.message}\n`);
+        }
+      };
+
+      const clearDraft = () => {
+        localStorage.removeItem('airdrop-tool-draft-v1');
+        setDraftMessage('Draft removed.');
+        setStatus(prev => `${prev}Saved draft removed from browser storage.\n`);
+      };
+
+      const exportHistoryCsv = () => {
+        if (txHistory.length === 0) {
+          setStatus(prev => `${prev}No transaction history to export.\n`);
+          return;
+        }
+        const header = 'recipient,amount,token,txHash,timestamp,explorer';
+        const rows = txHistory.map(tx => [
+          tx.recipient,
+          tx.amount,
+          tx.token,
+          tx.txHash,
+          tx.timestamp,
+          tx.explorer
+        ].map(value => `"${String(value).replace(/"/g, '""')}"`).join(','));
+        const csv = [header, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `airdrop-history-${Date.now()}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setStatus(prev => `${prev}Transaction history exported to CSV.\n`);
+      };
 
       const toggleWalletProvider = (e) => {
         e.preventDefault();
@@ -566,19 +1474,42 @@
             if (accounts.length === 0) {
               setStatus(prev => `${prev}Please unlock MetaMask or grant permission.\n`);
             } else {
+              if (selectedNetwork?.chainId) {
+                try {
+                  await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: selectedNetwork.chainId }],
+                  });
+                } catch (error) {
+                  if (error.code === 4902) {
+                    await window.ethereum.request({
+                      method: 'wallet_addEthereumChain',
+                      params: [{
+                        chainId: selectedNetwork.chainId,
+                        chainName: selectedNetwork.name,
+                        nativeCurrency: { name: selectedNetwork.nativeCurrency, symbol: selectedNetwork.nativeCurrency, decimals: 18 },
+                        rpcUrls: selectedNetwork.rpcUrls,
+                        blockExplorerUrls: selectedNetwork.blockExplorerUrls
+                      }],
+                    });
+                  } else {
+                    setStatus(prev => `${prev}Could not auto-switch to ${selectedNetwork.name}: ${error.message}\n`);
+                  }
+                }
+              }
+
               const signer = await browserProvider.getSigner();
               setProvider(browserProvider);
               setSigner(signer);
               setAccount(accounts[0]);
               setIsConnected(true);
               const network = await browserProvider.getNetwork();
-              const chainId = `0x${network.chainId.toString(16)}`;
-              const selectedNet = networks.find(n => n.chainId === chainId);
+              const selectedNet = getNetworkByChainId(network.chainId);
               if (selectedNet) {
                 setConnectedNetwork(selectedNet);
                 setSelectedNetwork(selectedNet);
                 window.ethereum.on('chainChanged', (chainId) => {
-                  const net = networks.find(n => n.chainId === chainId);
+                  const net = getNetworkByChainId(chainId);
                   if (net) {
                     setConnectedNetwork(net);
                     setSelectedNetwork(net);
@@ -598,7 +1529,8 @@
                   }
                 });
               } else {
-                setStatus(prev => `${prev}Unsupported network: ${chainId}. Please switch to Cronos Mainnet.\n`);
+                const connectedChainId = normalizeChainId(network.chainId) || String(network.chainId);
+                setStatus(prev => `${prev}Unsupported network: ${connectedChainId}. Please switch to a supported network in the selector.\n`);
               }
               setStatus(prev => `${prev}Connected to MetaMask: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}\n`);
             }
@@ -606,6 +1538,11 @@
             setStatus(prev => `${prev}MetaMask connection failed: ${error.message}\n`);
           }
         } else if (walletProvider === 'WalletConnect') {
+          if (!walletConnectProjectId || walletConnectProjectId === 'YOUR_WALLET_CONNECT_PROJECT_ID') {
+            setStatus(prev => `${prev}WalletConnect is not configured. Set a valid WalletConnect project ID in AirDrop.html before using this provider.\n`);
+            setIsLoading(false);
+            return;
+          }
           if (!walletConnectModal) {
             setStatus(prev => `${prev}WalletConnect not ready. Please refresh.\n`);
             setIsLoading(false);
@@ -613,7 +1550,7 @@
           }
           try {
             const wcProvider = await window.EthereumProvider.init({
-              projectId: 'YOUR_WALLET_CONNECT_PROJECT_ID',
+              projectId: walletConnectProjectId,
               chains: [parseInt(selectedNetwork.chainId, 16)],
               optionalChains: networks.map(n => parseInt(n.chainId, 16)),
               showQrModal: true,
@@ -633,13 +1570,12 @@
             setAccount(accounts);
             setIsConnected(true);
             const network = await browserProvider.getNetwork();
-            const chainId = `0x${network.chainId.toString(16)}`;
-            const selectedNet = networks.find(n => n.chainId === chainId);
+            const selectedNet = getNetworkByChainId(network.chainId);
             if (selectedNet) {
               setConnectedNetwork(selectedNet);
               setSelectedNetwork(selectedNet);
               wcProvider.on('chainChanged', (chainId) => {
-                const net = networks.find(n => n.chainId === chainId);
+                const net = getNetworkByChainId(chainId);
                 if (net) {
                   setConnectedNetwork(net);
                   setSelectedNetwork(net);
@@ -659,7 +1595,8 @@
                 }
               });
             } else {
-              setStatus(prev => `${prev}Unsupported network: ${chainId}. Please switch to Cronos Mainnet.\n`);
+              const connectedChainId = normalizeChainId(network.chainId) || String(network.chainId);
+              setStatus(prev => `${prev}Unsupported network: ${connectedChainId}. Please switch to a supported network in the selector.\n`);
             }
             setStatus(prev => `${prev}Connected to WalletConnect: ${accounts.slice(0, 6)}...${accounts.slice(-4)}\n`);
             walletConnectModal.closeModal();
@@ -693,50 +1630,154 @@
 
       const handleNetworkChange = async (e) => {
         const selected = networks.find(n => n.name === e.target.value);
-        setSelectedNetwork(selected);
+        if (!selected) {
+          return;
+        }
+
+        if (!isConnected) {
+          setSelectedNetwork(selected);
+          return;
+        }
+
+        const requestVia = async (method, params = []) => {
+          if (provider?.provider?.request) {
+            return provider.provider.request({ method, params });
+          }
+          if (provider?.send) {
+            return provider.send(method, params);
+          }
+          if (window.ethereum?.request) {
+            return window.ethereum.request({ method, params });
+          }
+          throw new Error('Wallet transport unavailable');
+        };
+
+        const readLiveNetwork = async () => {
+          if (provider?.getNetwork) {
+            return provider.getNetwork();
+          }
+          const chainId = await requestVia('eth_chainId');
+          return { chainId: BigInt(chainId) };
+        };
+
         if (isConnected) {
           try {
-            await provider.provider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: selected.chainId }],
-            });
-            setConnectedNetwork(selected);
-            setStatus(prev => `${prev}Switched to ${selected.name}.\n`);
+            await requestVia('wallet_switchEthereumChain', [{ chainId: selected.chainId }]);
+            const liveNetwork = await readLiveNetwork();
+            const activeNetwork = getNetworkByChainId(liveNetwork.chainId);
+            if (activeNetwork) {
+              setConnectedNetwork(activeNetwork);
+              setSelectedNetwork(activeNetwork);
+              setStatus(prev => `${prev}Switched to ${activeNetwork.name}.\n`);
+            } else {
+              setConnectedNetwork(null);
+              const activeChainId = normalizeChainId(liveNetwork.chainId) || String(liveNetwork.chainId);
+              setStatus(prev => `${prev}Switched network, but chain ${activeChainId} is not in the supported list.\n`);
+              if (connectedNetwork) {
+                setSelectedNetwork(connectedNetwork);
+              }
+            }
           } catch (error) {
             if (error.code === 4902) {
               try {
-                await provider.provider.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: selected.chainId,
-                    chainName: selected.name,
-                    nativeCurrency: { name: selected.nativeCurrency, symbol: selected.nativeCurrency, decimals: 18 },
-                    rpcUrls: selected.rpcUrls,
-                    blockExplorerUrls: selected.blockExplorerUrls
-                  }],
-                });
-                setConnectedNetwork(selected);
-                setStatus(prev => `${prev}Added and switched to ${selected.name}.\n`);
+                await requestVia('wallet_addEthereumChain', [{
+                  chainId: selected.chainId,
+                  chainName: selected.name,
+                  nativeCurrency: { name: selected.nativeCurrency, symbol: selected.nativeCurrency, decimals: 18 },
+                  rpcUrls: selected.rpcUrls,
+                  blockExplorerUrls: selected.blockExplorerUrls
+                }]);
+                await requestVia('wallet_switchEthereumChain', [{ chainId: selected.chainId }]);
+                const liveNetwork = await readLiveNetwork();
+                const activeNetwork = getNetworkByChainId(liveNetwork.chainId);
+                if (activeNetwork) {
+                  setConnectedNetwork(activeNetwork);
+                  setSelectedNetwork(activeNetwork);
+                  setStatus(prev => `${prev}Added and switched to ${activeNetwork.name}.\n`);
+                } else {
+                  setConnectedNetwork(null);
+                  const activeChainId = normalizeChainId(liveNetwork.chainId) || String(liveNetwork.chainId);
+                  setStatus(prev => `${prev}Added network, but active chain ${activeChainId} is unsupported.\n`);
+                  if (connectedNetwork) {
+                    setSelectedNetwork(connectedNetwork);
+                  }
+                }
               } catch (addError) {
                 setStatus(prev => `${prev}Error adding network: ${addError.message}\n`);
+                if (connectedNetwork) {
+                  setSelectedNetwork(connectedNetwork);
+                }
               }
             } else {
               setStatus(prev => `${prev}Error switching network: ${error.message}\n`);
+              if (connectedNetwork) {
+                setSelectedNetwork(connectedNetwork);
+              }
             }
           }
         }
       };
 
       const fetchNFTHolders = async () => {
-        if (!provider || !ethers.isAddress(nftContract)) {
-          setStatus(prev => `${prev}Please connect wallet and provide a valid NFT contract address.\n`);
+        if (!ethers.isAddress(nftContract)) {
+          setStatus(prev => `${prev}Please provide a valid NFT contract address.\n`);
           return;
         }
         setIsLoading(true);
-        setStatus(prev => `${prev}Fetching NFT holders for contract ${nftContract}...\n`);
+        setIsFetchVisualActive(true);
+        setFetchProgress(4);
+        setFetchFoundWallets(0);
+        setFetchStageLabel('Scanning supported networks...');
+        setStatus(prev => `${prev}Locating contract ${nftContract} across supported networks...\n`);
 
+        let fetchCompleted = false;
         try {
-          const contract = new ethers.Contract(nftContract, erc721Abi, provider);
+          const orderedNetworks = selectedNetwork
+            ? [selectedNetwork, ...networks.filter(n => n.chainId !== selectedNetwork.chainId)]
+            : [...networks];
+
+          let readProvider = null;
+          let readNetwork = null;
+
+          for (const [index, candidate] of orderedNetworks.entries()) {
+            const scanProgress = 6 + Math.round(((index + 1) / orderedNetworks.length) * 18);
+            setFetchProgress(scanProgress);
+            setFetchStageLabel(`Checking ${candidate.name} RPC...`);
+            try {
+              const candidateProvider = new ethers.JsonRpcProvider(candidate.rpcUrls[0]);
+              const code = await candidateProvider.getCode(nftContract);
+              if (code && code !== '0x') {
+                readProvider = candidateProvider;
+                readNetwork = candidate;
+                setFetchProgress(26);
+                setFetchStageLabel(`Contract found on ${candidate.name}. Gathering holders...`);
+                break;
+              }
+            } catch (scanError) {
+              setStatus(prev => `${prev}RPC check failed on ${candidate.name}: ${scanError.message}\n`);
+            }
+          }
+
+          if (!readProvider || !readNetwork) {
+            setStatus(prev => `${prev}Contract ${nftContract} was not found on supported networks (${networks.map(n => n.name).join(', ')}).\n`);
+            setIsLoading(false);
+            return;
+          }
+
+          setStatus(prev => `${prev}Found contract on ${readNetwork.name}. Fetching holders now...\n`);
+
+          const contract = new ethers.Contract(nftContract, erc721Abi, readProvider);
+
+          let isErc721 = null;
+          let isErc1155 = null;
+          try {
+            const interfaceProbe = new ethers.Contract(nftContract, supportsInterfaceAbi, readProvider);
+            isErc721 = await interfaceProbe.supportsInterface('0x80ac58cd');
+            isErc1155 = await interfaceProbe.supportsInterface('0xd9b67a26');
+          } catch (error) {
+            // Some contracts do not expose ERC165; ownerOf probing below is the fallback.
+          }
+
           let holdersMap = new Map();
 
           if (fetchMethod === 'ownerOf') {
@@ -753,22 +1794,53 @@
               setIsLoading(false);
               return;
             }
+
+            if (isErc1155 === true && isErc721 !== true) {
+              setStatus(prev => `${prev}This contract appears to be ERC-1155 on ${readNetwork.name}. ERC-1155 does not support ownerOf(tokenId). Use CSV upload or a dedicated ERC-1155 holder indexer.\n`);
+              setIsLoading(false);
+              return;
+            }
+
+            try {
+              await contract.ownerOf(tokenIdList[0]);
+            } catch (error) {
+              if (error?.code === 'BAD_DATA') {
+                setStatus(prev => `${prev}ownerOf returned empty data for ${nftContract} on ${readNetwork.name}. This usually means the contract is not ERC-721 on this chain, the address is wrong, or you are on the wrong network.\n`);
+                setIsLoading(false);
+                return;
+              }
+            }
+
             const BATCH_SIZE = 100;
+            let badDataCount = 0;
+            let processedCount = 0;
             for (let i = 0; i < tokenIdList.length; i += BATCH_SIZE) {
               const batch = tokenIdList.slice(i, i + BATCH_SIZE);
               setStatus(prev => `${prev}Fetching batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(tokenIdList.length / BATCH_SIZE)} (${batch.length} token IDs)...\n`);
+              setFetchStageLabel(`Reading token owners on ${readNetwork.name}...`);
               for (const tokenId of batch) {
                 try {
                   const owner = await contract.ownerOf(tokenId);
                   if (ethers.isAddress(owner) && owner !== ethers.ZeroAddress) {
                     holdersMap.set(owner, (holdersMap.get(owner) || 0) + 1);
+                    setFetchFoundWallets(holdersMap.size);
                   }
                 } catch (error) {
+                  if (error?.code === 'BAD_DATA') {
+                    badDataCount += 1;
+                  }
                   setStatus(prev => `${prev}Skipping token ID ${tokenId}: ${error.message}\n`);
+                } finally {
+                  processedCount += 1;
+                  const phaseProgress = 26 + Math.round((processedCount / tokenIdList.length) * 70);
+                  setFetchProgress(Math.min(96, phaseProgress));
                 }
               }
             }
             setStatus(prev => `${prev}Fetched ${holdersMap.size} unique holders for ${tokenIdList.length} token IDs.\n`);
+            if (holdersMap.size === 0 && badDataCount === tokenIdList.length) {
+              setStatus(prev => `${prev}All ownerOf calls returned empty data. Double-check that this is an ERC-721 contract deployed on ${readNetwork.name}.\n`);
+            }
           } else if (fetchMethod === 'entireCollection') {
             try {
               let totalSupply;
@@ -797,18 +1869,25 @@
                 return;
               }
               const BATCH_SIZE = 100;
+              let processedCount = 0;
               for (let i = 0; i < totalSupply; i += BATCH_SIZE) {
                 const batchEnd = Math.min(i + BATCH_SIZE, totalSupply);
                 setStatus(prev => `${prev}Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(totalSupply / BATCH_SIZE)} (tokens ${i} to ${batchEnd - 1})...\n`);
+                setFetchStageLabel(`Scanning collection owners on ${readNetwork.name}...`);
                 for (let j = i; j < batchEnd; j++) {
                   try {
                     const tokenId = await contract.tokenByIndex(j);
                     const owner = await contract.ownerOf(tokenId);
                     if (ethers.isAddress(owner) && owner !== ethers.ZeroAddress) {
                       holdersMap.set(owner, (holdersMap.get(owner) || 0) + 1);
+                      setFetchFoundWallets(holdersMap.size);
                     }
                   } catch (error) {
                     setStatus(prev => `${prev}Skipping token index ${j}: ${error.message}\n`);
+                  } finally {
+                    processedCount += 1;
+                    const phaseProgress = 26 + Math.round((processedCount / totalSupply) * 70);
+                    setFetchProgress(Math.min(96, phaseProgress));
                   }
                 }
               }
@@ -822,10 +1901,18 @@
 
           const holderList = Array.from(holdersMap, ([address, count]) => ({ address, count }));
           setHolderPreview(holderList);
+          setFetchFoundWallets(holderList.length);
+          setFetchProgress(100);
+          setFetchStageLabel(`Complete: found ${holderList.length} unique wallets on ${readNetwork.name}.`);
+          fetchCompleted = true;
           setStatus(prev => `${prev}Preview ${holderList.length} NFT holder addresses below (with NFT counts). Click 'Confirm Holders' to add to recipients.\n`);
         } catch (error) {
+          setFetchStageLabel('Fetch failed. Check status log for details.');
           setStatus(prev => `${prev}Error fetching NFT holders: ${error.message}\n`);
         } finally {
+          if (!fetchCompleted) {
+            setIsFetchVisualActive(false);
+          }
           setIsLoading(false);
         }
       };
@@ -917,11 +2004,12 @@
           return;
         }
         setAmountError('');
+        const normalizedRecipients = manualRecipientList.map(address => ({ address, count: 1 }));
         const recipientList = multipleHoldings
           ? holderPreview.length > 0
             ? holderPreview
-            : recipients.split(',').map(r => ({ address: r.trim(), count: 1 })).filter(r => ethers.isAddress(r.address))
-          : recipients.split(',').map(r => ({ address: r.trim(), count: 1 })).filter(r => ethers.isAddress(r.address));
+            : normalizedRecipients
+          : normalizedRecipients;
         if (recipientList.length === 0) {
           setStatus(prev => `${prev}No valid recipient addresses provided. ${multipleHoldings ? 'Please fetch and confirm NFT holders.' : 'Please enter valid addresses in the Recipients field or fetch NFT holders.'}\n`);
           return;
@@ -945,7 +2033,12 @@
         try {
           if (tokenType === 'native') {
             if (transferMethod === 'batch') {
-              const batchContractAddress = '0x99594c35f74eFE963C567434C530b1441EF7ff3e'; // REPLACE WITH ACTUAL DEPLOYED CONTRACT ADDRESS
+              const batchContractAddress = getBatchContractAddress();
+              if (!ethers.isAddress(batchContractAddress)) {
+                setStatus(prev => `${prev}Batch contract not available on ${selectedNetwork?.name || 'this network'}. Contact Niffty: https://x.com/pet_rescueNFT to deploy the contract or switch to another network.\n`);
+                setIsLoading(false);
+                return;
+              }
               const batchContract = new ethers.Contract(batchContractAddress, batchTransferAbi, signer);
               const recipientAddresses = recipientList.map(r => r.address);
               const amounts = recipientList.map(r => ethers.parseEther((parseFloat(amount) * r.count).toString()));
@@ -977,7 +2070,7 @@
                   explorer: `${selectedNetwork.blockExplorerUrls[0]}/tx/${txReceipt.hash}`
                 }]);
               } catch (error) {
-                setStatus(prev => `${prev}Error in batch native airdrop: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas and transfer amount.' : ''}\n`);
+                setStatus(prev => `${prev}Error in batch native airdrop: ${error.message}${error.message.includes('insufficient funds') ? `. Ensure enough ${selectedNetwork?.nativeCurrency || 'native token'} for gas and transfer amount.` : ''}\n`);
               }
             } else {
               let successCount = 0;
@@ -1002,7 +2095,7 @@
                   }]);
                   successCount++;
                 } catch (error) {
-                  setStatus(prev => `${prev}Error sending to ${recipient.address}: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas and transfer amount.' : ''}\n`);
+                  setStatus(prev => `${prev}Error sending to ${recipient.address}: ${error.message}${error.message.includes('insufficient funds') ? `. Ensure enough ${selectedNetwork?.nativeCurrency || 'native token'} for gas and transfer amount.` : ''}\n`);
                 }
               }
               setStatus(prev => `${prev}Completed airdrop: ${successCount}/${recipientList.length} transactions successful.\n`);
@@ -1036,7 +2129,12 @@
               return;
             }
             if (transferMethod === 'batch') {
-              const batchContractAddress = '0x99594c35f74eFE963C567434C530b1441EF7ff3e'; // REPLACE WITH ACTUAL DEPLOYED CONTRACT ADDRESS
+              const batchContractAddress = getBatchContractAddress();
+              if (!ethers.isAddress(batchContractAddress)) {
+                setStatus(prev => `${prev}Batch contract not available on ${selectedNetwork?.name || 'this network'}. Contact Niffty: https://x.com/pet_rescueNFT to deploy the contract or switch to another network.\n`);
+                setIsLoading(false);
+                return;
+              }
               const batchContract = new ethers.Contract(batchContractAddress, batchTransferAbi, signer);
               const allowance = await tokenContractInstance.allowance(account, batchContractAddress);
               if (allowance < totalAmountWei) {
@@ -1074,7 +2172,7 @@
                   explorer: `${selectedNetwork.blockExplorerUrls[0]}/tx/${txReceipt.hash}`
                 }]);
               } catch (error) {
-                setStatus(prev => `${prev}Error in batch airdrop: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas.' : ''}\n`);
+                setStatus(prev => `${prev}Error in batch airdrop: ${error.message}${error.message.includes('insufficient funds') ? `. Ensure enough ${selectedNetwork?.nativeCurrency || 'native token'} for gas.` : ''}\n`);
               }
             } else if (transferMethod === 'individual') {
               let successCount = 0;
@@ -1096,7 +2194,7 @@
                   }]);
                   successCount++;
                 } catch (error) {
-                  setStatus(prev => `${prev}Error sending to ${recipient.address}: ${error.message}${error.message.includes('insufficient funds') ? '. Ensure enough CRO for gas.' : ''}\n`);
+                  setStatus(prev => `${prev}Error sending to ${recipient.address}: ${error.message}${error.message.includes('insufficient funds') ? `. Ensure enough ${selectedNetwork?.nativeCurrency || 'native token'} for gas.` : ''}\n`);
                 }
               }
               setStatus(prev => `${prev}Completed airdrop: ${successCount}/${recipientList.length} transactions successful.\n`);
@@ -1122,12 +2220,19 @@
         setMultipleHoldings(false);
         setTokenIdsError('');
         setAmountError('');
+        setHolderSearch('');
+        setDraftMessage('');
         setStatus(prev => `${prev}Form reset.\n`);
       };
 
       const copyToClipboard = async () => {
         try {
-          await navigator.clipboard.writeText('0x99594c35f74eFE963C567434C530b1441EF7ff3e');
+          const address = getBatchContractAddress();
+          if (!ethers.isAddress(address)) {
+            setStatus(prev => `${prev}No batch contract configured for ${selectedNetwork?.name || 'this network'} yet.\n`);
+            return;
+          }
+          await navigator.clipboard.writeText(address);
           setCopyTooltip('Address copied!');
           setTimeout(() => setCopyTooltip('Click to copy address'), 2000);
         } catch (error) {
@@ -1142,33 +2247,42 @@
           <div className="modal p-6 text-gray-200">
             <h2 className="text-xl font-semibold text-white mb-4">How to Use the Airdrop Tool</h2>
             <ol className="list-decimal list-inside space-y-2 text-sm">
-              <li><strong>Connect Wallet</strong>: Click the wallet button to connect via MetaMask or WalletConnect (right-click to toggle provider). Ensure you're on Cronos Mainnet (or another supported network).</li>
-              <li><strong>Select Network</strong>: Choose a network (e.g., Cronos Mainnet). The app will prompt you to switch if needed.</li>
+              <li><strong>Connect Wallet</strong>: Click Connect in the Wallet section. MetaMask is ready by default, and WalletConnect requires a valid project ID in the code before production use.</li>
+              <li><strong>Select Network</strong>: Choose Ethereum, Polygon, Cronos, or Monad. The app will prompt your wallet to switch when possible.</li>
               <li><strong>Fetch NFT Holders</strong>:
                 <ul className="list-disc list-inside ml-4">
-                  <li><strong>Specific Token IDs</strong>: Enter comma-separated token IDs or ranges (e.g., 1to5,7,9to10 or 1-5,7,9-10 or 1,3,5) for an NFT contract. Processed in batches of 100 for large lists.</li>
+                  <li><strong>Specific Token IDs</strong>: Enter comma-separated IDs or ranges (for example: 1to5,7,9to10 or 1-5,7,9-10). IDs are processed in batches of 100.</li>
                   <li><strong>Entire Collection</strong>: Enter an ERC721Enumerable contract address to fetch all token holders (requires totalSupply and tokenByIndex). Processed in batches of 100 for large collections.</li>
                   <li><strong>CSV Upload</strong>: Upload a CSV with an 'address' column containing wallet addresses.</li>
                 </ul>
               </li>
+              <li><strong>Use Supply Hints</strong>: After entering an NFT address, the app checks totalSupply across supported networks and suggests token ID ranges for faster input.</li>
               <li><strong>Preview Holders</strong>: After fetching, review the list of holders and their NFT counts. Remove any unwanted addresses.</li>
               <li><strong>Confirm Holders</strong>: Click "Confirm Holders" to add addresses to the Recipients field.</li>
               <li><strong>Configure Airdrop</strong>:
                 <ul className="list-disc list-inside ml-4">
-                  <li><strong>Token Type</strong>: Choose Native Token (e.g., CRO) or ERC-20 Token (enter token contract address).</li>
+                  <li><strong>Token Type</strong>: Choose Native Token (network native coin) or ERC-20 Token (enter token contract address).</li>
                   <li><strong>Transfer Method</strong>: Choose Batch Transfer (one transaction) or Individual Transfers (one transaction per recipient) for either token type.</li>
-                  <li><strong>Recipients</strong>: Addresses are auto-filled from confirmed holders or manually entered (comma-separated).</li>
+                  <li><strong>Recipients</strong>: Addresses are auto-filled from confirmed holders or manually entered. You can paste from clipboard, normalize/dedupe, and see invalid count live.</li>
                   <li><strong>Amount</strong>: Enter the amount per recipient or per NFT (if "Airdrop per NFT Held" is checked).</li>
                   <li><strong>Airdrop per NFT Held</strong>: If enabled, each holder receives the amount multiplied by their NFT count.</li>
                 </ul>
               </li>
               <li><strong>Send Airdrop</strong>: Click "Send Airdrop". For Batch Transfer, confirm one transaction (plus approval for ERC-20 if needed). For Individual Transfers, confirm one transaction per recipient (plus approval for ERC-20 if needed). Monitor progress in the Status section.</li>
-              <li><strong>View History</strong>: Check sent transactions in the Transaction History section with links to Cronosscan.</li>
+              <li><strong>View History</strong>: Check sent transactions in Transaction History. Explorer links follow the currently selected network.</li>
               <li><strong>Reset Form</strong>: Clear all inputs and start over if needed.</li>
             </ol>
             <p className="mt-4 text-sm text-gray-400">
-              <strong>Tips</strong>: Test on Cronos Testnet to avoid using real funds. Ensure your wallet has enough CRO for gas fees and transfer amounts (for native tokens). For ERC721Enumerable issues, use CSV upload or specific token IDs.
+              <strong>Tips</strong>: On mobile, use the status log for detailed guidance. Ensure your selected network has enough native token for gas fees and transfer amounts. If batch mode says contract not configured, switch to a deployed network or request deployment for that chain.
             </p>
+            <div className="mt-3 p-3 rounded-lg border border-sky-900/40 bg-slate-900/35 text-sm text-gray-300">
+              <p className="font-semibold text-white">Suggested Best Practices</p>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>Start with 1-2 test recipients before a full airdrop.</li>
+                <li>Use "Normalize + Dedupe" before sending to reduce mistakes.</li>
+                <li>On large drops, keep the status log open and export history when done.</li>
+              </ul>
+            </div>
             <button
               onClick={() => setShowInstructions(false)}
               className="mt-4 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium w-full"
@@ -1181,44 +2295,83 @@
 
       return (
         <ErrorBoundary>
-          <div className="w-full max-w-4xl lg:max-w-5xl">
-            <header className="mb-6 text-center">
-              <h1 className="text-3xl font-bold text-white">Airdrop Tool</h1>
-              <button
-                onClick={() => setShowInstructions(true)}
-                className="mt-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium tooltip"
-                data-tooltip="View instructions on how to use the app"
-              >
-                How to Use the App
-              </button>
+          <div className="w-full max-w-6xl mx-auto">
+            <header className="mb-6">
+              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+                <div>
+                  <span className={`pill ${isConnected ? 'pill-live' : 'pill-alert'}`}>{isConnected ? 'Wallet Online' : 'Wallet Offline'}</span>
+                  <h1 className="hero-title text-3xl md:text-4xl mt-2">Airdrop Command Deck</h1>
+                  <p className="text-sm md:text-base mt-2" style={{ color: 'var(--muted)' }}>
+                    Precision distribution for NFT communities and token campaigns.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setShowInstructions(true)}
+                    className="px-4 py-2 rounded-lg font-medium tooltip primary-btn"
+                    data-tooltip="View instructions on how to use the app"
+                  >
+                    How to Use
+                  </button>
+                  <button
+                    onClick={saveDraft}
+                    className="px-4 py-2 rounded-lg font-medium tooltip ghost-btn"
+                    data-tooltip="Save current form values locally"
+                  >
+                    Save Draft
+                  </button>
+                  <button
+                    onClick={clearDraft}
+                    className="px-4 py-2 rounded-lg font-medium tooltip ghost-btn"
+                    data-tooltip="Delete saved local draft"
+                  >
+                    Clear Draft
+                  </button>
+                </div>
+              </div>
+              {draftMessage && <p className="mt-3 text-sm" style={{ color: '#9ce7cf' }}>{draftMessage}</p>}
+              <div className="kpi-grid">
+                <div className="kpi">
+                  <h4>Unique Recipients</h4>
+                  <p>{projectedDistribution.uniqueRecipients}</p>
+                </div>
+                <div className="kpi">
+                  <h4>Projected Total</h4>
+                  <p>{projectedDistribution.projectedUnits.toLocaleString(undefined, { maximumFractionDigits: 6 })}</p>
+                </div>
+                <div className="kpi">
+                  <h4>Estimated TX Count</h4>
+                  <p>{projectedDistribution.estimatedTransactions}</p>
+                </div>
+                <div className="kpi">
+                  <h4>History Entries</h4>
+                  <p>{txHistory.length}</p>
+                </div>
+              </div>
             </header>
             {showInstructions && <InstructionsModal />}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-white mb-3">Wallet Connection</h2>
+
+            <div className="mb-8 section-card">
+              <h2 className="text-xl font-semibold text-white mb-3">Wallet and Network</h2>
               <div className="button-group">
                 <button
                   onClick={handleWalletAction}
-                  onContextMenu={toggleWalletProvider}
                   disabled={isLoading}
-                  className={`p-3 rounded-lg text-white font-medium ${isConnected ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} disabled:bg-gray-500 tooltip`}
-                  data-tooltip={isConnected ? 'Disconnect your wallet' : 'Click to connect; right-click to toggle provider'}
+                  className={`p-3 rounded-lg text-white font-medium ${isConnected ? 'bg-red-600 hover:bg-red-700' : 'primary-btn'} disabled:bg-gray-500 tooltip`}
+                  data-tooltip={isConnected ? 'Disconnect your wallet' : 'Click to connect with selected provider'}
                 >
                   {isLoading ? 'Connecting...' : buttonText}
                 </button>
               </div>
               {isConnected && account && (
                 <p className="mt-2 text-gray-300">
-                  Connected as: <span className="font-mono">{account.slice(0, 6)}...{account.slice(-4)}</span>
+                  Connected as: <span className="font-mono">{account.slice(0, 6)}...{account.slice(-4)}</span> via {walletProvider}
                 </p>
               )}
-            </div>
-
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-white mb-3">Network</h2>
               <select
                 value={selectedNetwork?.name || networks[0].name}
                 onChange={handleNetworkChange}
-                className="w-full sm:w-1/2 p-3 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
+                className="w-full sm:w-1/2 p-3 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white mt-3"
                 disabled={isLoading}
               >
                 {networks.map(n => (
@@ -1230,9 +2383,30 @@
                   Connected to: {connectedNetwork.name}
                 </p>
               )}
+              <div className="mt-4 p-3 rounded-lg border border-sky-900/40 bg-slate-900/40">
+                <p className="text-sm text-gray-200">
+                  Batch Contract ({selectedNetwork?.name || 'Network'}):
+                </p>
+                {ethers.isAddress(getBatchContractAddress()) ? (
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                    <code className="text-xs sm:text-sm break-all text-sky-200">{getBatchContractAddress()}</code>
+                    <button
+                      onClick={copyToClipboard}
+                      className="tiny-btn ghost-btn tooltip"
+                      data-tooltip={copyTooltip}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-amber-300">
+                    Batch contract not available on this network. Contact <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer" className="text-sky-300 hover:underline">Niffty</a> to deploy the contract or switch to another network.
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-8 section-card">
               <h2 className="text-xl font-semibold text-white mb-3">NFT Holders</h2>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-300">NFT Contract Address</label>
@@ -1243,10 +2417,33 @@
                   placeholder="e.g., 0x..."
                   className={`mt-1 block w-full p-3 rounded-lg border border-gray-600 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white ${!ethers.isAddress(nftContract) && nftContract ? 'input-error' : ''}`}
                   disabled={isLoading}
-                  data-tooltip="Enter the ERC-721 NFT contract address on Cronos"
+                  data-tooltip="Enter the ERC-721 NFT contract address"
                 />
                 {!ethers.isAddress(nftContract) && nftContract && (
                   <p className="error-text mt-1">Invalid contract address</p>
+                )}
+                {ethers.isAddress(nftContract) && (
+                  <div className="mt-2 text-xs">
+                    {nftSupplyLoading && (
+                      <p style={{ color: 'var(--muted)' }}>
+                        Checking total supply across supported networks...
+                      </p>
+                    )}
+                    {!nftSupplyLoading && nftSupplyResults.length > 0 && (
+                      <div className="space-y-1">
+                        {nftSupplyResults.map((entry) => (
+                          <p key={entry.networkName} className={entry.supply !== null ? 'text-emerald-300' : 'text-amber-300'}>
+                            {entry.networkName}: {entry.supply !== null
+                              ? `totalSupply ${entry.supply.toLocaleString()} (try IDs ${entry.supply > 0 ? `1to${entry.supply}` : 'none'}${entry.supply > 0 ? ` or 0to${Math.max(0, entry.supply - 1)}` : ''})`
+                              : entry.error}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {!nftSupplyLoading && nftSupplyScanError && (
+                      <p className="error-text">{nftSupplyScanError}</p>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="mb-4">
@@ -1344,11 +2541,34 @@
                   {isLoading ? 'Fetching...' : 'Fetch NFT Holders'}
                 </button>
               )}
+              {isFetchVisualActive && (
+                <div className="fetch-progress-panel" role="status" aria-live="polite">
+                  <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+                    <span className="text-cyan-100">{fetchStageLabel}</span>
+                    <span className="text-amber-200 font-semibold">{fetchProgress}%</span>
+                  </div>
+                  <div className="rocket-track">
+                    <div className="rocket-fill" style={{ width: `${Math.max(0, Math.min(100, fetchProgress))}%` }}></div>
+                  </div>
+                  <p className="mt-2 text-xs text-cyan-100/90">
+                    Found {fetchFoundWallets} wallet{fetchFoundWallets === 1 ? '' : 's'} so far while gathering addresses.
+                  </p>
+                </div>
+              )}
               {holderPreview.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">Preview NFT Holders</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                    <h3 className="text-lg font-semibold text-white">Preview NFT Holders</h3>
+                    <input
+                      type="text"
+                      value={holderSearch}
+                      onChange={(e) => setHolderSearch(e.target.value)}
+                      placeholder="Search by address"
+                      className="p-2 rounded-lg border border-gray-600 bg-gray-700 text-white text-sm"
+                    />
+                  </div>
                   <div className="scrollable-preview bg-gray-700 p-4 rounded-lg text-sm text-gray-200">
-                    {holderPreview.map((holder, index) => (
+                    {filteredHolderPreview.map((holder, index) => (
                       <div key={index} className="holder-row flex items-center justify-between mb-2">
                         <span className="font-mono">{holder.address} (x{holder.count} NFT{holder.count > 1 ? 's' : ''})</span>
                         <button
@@ -1360,6 +2580,9 @@
                         </button>
                       </div>
                     ))}
+                    {filteredHolderPreview.length === 0 && (
+                      <p className="text-gray-400">No matching holders for this filter.</p>
+                    )}
                   </div>
                   <button
                     onClick={confirmHolders}
@@ -1372,7 +2595,7 @@
               )}
             </div>
 
-            <div className="mb-8">
+            <div className="mb-8 section-card">
               <h2 className="text-xl font-semibold text-white mb-3">Send Airdrop</h2>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-300 mb-1">Token Type</label>
@@ -1434,16 +2657,52 @@
                 </div>
               )}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300">Recipients (comma-separated)</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-300">Recipients (comma, newline, or space separated)</label>
+                <textarea
                   value={recipients}
                   onChange={(e) => setRecipients(e.target.value)}
-                  placeholder="e.g., 0x123...,0x456..."
+                  placeholder="0x123...\n0x456..."
+                  rows={4}
                   className="mt-1 block w-full p-3 rounded-lg border border-gray-600 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
                   disabled={isLoading}
-                  data-tooltip="Enter comma-separated wallet addresses or fetch from NFT holders"
+                  data-tooltip="Enter wallet addresses or fetch from NFT holders"
                 />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    onClick={pasteRecipientsFromClipboard}
+                    disabled={isLoading}
+                    className="tiny-btn ghost-btn"
+                  >
+                    Paste From Clipboard
+                  </button>
+                  <button
+                    onClick={useConnectedWalletAsRecipient}
+                    disabled={isLoading}
+                    className="tiny-btn ghost-btn"
+                  >
+                    Use My Wallet (Test)
+                  </button>
+                  <button
+                    onClick={normalizeRecipientsInput}
+                    disabled={isLoading}
+                    className="tiny-btn ghost-btn"
+                  >
+                    Normalize + Dedupe
+                  </button>
+                  <button
+                    onClick={() => setRecipients('')}
+                    disabled={isLoading}
+                    className="tiny-btn ghost-btn"
+                  >
+                    Clear Recipients
+                  </button>
+                  <p className="text-xs self-center" style={{ color: 'var(--muted)' }}>
+                    Valid unique addresses detected: {manualRecipientList.length}
+                  </p>
+                  <p className="text-xs self-center" style={{ color: invalidRecipientCount > 0 ? '#fda4af' : '#9ce7cf' }}>
+                    Invalid entries: {invalidRecipientCount}
+                  </p>
+                </div>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-300">Amount per Recipient</label>
@@ -1465,7 +2724,7 @@
                 <button
                   onClick={sendAirdrop}
                   disabled={isLoading || amountError || (tokenType === 'erc20' && (!ethers.isAddress(tokenContract) || !tokenContract))}
-                  className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-500 font-medium tooltip"
+                  className="p-3 rounded-lg primary-btn disabled:bg-gray-500 font-medium tooltip"
                   data-tooltip="Send the airdrop to recipients"
                 >
                   {isLoading ? 'Sending...' : 'Send Airdrop'}
@@ -1473,7 +2732,7 @@
                 <button
                   onClick={resetForm}
                   disabled={isLoading}
-                  className="p-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 disabled:bg-gray-500 font-medium tooltip"
+                  className="p-3 rounded-lg ghost-btn disabled:bg-gray-500 font-medium tooltip"
                   data-tooltip="Clear all inputs and reset the form"
                 >
                   Reset Form
@@ -1481,15 +2740,24 @@
               </div>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-white mb-3">Status</h2>
-              <div className="scrollable-status bg-gray-700 p-4 rounded-lg text-sm text-gray-200">
+            <div className="mb-8 section-card">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 className="text-xl font-semibold text-white">Status</h2>
+                <button onClick={clearStatusLog} className="tiny-btn ghost-btn">Clear Log</button>
+              </div>
+              <div className="scrollable-status status-log p-4 rounded-lg text-sm text-gray-200">
                 <pre className="font-mono whitespace-pre-wrap">{status}</pre>
               </div>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-white mb-3">Transaction History</h2>
+            <div className="mb-8 section-card">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 className="text-xl font-semibold text-white">Transaction History</h2>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={exportHistoryCsv} className="tiny-btn ghost-btn">Export CSV</button>
+                  <button onClick={clearTransactionHistory} className="tiny-btn ghost-btn">Clear History</button>
+                </div>
+              </div>
               {txHistory.length > 0 ? (
                 <div className="scrollable-history bg-gray-700 p-4 rounded-lg">
                   <table className="history-table">
@@ -1529,7 +2797,7 @@
               )}
             </div>
 
-            <footer className="mt-8 text-center text-gray-400 text-sm">
+            <footer className="mt-8 text-center text-gray-400 text-sm section-card">
               <p>
                 Developed By <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">NifftySwiggle. All rights reserved.</a> 
               </p>
