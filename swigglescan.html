@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" />
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/NifftySwiggle/Home@main/assets/NSlogo.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.jsdelivr.net/gh/NifftySwiggle/Home@main/assets/NSlogo.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SwiggleScan</title>
@@ -12,33 +12,1656 @@
   <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" as="script">
 
   <style>
-    :root { --primary: #007bff; --dark: #212529; }
-    body { background: #f8f9fa; font-family: system-ui, -apple-system, sans-serif; }
-    .header { background: var(--primary); color: white; padding: 1rem; border-radius: .5rem; text-align: center; }
-    .card { transition: transform .2s; }
-    .card:hover { transform: translateY(-2px); }
-    .table th { background: #e9ecef; font-weight: 600; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
+
+    :root {
+            /* Make verifyResult .text-success white in light mode */
+            #verifyResult .text-success {
+              color: #fff !important;
+            }
+        --main-text-light: #212529;
+        --main-text-dark: #ffffff;
+      --primary: #007bff;
+      --primary-dark: #0056b3;
+      --dark: #181a1b;
+      --dark-bg: #23272f;
+      --dark-card: #23272f;
+      --dark-border: #343a40;
+      --dark-text: #e9ecef;
+      --light-bg: #f8f9fa;
+      --light-card: #fff;
+      --light-border: #dee2e6;
+      --light-text: #212529;
+      --transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+    /* Placeholder color for light and dark mode */
+    ::placeholder {
+      color: #adb5bd;
+      opacity: 1;
+      transition: color 0.3s;
+    }
+    body.dark ::placeholder {
+      color: var(--main-text-dark);
+      opacity: 1;
+    }
+    body {
+      background: var(--light-bg);
+      color: var(--main-text-light);
+      font-family: system-ui, -apple-system, sans-serif;
+      transition: var(--transition);
+      min-height: 100vh;
+      letter-spacing: 0.01em;
+    }
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--main-text-dark);
+    }
+    body, .card, .modal-content, .form-control, .form-select, .table, .alert {
+      box-shadow: none !important;
+    }
+    .header {
+      background: linear-gradient(90deg, var(--primary) 60%, #4e54c8 100%);
+      color: white;
+      padding: 1.5rem 1rem 1rem 1rem;
+      border-radius: 1.25rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
+      position: relative;
+    }
+    .theme-toggle {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      background: rgba(255,255,255,0.18);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+      transition: background 0.2s, color 0.2s;
+      outline: none;
+    }
+    .theme-toggle:focus {
+      outline: 2px solid #fff;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.18);
+      color: #ffe066;
+    }
+    .card {
+        color: var(--main-text-light);
+      background: var(--light-card);
+      border-radius: 1.25rem;
+      border: 1px solid var(--light-border);
+      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.04);
+      transition: var(--transition), transform .2s;
+    }
+    body.dark .card {
+        color: var(--main-text-dark);
+      background: #23272f;
+      border-color: #343a40;
+      color: #e9ecef;
+    }
+    .card:hover { transform: translateY(-2px) scale(1.01); }
+    .table th {
+        color: var(--main-text-light);
+      background: #e9ecef;
+      font-weight: 600;
+      border-top: none;
+      transition: var(--transition);
+      font-size: 1.01em;
+      letter-spacing: 0.01em;
+    }
+    body.dark .table th {
+        color: var(--main-text-dark);
+      background: #23272f;
+      color: #ffe066;
+    }
+    .table td, .table th {
+      vertical-align: middle;
+      border-color: var(--light-border);
+      transition: var(--transition);
+      font-size: 1em;
+      background: #fff;
+    }
+    body.dark .table td {
+      background: #181a1b;
+      color: var(--main-text-dark);
+    }
+    body.dark .table td, body.dark .table th {
+      border-color: #343a40;
+      color: #e9ecef;
+    }
     .copy { cursor: pointer; opacity: .6; font-size: .8em; }
     .copy:hover { opacity: 1; }
     .address-display { cursor: pointer; transition: all 0.2s; }
     .address-display:hover { background: #f8f9fa; border-radius: 3px; padding: 1px 3px; }
+    body.dark .address-display:hover { background: #23272f; }
     .address-expanded { font-family: monospace; word-break: break-all; }
     .spinner { width: 2rem; height: 2rem; }
     .age { white-space: nowrap; }
     #searchInput { max-width: 600px; }
     .badge-type { font-size: .7rem; }
     .bg-purple { background-color: #6f42c1 !important; }
-    .footer { margin-top: 3rem; font-size: .8rem; text-align: center; color: #6c757d; }
+    .footer {
+      margin-top: 3rem;
+      font-size: .9rem;
+      text-align: center;
+      color: var(--main-text-light);
+      opacity: 0.85;
+      transition: var(--transition);
+    }
+    body.dark .footer { color: var(--main-text-dark); }
+    .nav-tabs .nav-link.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    body.dark .nav-tabs .nav-link.active {
+      background: #23272f;
+      color: var(--main-text-dark);
+            background: #fff;
+            color: var(--main-text-light);
+          }
+          body.dark .card-body {
+            background: #23272f;
+            color: var(--main-text-dark);
+            color: #fefefe !important;
+          }
+          body.dark .text-success {
+            color: #fff !important;
+      border-radius: 1rem 1rem 0 0;
+      font-weight: 600;
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+    }
+    .nav-tabs .nav-link {
+      border-radius: 1rem 1rem 0 0;
+      margin-right: 2px;
+      color: var(--primary-dark);
+      transition: var(--transition);
+    }
+    body.dark .nav-tabs .nav-link {
+      color: #e9ecef;
+    }
+    .alert {
+        color: var(--main-text-light);
+        background: #fffbe6;
+      border-radius: .75rem;
+      font-size: 1em;
+      padding: .75rem 1rem;
+      margin-bottom: 1rem;
+      transition: var(--transition);
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+    }
+    body.dark .alert {
+      background: #23272f;
+      color: var(--main-text-dark);
+    }
+    .alert, .alert * {
+      color: var(--main-text-light) !important;
+    }
+    body.dark .alert, body.dark .alert * {
+      color: var(--main-text-dark) !important;
+    }
+          /* Improve badge contrast for verification results */
+          .badge.bg-success, .badge.bg-success * {
+            background: #28a745 !important;
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            font-size: 1em;
+            border: 1px solid #218838;
+            box-shadow: 0 1px 4px 0 rgba(40,167,69,0.08);
+          }
+          body.dark .badge.bg-success, body.dark .badge.bg-success * {
+            background: #30e35a !important;
+            color: #b6ffb6 !important;
+            border: 1px solid #28a745;
+          }
+          .badge.bg-danger, .badge.bg-danger * {
+            background: #dc3545 !important;
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            font-size: 1em;
+            border: 1px solid #c82333;
+            box-shadow: 0 1px 4px 0 rgba(220,53,69,0.08);
+          }
+          body.dark .badge.bg-danger, body.dark .badge.bg-danger * {
+            background: #721c24 !important;
+            color: #ffb6b6 !important;
+            border: 1px solid #dc3545;
+          }
+          .badge.bg-primary, .badge.bg-primary * {
+            background: var(--primary) !important;
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            font-size: 1em;
+          }
+          .badge.bg-secondary, .badge.bg-secondary * {
+            background: #6c757d !important;
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            font-size: 1em;
+          }
+          .badge.bg-warning, .badge.bg-warning * {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            font-size: 1em;
+          }
+      border-color: #343a40;
+    }
+    .btn {
+      border-radius: .5rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+    }
+    .btn-outline-primary {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .btn-outline-primary:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-outline-secondary, .btn-outline-success {
+      border-width: 2px;
+    }
+    .modal-content {
+        color: var(--main-text-light);
+        background: #fff;
+      border-radius: 1rem;
+      transition: var(--transition);
+    }
+    body.dark .modal-content {
+        color: var(--main-text-dark);
+        background: #23272f;
+    }
+    .form-control, .form-select {
+        color: var(--main-text-light);
+        background: #fff;
+        border-radius: .5rem;
+        transition: var(--transition);
+        font-size: 1em;
+        background: #fff;
+    }
+    body.dark .form-control, body.dark .form-select {
+        color: var(--main-text-dark);
+        background: #23272f;
+        background: #23272f;
+        border-color: #343a40;
+    }
+    .sortable { cursor: pointer; user-select: none; }
+    .sortable:hover { text-decoration: underline; }
+    /* Smooth transitions for theme */
+    * { transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+    :root {
+      --bg: #08131f;
+      --bg-2: #10243a;
+      --card: rgba(10, 24, 40, 0.78);
+      --card-strong: rgba(8, 20, 34, 0.92);
+      --border: rgba(120, 188, 255, 0.26);
+      --text: #e8f4ff;
+      --muted: #9ec0df;
+      --accent: #1cb7c5;
+      --accent-2: #ff9f43;
+      --shadow: 0 24px 60px rgba(1, 8, 20, 0.55);
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 540px at 6% -15%, rgba(28, 183, 197, 0.36), transparent 58%),
+        radial-gradient(900px 520px at 95% 5%, rgba(255, 159, 67, 0.28), transparent 60%),
+        linear-gradient(140deg, var(--bg), var(--bg-2));
+      color: var(--text);
+    }
+
+    body.dark {
+      background:
+        radial-gradient(1200px 540px at 6% -15%, rgba(28, 183, 197, 0.44), transparent 58%),
+        radial-gradient(900px 520px at 95% 5%, rgba(255, 159, 67, 0.34), transparent 60%),
+        linear-gradient(140deg, #040d16, #0b1d30);
+      color: var(--text);
+    }
+
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(44px);
+      opacity: 0.45;
+      border-radius: 999px;
+      animation: floatOrb 12s ease-in-out infinite;
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      right: -80px;
+      bottom: 24%;
+      background: rgba(28, 183, 197, 0.46);
+    }
+
+    body::after {
+      width: 260px;
+      height: 260px;
+      left: -80px;
+      top: 15%;
+      background: rgba(255, 159, 67, 0.36);
+      animation-delay: -4s;
+    }
+
+    @keyframes floatOrb {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-18px) scale(1.05); }
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      background: rgba(213, 241, 255, 0.9);
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: twinkle var(--twinkle-duration) infinite linear;
+    }
+
+    .star:nth-child(1) { width: 2px; height: 2px; top: 10%; left: 15%; --twinkle-duration: 5s; }
+    .star:nth-child(2) { width: 3px; height: 3px; top: 20%; left: 80%; --twinkle-duration: 4s; animation-delay: -1s; }
+    .star:nth-child(3) { width: 1px; height: 1px; top: 30%; left: 25%; --twinkle-duration: 6s; animation-delay: -2s; }
+    .star:nth-child(4) { width: 2px; height: 2px; top: 40%; left: 70%; --twinkle-duration: 5s; animation-delay: -3s; }
+    .star:nth-child(5) { width: 3px; height: 3px; top: 50%; left: 10%; --twinkle-duration: 7s; }
+    .star:nth-child(6) { width: 1px; height: 1px; top: 60%; left: 90%; --twinkle-duration: 4s; animation-delay: -4s; }
+    .star:nth-child(7) { width: 2px; height: 2px; top: 70%; left: 30%; --twinkle-duration: 6s; animation-delay: -1s; }
+    .star:nth-child(8) { width: 3px; height: 3px; top: 80%; left: 85%; --twinkle-duration: 5s; animation-delay: -2s; }
+    .star:nth-child(9) { width: 1px; height: 1px; top: 15%; left: 45%; --twinkle-duration: 7s; }
+    .star:nth-child(10) { width: 2px; height: 2px; top: 25%; left: 65%; --twinkle-duration: 4s; animation-delay: -3s; }
+    .star:nth-child(11) { width: 3px; height: 3px; top: 35%; left: 20%; --twinkle-duration: 6s; }
+    .star:nth-child(12) { width: 1px; height: 1px; top: 45%; left: 75%; --twinkle-duration: 5s; animation-delay: -4s; }
+    .star:nth-child(13) { width: 2px; height: 2px; top: 55%; left: 35%; --twinkle-duration: 7s; animation-delay: -1s; }
+    .star:nth-child(14) { width: 3px; height: 3px; top: 65%; left: 50%; --twinkle-duration: 4s; animation-delay: -2s; }
+    .star:nth-child(15) { width: 1px; height: 1px; top: 75%; left: 15%; --twinkle-duration: 6s; }
+    .star:nth-child(16) { width: 2px; height: 2px; top: 85%; left: 60%; --twinkle-duration: 5s; animation-delay: -3s; }
+    .star:nth-child(17) { width: 3px; height: 3px; top: 20%; left: 40%; --twinkle-duration: 7s; animation-delay: -4s; }
+    .star:nth-child(18) { width: 1px; height: 1px; top: 30%; left: 95%; --twinkle-duration: 4s; }
+    .star:nth-child(19) { width: 2px; height: 2px; top: 40%; left: 30%; --twinkle-duration: 6s; animation-delay: -1s; }
+    .star:nth-child(20) { width: 3px; height: 3px; top: 50%; left: 55%; --twinkle-duration: 5s; animation-delay: -2s; }
+
+    @keyframes twinkle {
+      0% { opacity: 0.25; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.4); }
+      100% { opacity: 0.25; transform: scale(1); }
+    }
+
+    .ad-topnav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      max-width: 1280px;
+      margin: 1rem auto 0;
+      background: rgba(7, 20, 33, 0.78);
+      border: 1px solid rgba(120, 188, 255, 0.22);
+      border-radius: 1rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 34px rgba(2, 10, 20, 0.35);
+    }
+
+    .ad-topnav-inner {
+      min-height: 62px;
+      padding: 0.7rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.9rem;
+    }
+
+    .ad-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e8f4ff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .ad-brand img {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
+    }
+
+    .ad-menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 0.65rem;
+      border: 1px solid rgba(123, 183, 237, 0.35);
+      background: rgba(19, 47, 72, 0.92);
+      color: #e8f4ff;
+      font-size: 1.15rem;
+      line-height: 1;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .ad-nav-links {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ad-nav-links a {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.68rem;
+      border-radius: 0.6rem;
+      color: #d7ecff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .ad-nav-links a:hover {
+      background: rgba(19, 47, 72, 0.9);
+      border-color: rgba(123, 183, 237, 0.3);
+      color: #f4fbff;
+    }
+
+    .ad-nav-links a[aria-current="page"] {
+      background: linear-gradient(90deg, rgba(17, 144, 162, 0.9), rgba(245, 143, 58, 0.92));
+      color: #f4fbff;
+      border-color: rgba(255, 211, 167, 0.45);
+    }
+
+    .ad-nav-dropdown {
+      position: relative;
+    }
+
+    .ad-nav-dropdown-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      padding: 0.45rem 0.68rem;
+      border-radius: 0.6rem;
+      color: #d7ecff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .ad-nav-dropdown-trigger:hover {
+      background: rgba(19, 47, 72, 0.9);
+      border-color: rgba(123, 183, 237, 0.3);
+      color: #f4fbff;
+    }
+
+    .ad-nav-dropdown-menu {
+      list-style: none;
+      display: none;
+      position: absolute;
+      top: calc(100% + 0.45rem);
+      right: 0;
+      min-width: 220px;
+      max-width: min(92vw, 320px);
+      max-height: min(68vh, 520px);
+      overflow-y: auto;
+      background: rgba(7, 20, 33, 0.97);
+      border: 1px solid rgba(120, 188, 255, 0.22);
+      border-radius: 0.8rem;
+      box-shadow: 0 18px 42px rgba(2, 10, 20, 0.45);
+      margin: 0;
+      padding: 0.45rem;
+      flex-direction: column;
+      gap: 0.2rem;
+      z-index: 30;
+    }
+
+    .ad-nav-dropdown.open .ad-nav-dropdown-menu {
+      display: flex;
+    }
+
+    .ad-nav-dropdown-menu a {
+      display: block;
+      width: 100%;
+      padding: 0.45rem 0.68rem;
+      border-radius: 0.55rem;
+      color: #d7ecff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .ad-nav-dropdown-menu a:hover {
+      background: rgba(19, 47, 72, 0.9);
+      border-color: rgba(123, 183, 237, 0.3);
+      color: #f4fbff;
+    }
+
+    .scan-shell.container {
+      position: relative;
+      background: linear-gradient(160deg, var(--card), var(--card-strong));
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      z-index: 3;
+      margin-top: 1rem;
+      max-width: 1280px;
+    }
+
+    .header {
+      background: linear-gradient(160deg, rgba(10, 38, 62, 0.9), rgba(9, 23, 41, 0.92));
+      color: var(--text);
+      padding: 1.5rem 1.25rem 1.25rem;
+      border: 1px solid rgba(120, 188, 255, 0.26);
+      border-radius: 1.1rem;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(199, 228, 255, 0.08);
+    }
+
+    .header h1 {
+      font-family: 'Sora', sans-serif;
+      letter-spacing: 0.02em;
+      font-weight: 800;
+      line-height: 1.12;
+      margin-top: 0.35rem;
+    }
+
+    .header p {
+      color: var(--muted);
+    }
+
+    .theme-toggle {
+      background: rgba(19, 47, 72, 0.92);
+      border: 1px solid rgba(123, 183, 237, 0.35);
+      color: #e8f4ff;
+      box-shadow: none;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(30, 66, 95, 0.95);
+      color: #ffcf9c;
+    }
+
+    .card,
+    .modal-content,
+    .alert,
+    .form-control,
+    .form-select,
+    .table td,
+    .table th,
+    .nav-tabs .nav-link {
+      background: rgba(9, 27, 44, 0.72) !important;
+      color: #d7ecff !important;
+      border-color: rgba(120, 188, 255, 0.18) !important;
+    }
+
+    .card {
+      border-radius: 1rem;
+      box-shadow: inset 0 1px 0 rgba(199, 228, 255, 0.08), 0 10px 28px rgba(2, 10, 20, 0.18) !important;
+    }
+
+    .card-header,
+    .modal-header,
+    .modal-footer {
+      background: rgba(18, 45, 70, 0.9) !important;
+      color: #eff9ff !important;
+      border-color: rgba(120, 188, 255, 0.2) !important;
+    }
+
+    .table a,
+    .footer a,
+    a.btn-link,
+    #explorerLink,
+    #transfersAll,
+    #holdersCsv {
+      color: #67d4ff;
+    }
+
+    .footer {
+      color: var(--muted);
+      margin-top: 2rem;
+    }
+
+    .btn-primary,
+    .btn-warning,
+    .nav-tabs .nav-link.active {
+      background: linear-gradient(90deg, #1190a2, #f58f3a) !important;
+      border-color: rgba(255, 211, 167, 0.45) !important;
+      color: #f4fbff !important;
+    }
+
+    .btn-outline-primary,
+    .btn-outline-secondary,
+    .btn-outline-success,
+    .btn-outline-info,
+    .btn-secondary {
+      background: rgba(19, 47, 72, 0.92) !important;
+      color: #d9edff !important;
+      border-color: rgba(123, 183, 237, 0.3) !important;
+    }
+
+    .btn-outline-primary:hover,
+    .btn-outline-secondary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-info:hover,
+    .btn-secondary:hover {
+      background: rgba(30, 66, 95, 0.95) !important;
+      color: #f4fbff !important;
+    }
+
+    .form-control::placeholder {
+      color: #9ec0df;
+    }
+
+    .text-muted,
+    small,
+    .small {
+      color: var(--muted) !important;
+    }
+
+    /* Theme readability overrides */
+    body.dark .card-body,
+    body.dark .card-body p,
+    body.dark .card-body strong,
+    body.dark .card-footer,
+    body.dark .modal-body,
+    body.dark .modal-title,
+    body.dark .btn-close,
+    body.dark #searchHint,
+    body.dark #searchHint strong,
+    body.dark #tokenSymbol,
+    body.dark .text-center.text-muted,
+    body.dark label,
+    body.dark .form-label {
+      color: #f4fbff !important;
+    }
+
+    body.dark .form-control,
+    body.dark .form-control-sm,
+    body.dark .form-select,
+    body.dark input,
+    body.dark textarea,
+    body.dark select {
+      background: rgba(10, 30, 47, 0.92) !important;
+      color: #f4fbff !important;
+      border-color: rgba(120, 188, 255, 0.28) !important;
+    }
+
+    body.dark .form-control::placeholder,
+    body.dark .form-control-sm::placeholder,
+    body.dark input::placeholder,
+    body.dark textarea::placeholder {
+      color: #9ec0df !important;
+      opacity: 1;
+    }
+
+    body.dark .form-control:focus,
+    body.dark .form-select:focus,
+    body.dark input:focus,
+    body.dark textarea:focus,
+    body.dark select:focus {
+      color: #ffffff !important;
+      background: rgba(12, 36, 57, 0.97) !important;
+      border-color: rgba(93, 216, 228, 0.6) !important;
+      box-shadow: 0 0 0 0.2rem rgba(28, 183, 197, 0.18) !important;
+    }
+
+    body.dark .btn-outline-secondary,
+    body.dark .btn-outline-secondary:hover,
+    body.dark .btn-check:checked + .btn-outline-secondary,
+    body.dark .btn-check:active + .btn-outline-secondary {
+      color: #f4fbff !important;
+    }
+
+    body.dark .card-footer.text-muted,
+    body.dark .card-footer.text-muted *,
+    body.dark small.text-muted,
+    body.dark .text-muted {
+      color: #b9d4ea !important;
+    }
+
+    body:not(.dark) .card,
+    body:not(.dark) .modal-content,
+    body:not(.dark) .alert,
+    body:not(.dark) .form-control,
+    body:not(.dark) .form-select,
+    body:not(.dark) .table td,
+    body:not(.dark) .table th,
+    body:not(.dark) .nav-tabs .nav-link {
+      background: rgba(255, 255, 255, 0.96) !important;
+      color: #1d2b38 !important;
+      border-color: rgba(160, 190, 220, 0.55) !important;
+    }
+
+    body:not(.dark) .card-header,
+    body:not(.dark) .modal-header,
+    body:not(.dark) .modal-footer {
+      background: rgba(237, 245, 252, 0.98) !important;
+      color: #183247 !important;
+      border-color: rgba(160, 190, 220, 0.55) !important;
+    }
+
+    body:not(.dark) .card-body,
+    body:not(.dark) .card-body p,
+    body:not(.dark) .card-body strong,
+    body:not(.dark) .card-footer,
+    body:not(.dark) .modal-body,
+    body:not(.dark) .modal-title,
+    body:not(.dark) label,
+    body:not(.dark) .form-label,
+    body:not(.dark) #searchHint,
+    body:not(.dark) #searchHint strong,
+    body:not(.dark) #tokenSymbol {
+      color: #1d2b38 !important;
+    }
+
+    body:not(.dark) .form-control,
+    body:not(.dark) .form-control-sm,
+    body:not(.dark) .form-select,
+    body:not(.dark) input,
+    body:not(.dark) textarea,
+    body:not(.dark) select {
+      background: rgba(255, 255, 255, 0.98) !important;
+      color: #1d2b38 !important;
+      border-color: rgba(160, 190, 220, 0.7) !important;
+    }
+
+    body:not(.dark) .form-control::placeholder,
+    body:not(.dark) .form-control-sm::placeholder,
+    body:not(.dark) input::placeholder,
+    body:not(.dark) textarea::placeholder {
+      color: #647b91 !important;
+      opacity: 1;
+    }
+
+    body:not(.dark) .form-control:focus,
+    body:not(.dark) .form-select:focus,
+    body:not(.dark) input:focus,
+    body:not(.dark) textarea:focus,
+    body:not(.dark) select:focus {
+      background: #ffffff !important;
+      color: #13202c !important;
+      border-color: rgba(17, 144, 162, 0.6) !important;
+      box-shadow: 0 0 0 0.2rem rgba(17, 144, 162, 0.14) !important;
+    }
+
+    body:not(.dark) .text-muted,
+    body:not(.dark) small,
+    body:not(.dark) .small,
+    body:not(.dark) .card-footer.text-muted,
+    body:not(.dark) .card-footer.text-muted * {
+      color: #567086 !important;
+    }
+
+    body:not(.dark) .btn-outline-secondary,
+    body:not(.dark) .btn-outline-secondary:hover,
+    body:not(.dark) .btn-check:checked + .btn-outline-secondary,
+    body:not(.dark) .btn-check:active + .btn-outline-secondary {
+      color: #183247 !important;
+    }
+
+    /* Home page theme alignment */
+    :root {
+      --bg: #090b10;
+      --bg-elev: #11141d;
+      --bg-soft: #151925;
+      --text: #eef1f8;
+      --text-soft: #aeb7cc;
+      --line: #2a3144;
+      --primary: #7c8cff;
+      --secondary: #35d7b7;
+      --accent: #c08bff;
+      --success: #8bf8cd;
+      --max: 1180px;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --shadow-focus: 0 0 0 3px rgba(124, 140, 255, 0.35);
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 85% -10%, rgba(124, 140, 255, 0.25), transparent 65%),
+        radial-gradient(1000px 500px at -10% 20%, rgba(192, 139, 255, 0.2), transparent 70%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    body.dark {
+      background:
+        radial-gradient(1200px 600px at 85% -10%, rgba(124, 140, 255, 0.25), transparent 65%),
+        radial-gradient(1000px 500px at -10% 20%, rgba(192, 139, 255, 0.2), transparent 70%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    body:not(.dark) {
+      background:
+        radial-gradient(1200px 600px at 85% -10%, rgba(124, 140, 255, 0.18), transparent 65%),
+        radial-gradient(1000px 500px at -10% 20%, rgba(192, 139, 255, 0.14), transparent 70%),
+        #f4f7ff;
+      color: #182130;
+    }
+
+    .ad-topnav {
+      max-width: var(--max);
+      margin: 0 auto;
+      border: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0;
+      background: rgba(10, 12, 18, 0.72);
+      box-shadow: none;
+      backdrop-filter: blur(10px);
+    }
+
+    body:not(.dark) .ad-topnav {
+      background: rgba(244, 247, 255, 0.88);
+      border-bottom: 1px solid rgba(42, 49, 68, 0.12);
+    }
+
+    .ad-topnav-inner {
+      min-height: 74px;
+      gap: 1.5rem;
+    }
+
+    .ad-brand,
+    .header h1,
+    .card-header,
+    .modal-title {
+      font-family: Sora, Inter, sans-serif;
+    }
+
+    .ad-brand {
+      color: #eef1f8;
+      letter-spacing: -0.01em;
+      font-size: 1rem;
+    }
+
+    body:not(.dark) .ad-brand {
+      color: #182130;
+    }
+
+    .ad-brand img {
+      width: 34px;
+      height: 34px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 20px rgba(124, 140, 255, 0.35);
+    }
+
+    .ad-nav-links a,
+    .ad-nav-dropdown-trigger {
+      color: #dbe2f5;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 0.4rem;
+      border-radius: 8px;
+      border: 0;
+      background: transparent !important;
+    }
+
+    body:not(.dark) .ad-nav-links a,
+    body:not(.dark) .ad-nav-dropdown-trigger {
+      color: #33405d;
+    }
+
+    .ad-nav-links a:hover,
+    .ad-nav-dropdown-trigger:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.03) !important;
+      border-color: transparent !important;
+    }
+
+    body:not(.dark) .ad-nav-links a:hover,
+    body:not(.dark) .ad-nav-dropdown-trigger:hover {
+      color: #11141d;
+      background: rgba(124, 140, 255, 0.09) !important;
+    }
+
+    .ad-nav-links a[aria-current="page"] {
+      background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+      color: #ffffff !important;
+      box-shadow: 0 8px 26px rgba(124, 140, 255, 0.35);
+      border-radius: 999px;
+      padding: 0.72rem 1.15rem;
+    }
+
+    .ad-nav-dropdown-menu {
+      top: calc(100% + 0.6rem);
+      right: auto;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 13, 22, 0.97);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+    }
+
+    body:not(.dark) .ad-nav-dropdown-menu {
+      background: rgba(250, 251, 255, 0.98);
+      border-color: rgba(42, 49, 68, 0.14);
+      box-shadow: 0 18px 42px rgba(23, 31, 48, 0.12);
+    }
+
+    .ad-nav-dropdown-menu a {
+      color: #cdd5ef;
+      border-radius: 8px;
+    }
+
+    body:not(.dark) .ad-nav-dropdown-menu a {
+      color: #33405d;
+    }
+
+    .ad-nav-dropdown-menu a:hover {
+      background: rgba(124, 140, 255, 0.13);
+      color: #ffffff;
+    }
+
+    body:not(.dark) .ad-nav-dropdown-menu a:hover {
+      color: #11141d;
+    }
+
+    .scan-shell.container {
+      width: min(100% - 2rem, var(--max));
+      max-width: none;
+      margin-inline: auto;
+      background: linear-gradient(170deg, rgba(24, 30, 45, 0.95), rgba(16, 19, 29, 0.94));
+      border: 1px solid #31384f;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 2rem;
+    }
+
+    body:not(.dark) .scan-shell.container {
+      background: linear-gradient(175deg, rgba(255, 255, 255, 0.98), rgba(243, 246, 255, 0.98));
+      border-color: rgba(49, 56, 79, 0.14);
+      box-shadow: 0 12px 34px rgba(35, 44, 72, 0.08);
+    }
+
+    .header {
+      background: linear-gradient(170deg, rgba(24, 30, 45, 0.95), rgba(16, 19, 29, 0.94));
+      border: 1px solid #31384f;
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    body:not(.dark) .header {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 247, 255, 0.98));
+      border-color: rgba(49, 56, 79, 0.14);
+    }
+
+    .header p,
+    .section-subtitle,
+    .text-muted,
+    small,
+    .small {
+      color: var(--text-soft) !important;
+    }
+
+    body:not(.dark) .header p,
+    body:not(.dark) .text-muted,
+    body:not(.dark) small,
+    body:not(.dark) .small {
+      color: #65718e !important;
+    }
+
+    .card,
+    .modal-content {
+      border-radius: var(--radius-md);
+      border: 1px solid #323b53 !important;
+      background: linear-gradient(175deg, #161b27, #121722) !important;
+      overflow: hidden;
+      box-shadow: none !important;
+    }
+
+    body:not(.dark) .card,
+    body:not(.dark) .modal-content {
+      border-color: rgba(50, 59, 83, 0.12) !important;
+      background: linear-gradient(175deg, #ffffff, #f5f7ff) !important;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #4a5576 !important;
+    }
+
+    body:not(.dark) .card:hover {
+      border-color: rgba(124, 140, 255, 0.32) !important;
+    }
+
+    .card-header,
+    .modal-header,
+    .modal-footer {
+      background: rgba(18, 22, 33, 0.78) !important;
+      color: #f4f7ff !important;
+      border-color: #2d3550 !important;
+    }
+
+    body:not(.dark) .card-header,
+    body:not(.dark) .modal-header,
+    body:not(.dark) .modal-footer {
+      background: rgba(238, 242, 255, 0.9) !important;
+      color: #182130 !important;
+      border-color: rgba(45, 53, 80, 0.12) !important;
+    }
+
+    .card-body,
+    .modal-body,
+    .card-footer {
+      background: transparent !important;
+    }
+
+    .btn,
+    button.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 0.72rem 1.15rem;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .btn-primary,
+    .btn-warning,
+    .nav-tabs .nav-link.active {
+      background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+      color: #ffffff !important;
+      box-shadow: 0 8px 26px rgba(124, 140, 255, 0.35);
+      border-color: transparent !important;
+    }
+
+    .btn-outline-primary,
+    .btn-outline-secondary,
+    .btn-outline-success,
+    .btn-outline-info,
+    .btn-secondary {
+      border-color: #3a425b !important;
+      color: #dce3f4 !important;
+      background: rgba(255, 255, 255, 0.03) !important;
+    }
+
+    .btn-outline-primary:hover,
+    .btn-outline-secondary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-info:hover,
+    .btn-secondary:hover {
+      border-color: #566282 !important;
+      background: rgba(255, 255, 255, 0.07) !important;
+      color: #ffffff !important;
+    }
+
+    body:not(.dark) .btn-outline-primary,
+    body:not(.dark) .btn-outline-secondary,
+    body:not(.dark) .btn-outline-success,
+    body:not(.dark) .btn-outline-info,
+    body:not(.dark) .btn-secondary {
+      border-color: rgba(58, 66, 91, 0.18) !important;
+      color: #2a3550 !important;
+      background: rgba(124, 140, 255, 0.05) !important;
+    }
+
+    body:not(.dark) .btn-outline-primary:hover,
+    body:not(.dark) .btn-outline-secondary:hover,
+    body:not(.dark) .btn-outline-success:hover,
+    body:not(.dark) .btn-outline-info:hover,
+    body:not(.dark) .btn-secondary:hover {
+      border-color: rgba(86, 98, 130, 0.36) !important;
+      background: rgba(124, 140, 255, 0.1) !important;
+      color: #11141d !important;
+    }
+
+    .form-control,
+    .form-select,
+    input,
+    textarea,
+    select {
+      background: #11141d !important;
+      color: var(--text) !important;
+      border: 1px solid var(--line) !important;
+      border-radius: var(--radius-sm) !important;
+    }
+
+    body:not(.dark) .form-control,
+    body:not(.dark) .form-select,
+    body:not(.dark) input,
+    body:not(.dark) textarea,
+    body:not(.dark) select {
+      background: #ffffff !important;
+      color: #182130 !important;
+      border-color: rgba(42, 49, 68, 0.18) !important;
+    }
+
+    .form-control::placeholder,
+    input::placeholder,
+    textarea::placeholder {
+      color: #8f99b4 !important;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    input:focus,
+    textarea:focus,
+    select:focus,
+    :is(a, button, input, [role="button"]):focus-visible {
+      outline: none;
+      box-shadow: var(--shadow-focus) !important;
+      border-color: rgba(124, 140, 255, 0.5) !important;
+    }
+
+    .nav-tabs {
+      gap: 0.45rem;
+      border-bottom: 0;
+    }
+
+    .nav-tabs .nav-link {
+      border-radius: 999px;
+      border: 1px solid #3a425b !important;
+      color: #dce3f4 !important;
+      background: rgba(255, 255, 255, 0.03) !important;
+      padding: 0.68rem 1rem;
+      margin-right: 0;
+    }
+
+    body:not(.dark) .nav-tabs .nav-link {
+      border-color: rgba(58, 66, 91, 0.18) !important;
+      color: #2a3550 !important;
+      background: rgba(124, 140, 255, 0.05) !important;
+    }
+
+    /* ── Token tab pills ── */
+    #tokenTabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0;
+      background: none;
+      border: none;
+      width: auto;
+      max-width: 100%;
+    }
+
+    body:not(.dark) #tokenTabs {
+      background: none;
+      border-color: transparent;
+    }
+
+    #tokenTabs .nav-link {
+      border-radius: 999px !important;
+      border: 1px solid rgba(148, 120, 255, 0.35) !important;
+      color: #d9d0ff !important;
+      background: rgba(80, 50, 160, 0.18) !important;
+      padding: 0.55rem 1.35rem !important;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: none;
+      transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
+    }
+
+    body:not(.dark) #tokenTabs .nav-link {
+      border-color: rgba(148, 100, 255, 0.3) !important;
+      background: rgba(148, 100, 255, 0.08) !important;
+      color: #3a1f6e !important;
+    }
+
+    #tokenTabs .nav-link:hover {
+      background: rgba(148, 100, 255, 0.28) !important;
+      border-color: rgba(180, 130, 255, 0.6) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(130, 80, 255, 0.2) !important;
+    }
+
+    body:not(.dark) #tokenTabs .nav-link:hover {
+      background: rgba(148, 100, 255, 0.16) !important;
+      border-color: rgba(148, 100, 255, 0.5) !important;
+      color: #1e0a4a !important;
+    }
+
+    #tokenTabs .nav-link.active {
+      background: linear-gradient(135deg, #7c4fff, #c084fc) !important;
+      border-color: transparent !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 18px rgba(140, 80, 255, 0.4) !important;
+    }
+
+    #searchGroup {
+      align-items: stretch;
+      border-radius: 999px;
+      padding: 0.35rem;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    }
+
+    body:not(.dark) #searchGroup {
+      background: rgba(124, 140, 255, 0.045);
+      border-color: rgba(42, 49, 68, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    #searchGroup .form-control {
+      border: 0 !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      min-height: 50px;
+      padding-inline: 1rem;
+    }
+
+    #searchGroup .form-control:focus {
+      box-shadow: none !important;
+    }
+
+    #loadBtn {
+      min-height: 50px;
+      min-width: 122px;
+      padding-inline: 1.35rem;
+      border-radius: 999px !important;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      background: linear-gradient(135deg, #7c8cff, #c08bff) !important;
+      border: 0 !important;
+      box-shadow: 0 10px 24px rgba(124, 140, 255, 0.3);
+    }
+
+    #loadBtn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 14px 28px rgba(124, 140, 255, 0.34);
+    }
+
+    #loadBtn:active {
+      transform: translateY(1px);
+    }
+
+    @media (max-width: 767px) {
+      #tokenTabs {
+        width: 100%;
+        gap: 0.35rem;
+      }
+
+      #tokenTabs .nav-link {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+
+      #searchGroup {
+        border-radius: 20px;
+      }
+
+      #loadBtn {
+        width: 100%;
+      }
+    }
+
+    /* ── Custom scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(7, 20, 33, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(28, 183, 197, 0.4); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(28, 183, 197, 0.68); }
+    * { scrollbar-width: thin; scrollbar-color: rgba(28, 183, 197, 0.38) rgba(7, 20, 33, 0.4); }
+
+    /* ── Cursor glow ── */
+    #cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(28,183,197,0.09) 0%, rgba(255,159,67,0.05) 45%, transparent 70%);
+      pointer-events: none;
+      transform: translate(-9999px, -9999px);
+      z-index: 1;
+      will-change: transform;
+    }
+
+    .cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 2100;
+      opacity: 0;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(139, 248, 205, 0.88);
+      box-shadow: 0 0 12px rgba(139, 248, 205, 0.58);
+      transform: translate(-50%, -50%);
+      transition: opacity 200ms ease;
+      mix-blend-mode: screen;
+    }
+
+    .cursor-dot.cursor-hover {
+      transform: translate(-50%, -50%) scale(1.28);
+      background: rgba(192, 139, 255, 0.95);
+      box-shadow: 0 0 14px rgba(192, 139, 255, 0.58);
+    }
+
+    .cursor-dot.cursor-down {
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    .tap-ripple {
+      position: fixed;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2099;
+      border: 1px solid rgba(139, 248, 205, 0.58);
+      background: radial-gradient(circle at center, rgba(139, 248, 205, 0.26), rgba(124, 140, 255, 0.03) 66%, transparent 74%);
+      box-shadow: 0 0 14px rgba(124, 140, 255, 0.19);
+      transform: translate(-50%, -50%);
+      animation: tapRipple 760ms cubic-bezier(0.15, 0.64, 0.22, 1) forwards;
+    }
+
+    .tap-ripple::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(192, 139, 255, 0.48);
+      transform: scale(0.72);
+      animation: tapRippleInner 760ms cubic-bezier(0.15, 0.64, 0.22, 1) forwards;
+    }
+
+    @keyframes tapRipple {
+      0% {
+        opacity: 0.75;
+        transform: translate(-50%, -50%) scale(0.25);
+      }
+
+      60% {
+        opacity: 0.4;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(4.8);
+      }
+    }
+
+    @keyframes tapRippleInner {
+      0% {
+        opacity: 0.6;
+        transform: scale(0.5);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(2.8);
+      }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .has-cursor-effects,
+      .has-cursor-effects a,
+      .has-cursor-effects button,
+      .has-cursor-effects .btn,
+      .has-cursor-effects .nav-link {
+        cursor: none;
+      }
+
+      .has-cursor-effects .cursor-dot {
+        opacity: 1;
+      }
+    }
+
+    .footer {
+      color: #909ab2;
+      font-size: 0.84rem;
+      opacity: 1;
+    }
+
+    body:not(.dark) .footer {
+      color: #65718e;
+    }
+
+    @media (max-width: 920px) {
+      .ad-menu-toggle {
+        display: inline-flex;
+      }
+
+      .ad-topnav-inner {
+        flex-wrap: wrap;
+      }
+
+      .ad-nav-links {
+        width: 100%;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+        padding-top: 0.25rem;
+      }
+
+      .ad-topnav.open .ad-nav-links {
+        display: flex;
+      }
+
+      .ad-nav-links a,
+      .ad-nav-dropdown-trigger {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .ad-nav-dropdown {
+        width: 100%;
+      }
+
+      .ad-nav-dropdown-menu {
+        position: static;
+        min-width: 0;
+        max-width: 100%;
+        max-height: none;
+        overflow-y: visible;
+        box-shadow: none;
+        border-radius: 0.65rem;
+      }
+    }
   </style>
 </head>
-<body class="pb-5">
+<body class="pb-5 dark">
+  <nav class="ad-topnav" aria-label="Primary navigation">
+    <div class="ad-topnav-inner">
+      <a href="index.html" class="ad-brand" aria-label="Back to NifftySwiggle Studio home">
+        <img src="https://raw.githubusercontent.com/NifftySwiggle/Home/main/assets/NSlogo.png" alt="NifftySwiggle logo" />
+        <span>NifftySwiggle Studio</span>
+      </a>
 
-<div class="container mt-4">
+      <button class="ad-menu-toggle" id="ad-menu-toggle" aria-expanded="false" aria-controls="ad-nav-links" aria-label="Open menu" type="button">☰</button>
+
+      <ul class="ad-nav-links" id="ad-nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li class="ad-nav-dropdown">
+          <button type="button" class="ad-nav-dropdown-trigger" id="ad-websites-toggle" aria-expanded="false" aria-controls="ad-websites-menu">Projects ▾</button>
+          <ul class="ad-nav-dropdown-menu" id="ad-websites-menu">
+            <li><a href="/tempohub">Tempo Hub</a></li>
+            <li><a href="https://strategicplay.xyz" target="_blank" rel="noopener noreferrer">Strategic Play</a></li>
+            <li><a href="https://nomadshq.xyz" target="_blank" rel="noopener noreferrer">Nomads</a></li>
+            <li><a href="/swigglescan" aria-current="page">Swiggle Scan</a></li>
+            <li><a href="/nftgenerator">NFT Generator</a></li>
+            <li><a href="https://www.gaiaecosystem.com/stake.html" target="_blank" rel="noopener noreferrer">Non-Custodial Stake</a></li>
+            <li><a href="/chess">Online Chess</a></li>
+            <li><a href="/airdrop">Token Airdrop</a></li>
+            <li><a href="/gamehub">Game Hub</a></li>
+            <li><a href="/pixeldraw">Pixel Draw</a></li>
+            <li><a href="/updatemetadata">Update Metadata</a></li>
+            <li><a href="/mpc">MPC</a></li>
+            <li><a href="https://www.gaiaecosystem.com/" target="_blank" rel="noopener noreferrer">Gaia Ecosystem</a></li>
+            <li><a href="/cdcswigglescan">CDC Swiggle Scan</a></li>
+            <li><a href="https://allstake.io/launches/pitbits" target="_blank" rel="noopener noreferrer">PitBits</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="stars">
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+  </div>
+
+  <!-- Back to Top Button -->
+  <button id="backToTopBtn" title="Back to top" style="display:none;position:fixed;bottom:2rem;right:2rem;z-index:9999;background:#007bff;color:#fff;border:none;border-radius:50%;width:3rem;height:3rem;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:1.5rem;align-items:center;justify-content:center;transition:background 0.2s, color 0.2s;">
+    ↑
+  </button>
+
+<div class="container scan-shell mt-4">
   <!-- Header -->
   <div class="header mb-4">
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
     <h1 class="h3 mb-0"> Swiggle Scan </h1>
     <p class="mb-0"> • Remake of Classic Cronos Scan • </p>
+    <button class="btn btn-warning btn-sm mt-2" id="verifyBtn">Verify Data</button>
+    <div id="verifyResult" class="mt-2"></div>
+    <button class="btn btn-outline-info btn-sm mt-2" id="viewReportBtn" style="display:none">View Report</button>
+    <div id="verifyReport" class="mt-2 p-3" style="display:none;border-radius:0.9rem;border:1px solid rgba(120,188,255,0.22);background:rgba(9,27,44,0.55);">
+      <!-- Inline verification report injected here -->
+    </div>
   </div>
+
+  <script>
+    // --- BACK TO TOP BUTTON LOGIC ---
+    document.addEventListener('DOMContentLoaded', function() {
+      const backToTopBtn = document.getElementById('backToTopBtn');
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+          backToTopBtn.style.display = 'flex';
+        } else {
+          backToTopBtn.style.display = 'none';
+        }
+      });
+      backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      // Theme support for button
+      function updateBackToTopTheme() {
+        if (document.body.classList.contains('dark')) {
+          backToTopBtn.style.background = '#23272f';
+          backToTopBtn.style.color = '#ffe066';
+        } else {
+          backToTopBtn.style.background = '#007bff';
+          backToTopBtn.style.color = '#fff';
+        }
+      }
+      updateBackToTopTheme();
+      // Update on theme toggle
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          setTimeout(updateBackToTopTheme, 10);
+        });
+      }
+    });
+  // --- THEME TOGGLE LOGIC ---
+  document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('themeToggle');
+    function setTheme(dark) {
+      if (dark) {
+        document.body.classList.add('dark');
+        if (themeToggle) themeToggle.innerHTML = '☀️';
+        localStorage.setItem('swiggle-theme', 'dark');
+      } else {
+        document.body.classList.remove('dark');
+        if (themeToggle) themeToggle.innerHTML = '🌙';
+        localStorage.setItem('swiggle-theme', 'light');
+      }
+    }
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        setTheme(!document.body.classList.contains('dark'));
+      });
+    }
+    // On load, default to dark theme unless user previously chose light.
+    const saved = localStorage.getItem('swiggle-theme');
+    if (saved === 'dark' || saved === 'light') setTheme(saved === 'dark');
+    else setTheme(true);
+    // Also update theme if system preference changes
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mql && typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', e => {
+        if (!localStorage.getItem('swiggle-theme')) setTheme(e.matches);
+      });
+    }
+  });
+  </script>
 
   <!-- Search -->
   <div class="card mb-4">
@@ -109,6 +1732,9 @@
                 <p><strong>Price:</strong> $<span id="tokenPrice">—</span></p>
                 <p><strong>Total Supply:</strong> <span id="totalSupply">—</span></p>
                 <p><strong>Total Holders:</strong> <span id="totalHolders">—</span></p>
+                <p><strong>Holder Source:</strong> <span id="contractHolders">—</span></p>
+                <p><strong>Active Holders:</strong> <span id="activeHolders">—</span></p>
+                <p><strong>Holder Coverage:</strong> <span id="holderCoverage">—</span></p>
               </div>
             </div>
           </div>
@@ -138,6 +1764,17 @@
             </div>
           </div>
           <div class="card-body pb-0">
+            <div class="row mb-2">
+              <div class="col-md-4 mb-2">
+                <select class="form-select form-select-sm" id="txTypeFilter">
+                  <option value="">All Types</option>
+                  <!-- Transaction types will be populated dynamically -->
+                </select>
+              </div>
+              <div class="col-md-4 mb-2">
+                <input type="text" class="form-control form-control-sm" id="txAddressFilter" placeholder="Filter by address (from/to)">
+              </div>
+            </div>
             <div class="alert alert-warning py-2 mb-2 small">
               This view is limited to the most recent 1,000 transactions. For full historical scans and advanced data,
               the website needs funding. Please contact me on X: <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer">NifftySwiggle</a>.
@@ -147,7 +1784,13 @@
             <div class="table-responsive">
               <table class="table table-hover mb-0">
                 <thead><tr>
-                  <th>Txn Hash</th><th>Type</th><th>Block</th><th class="age">Age</th><th>From</th><th>To</th><th>Value</th>
+                  <th id="thTxnHash" class="sortable">Txn Hash</th>
+                  <th id="thType" class="sortable">Type</th>
+                  <th id="thBlock" class="sortable">Block</th>
+                  <th id="thAge" class="sortable">Age</th>
+                  <th id="thFrom" class="sortable">From</th>
+                  <th id="thTo" class="sortable">To</th>
+                  <th id="thValue" class="sortable">Value</th>
                 </tr></thead>
                 <tbody id="transfersBody"></tbody>
               </table>
@@ -166,10 +1809,67 @@
               <a href="#" id="holdersCsv" class="btn btn-sm btn-outline-success">CSV Export</a>
             </div>
           </div>
+          <div class="card-body pb-0">
+            <div class="row mb-2">
+              <div class="col-md-6 mb-2">
+                <input type="text" class="form-control form-control-sm" id="holderAddressFilter" placeholder="Filter by address">
+              </div>
+              <div class="col-md-6 mb-2">
+                <input type="number" min="0" class="form-control form-control-sm" id="holderMinQtyFilter" placeholder="Min quantity">
+              </div>
+            </div>
+            <div class="alert alert-info py-2 px-3 mb-2" id="deepScanPanel" style="display:none">
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <strong>🔍 Deep NFT Scan</strong>
+                <button class="btn btn-sm btn-outline-primary" id="deepScanToggleBtn" onclick="toggleDeepScanForm()">Scan Owners</button>
+                <a href="https://nifftyswiggle.pw/airdrop" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info">Use Airdrop Tool</a>
+              </div>
+              <div id="deepScanForm" style="display:none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                <div class="mb-2">
+                  <small class="d-block mb-1"><strong>NFT Contract Address</strong></small>
+                  <input type="text" class="form-control form-control-sm" id="deepScanContractInput" placeholder="0x..." value="">
+                </div>
+                <div class="mb-2">
+                  <small class="d-block mb-1"><strong>Scan Method</strong></small>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <input type="radio" class="btn-check" name="scanMethod" id="scanTokenIds" value="tokenIds" onchange="updateScanUI()" checked>
+                    <label class="btn btn-outline-secondary" for="scanTokenIds">Specific IDs</label>
+                    <input type="radio" class="btn-check" name="scanMethod" id="scanCollection" value="collection" onchange="updateScanUI()">
+                    <label class="btn btn-outline-secondary" for="scanCollection">Entire Collection</label>
+                  </div>
+                </div>
+                <div id="tokenIdsField" class="mb-2">
+                  <small class="d-block mb-1"><strong>Token IDs (comma-separated or ranges)</strong></small>
+                  <input type="text" class="form-control form-control-sm" id="deepScanTokenIds" placeholder="e.g., 1to100,105,110to115">
+                </div>
+                <div class="mb-2">
+                  <button class="btn btn-sm btn-success" id="deepScanBtn" onclick="runDeepScan()">Start Scan</button>
+                  <button class="btn btn-sm btn-secondary" id="deepScanCancelBtn" onclick="cancelDeepScan()" style="display:none;">Cancel</button>
+                </div>
+                <div id="deepScanProgress" style="display:none; margin-top: 10px;">
+                  <div class="progress" style="height: 20px;">
+                    <div id="deepScanProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+                  </div>
+                  <small id="deepScanStatus" class="d-block mt-1 text-muted">Preparing scan...</small>
+                </div>
+                <div id="deepScanPreview" style="display:none; margin-top: 10px;">
+                  <small class="d-block mb-1"><strong>Found Holders (<span id="deepScanFoundCount">0</span>)</strong></small>
+                  <div id="deepScanPreviewList" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.1); border-radius: 4px; padding: 8px; font-size: 0.8rem;">
+                  </div>
+                  <button class="btn btn-sm btn-success mt-2" onclick="confirmDeepScanHolders()">Use These Holders</button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-hover mb-0">
-                <thead><tr><th>Rank</th><th>Address</th><th>Quantity</th><th>Percentage</th></tr></thead>
+                <thead><tr>
+                  <th id="thRank" class="sortable">Rank</th>
+                  <th id="thHolderAddress" class="sortable">Address</th>
+                  <th id="thHolderQty" class="sortable">Quantity</th>
+                  <th id="thHolderPct" class="sortable">Percentage</th>
+                </tr></thead>
                 <tbody id="holdersBody"></tbody>
               </table>
             </div>
@@ -290,23 +1990,96 @@
   </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script>
-  // Load Bootstrap after preload
-  const bsLink = document.createElement('link');
-  bsLink.rel = 'stylesheet';
-  bsLink.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
-  document.head.appendChild(bsLink);
+    <script>
+      (function () {
+        const nav = document.querySelector('.ad-topnav');
+        const toggle = document.getElementById('ad-menu-toggle');
+        const links = document.getElementById('ad-nav-links');
+        const websitesDropdown = document.querySelector('.ad-nav-dropdown');
+        const websitesToggle = document.getElementById('ad-websites-toggle');
+        if (!nav || !toggle || !links) return;
 
-  const bsScript = document.createElement('script');
-  bsScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
-  bsScript.async = true;
-  document.head.appendChild(bsScript);
-</script>
+        const closeWebsitesDropdown = function () {
+          if (!websitesDropdown || !websitesToggle) return;
+          websitesDropdown.classList.remove('open');
+          websitesToggle.setAttribute('aria-expanded', 'false');
+        };
+
+        const closeNav = function () {
+          nav.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+          toggle.textContent = '☰';
+          toggle.setAttribute('aria-label', 'Open menu');
+          closeWebsitesDropdown();
+        };
+
+        toggle.addEventListener('click', function () {
+          const isOpen = nav.classList.toggle('open');
+          toggle.setAttribute('aria-expanded', String(isOpen));
+          toggle.textContent = isOpen ? '✕' : '☰';
+          toggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+        });
+
+        links.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
+            if (window.innerWidth <= 920) {
+              closeNav();
+            }
+          });
+        });
+
+        if (websitesToggle && websitesDropdown) {
+          websitesToggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            const isOpen = websitesDropdown.classList.toggle('open');
+            websitesToggle.setAttribute('aria-expanded', String(isOpen));
+          });
+        }
+
+        document.addEventListener('click', function (event) {
+          if (websitesDropdown && websitesDropdown.classList.contains('open') && !websitesDropdown.contains(event.target)) {
+            closeWebsitesDropdown();
+          }
+          if (window.innerWidth <= 920 && nav.classList.contains('open')) {
+            const clickedInsideNav = nav.contains(event.target);
+            if (!clickedInsideNav) closeNav();
+          }
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            closeWebsitesDropdown();
+          }
+          if (event.key === 'Escape' && nav.classList.contains('open')) {
+            closeNav();
+            toggle.focus();
+          }
+        });
+
+        window.addEventListener('resize', function () {
+          if (window.innerWidth > 920 && nav.classList.contains('open')) {
+            closeNav();
+          }
+        });
+      })();
+    </script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.14.3/dist/ethers.umd.min.js"></script>
 
 <script>
   const API = 'https://cronos.org/explorer/api';
   const CG = 'https://api.coingecko.com/api/v3';
+  const IS_FILE_ORIGIN = window.location.protocol === 'file:';
+  const CRONOS_RPC = 'https://evm.cronos.org/';
+  const DEEP_SCAN_START_TOKEN = 1;
+  const DEEP_SCAN_END_TOKEN = 10000;
+  const DEEP_SCAN_PARALLEL = 32;
+  const DEEP_SCAN_RPC_TIMEOUT = 10000;
+  const DEEP_SCAN_MAX_RETRIES = 3;
+  const DEEP_SCAN_RETRY_BASE_MS = 400;
+  const DEEP_SCAN_ROUND_BASE_MS = 1200;
   const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
   const CACHE_TTL = 5 * 60 * 1000; // 5 min
   const BLOCK_RANGE = 50000; // ~1 day
@@ -329,6 +2102,9 @@
     tokenPrice: document.getElementById('tokenPrice'),
     totalSupply: document.getElementById('totalSupply'),
     totalHolders: document.getElementById('totalHolders'),
+    contractHolders: document.getElementById('contractHolders'),
+    activeHolders: document.getElementById('activeHolders'),
+    holderCoverage: document.getElementById('holderCoverage'),
     volume24h: document.getElementById('volume24h'),
     marketCap: document.getElementById('marketCap'),
     circSupply: document.getElementById('circSupply'),
@@ -339,6 +2115,12 @@
     // Holders
     holdersBody: document.getElementById('holdersBody'),
     holdersCsv: document.getElementById('holdersCsv'),
+    deepScanPanel: document.getElementById('deepScanPanel'),
+    deepScanStartBtn: document.getElementById('deepScanStartBtn'),
+    deepScanStopBtn: document.getElementById('deepScanStopBtn'),
+    deepScanResetBtn: document.getElementById('deepScanResetBtn'),
+    deepScanStatus: document.getElementById('deepScanStatus'),
+    deepScanModeBadge: document.getElementById('deepScanModeBadge'),
     holdersCount: document.getElementById('holdersCount'),
     showMoreHolders: document.getElementById('showMoreHolders'),
     transfersCount: document.getElementById('transfersCount'),
@@ -373,6 +2155,16 @@
   let transfersDisplayCount = 100;
   let tokensDisplayCount = 50;
   let isWalletMode = false;
+  let activeSearchController = null;
+  let activeSearchRunId = 0;
+  const deepScanState = {
+    running: false,
+    stopRequested: false,
+    results: new Map(),
+    lastDone: 0,
+    mode: 'auto'
+  };
+  let deepRpcRequestId = 1;
 
   // Debug mode is always enabled in the background for troubleshooting
   // (no user toggle needed)
@@ -431,6 +2223,7 @@
       tokensTab.style.display = 'none';
       els.contractHeader.textContent = 'Contract Information';
     }
+    updateDeepScanVisibility();
   };
 
   // Init tabs
@@ -497,9 +2290,18 @@
     return `${Math.floor(diff/86400)}d ago`;
   };
 
+  const beginNewSearchRun = () => {
+    if (activeSearchController) {
+      activeSearchController.abort();
+    }
+    activeSearchController = new AbortController();
+    activeSearchRunId += 1;
+    return { runId: activeSearchRunId, signal: activeSearchController.signal };
+  };
+
   // Helper function for fetch with timeout
   const fetchWithTimeout = (url, timeout = REQUEST_TIMEOUT) => {
-    return fetch(url, { 
+    return fetch(url, {
       signal: AbortSignal.timeout(timeout),
       headers: {
         'Accept': 'application/json',
@@ -508,52 +2310,218 @@
     });
   };
 
-  // Render transfers table - Enhanced to show all transaction types
+  const pickNumber = (obj, keys) => {
+    if (!obj || typeof obj !== 'object') return null;
+    for (const key of keys) {
+      const value = obj[key];
+      if (value === null || value === undefined || value === '') continue;
+      const n = Number(value);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    return null;
+  };
+
+  const normalizeAddress = (value) => {
+    if (!value || typeof value !== 'string') return '';
+    const trimmed = value.trim().toLowerCase();
+    return /^0x[a-f0-9]{40}$/.test(trimmed) ? trimmed : '';
+  };
+
+  const EXCLUDED_HOLDER_ADDRESSES = new Set([
+    '0x0000000000000000000000000000000000000000',
+    '0x000000000000000000000000000000000000dead'
+  ]);
+
+  const parseBigIntSafe = (value) => {
+    try {
+      return BigInt(String(value ?? '0'));
+    } catch {
+      return 0n;
+    }
+  };
+
+  const getRowAddress = (row) => normalizeAddress(row?.address || row?.holder || '');
+  const getRowBalance = (row) => parseBigIntSafe(row?.value ?? row?.balance ?? '0');
+
+  // Returns the exact token divisor as a BigInt (avoids float precision loss from 10**18 etc.)
+  const tokenDivisor = (decimals) => 10n ** BigInt(Math.max(0, parseInt(decimals) || 0));
+
+  // Formats a raw BigInt token amount into a human-readable string with up to `maxFrac` fractional digits.
+  // Uses pure BigInt arithmetic so no precision is lost for 18-decimal tokens.
+  const formatTokenAmount = (rawValue, decimals, maxFrac = 6) => {
+    let raw;
+    try { raw = BigInt(String(rawValue ?? '0')); } catch { return String(rawValue); }
+    if (raw === 0n) return '0';
+    const dec = Math.max(0, parseInt(decimals) || 0);
+    if (dec === 0) return raw.toLocaleString();
+    const divisor = tokenDivisor(dec);
+    const whole = raw / divisor;
+    const remainder = raw % divisor;
+    if (remainder === 0n) return whole.toLocaleString();
+    const fracStr = remainder.toString().padStart(dec, '0').slice(0, maxFrac).replace(/0+$/, '');
+    return fracStr ? `${whole.toLocaleString()}.${fracStr}` : whole.toLocaleString();
+  };
+
+  // Returns a plain Number approximation suitable for sorting/percentage math.
+  const tokenAmountApprox = (rawValue, decimals) => {
+    let raw;
+    try { raw = BigInt(String(rawValue ?? '0')); } catch { return 0; }
+    const dec = Math.max(0, parseInt(decimals) || 0);
+    if (dec === 0) return Number(raw);
+    const divisor = tokenDivisor(dec);
+    const whole = Number(raw / divisor);
+    const remainder = Number(raw % divisor) / Number(divisor);
+    return whole + remainder;
+  };
+
+  // BigInt-precise percentage: returns e.g. "12.34" (string, 4 dp) or "—"
+  const tokenPct = (rawAmount, rawSupply) => {
+    let amt, sup;
+    try { amt = BigInt(String(rawAmount ?? '0')); } catch { return '—'; }
+    try { sup = BigInt(String(rawSupply ?? '0')); } catch { return '—'; }
+    if (sup === 0n) return '—';
+    // Multiply by 1_000_000 for 4 dp precision before dividing
+    const scaled = (amt * 1_000_000n) / sup;
+    const intPart = scaled / 10000n;
+    const fracPart = (scaled % 10000n).toString().padStart(4, '0');
+    return `${intPart}.${fracPart}`;
+  };
+
+  const isMeaningfulHolderRow = (row) => {
+    const addr = getRowAddress(row);
+    if (!addr || EXCLUDED_HOLDER_ADDRESSES.has(addr)) return false;
+    return getRowBalance(row) > 0n;
+  };
+
+  const getTransferAddress = (tx, side) => {
+    const direct = normalizeAddress(tx?.[side] || '');
+    if (direct) return direct;
+    if (Array.isArray(tx?.topics)) {
+      const topicIndex = side === 'from' ? 1 : 2;
+      const topic = tx.topics[topicIndex];
+      if (typeof topic === 'string' && topic.length >= 40) {
+        return normalizeAddress(`0x${topic.slice(-40)}`);
+      }
+    }
+    return '';
+  };
+
+  // --- FILTER & SORT STATE ---
+  let txTypeFilter = '';
+  let txAddressFilter = '';
+  let txSortKey = 'age';
+  let txSortAsc = false;
+  let holderAddressFilter = '';
+  let holderMinQtyFilter = '';
+  let holderSortKey = 'rank';
+  let holderSortAsc = true;
+
+  // Render transfers table - Enhanced to show all transaction types, now with filters and sorting
   const renderTransfers = () => {
     const { decimals, isNFT } = window.currentTokenData || {};
     let txHtml = '';
-    
-    if (allTransfers.length === 0) {
-      txHtml = '<tr><td colspan="7" class="text-center text-muted">No recent transactions found</td></tr>';
+
+    // --- Dynamic type filter population ---
+    const txTypeFilterEl = document.getElementById('txTypeFilter');
+    if (txTypeFilterEl) {
+      // Get unique types from allTransfers
+      const types = Array.from(new Set(allTransfers.map(t => t.txType || 'Unknown'))).filter(Boolean).sort();
+      // Save current selection
+      const prev = txTypeFilterEl.value;
+      txTypeFilterEl.innerHTML = '<option value="">All Types</option>' + types.map(type => `<option value="${type}">${type}</option>`).join('');
+      // Restore selection if possible
+      txTypeFilterEl.value = prev || '';
+    }
+
+    // Apply filters
+    let filteredTransfers = allTransfers;
+    if (txTypeFilter) {
+      filteredTransfers = filteredTransfers.filter(log => (log.txType || '').toLowerCase() === txTypeFilter.toLowerCase());
+    }
+    if (txAddressFilter) {
+      const addr = txAddressFilter.toLowerCase();
+      filteredTransfers = filteredTransfers.filter(log => {
+        const from = (log.from || (log.topics && log.topics[1] ? '0x' + log.topics[1].slice(-40) : '')).toLowerCase();
+        const to = (log.to || (log.topics && log.topics[2] ? '0x' + log.topics[2].slice(-40) : '')).toLowerCase();
+        return from.includes(addr) || to.includes(addr);
+      });
+    }
+
+    // --- Sorting ---
+    filteredTransfers = filteredTransfers.slice();
+    filteredTransfers.sort((a, b) => {
+      let vA, vB;
+      switch (txSortKey) {
+        case 'age':
+          vA = parseInt(a.timeStamp || a.timestamp || 0);
+          vB = parseInt(b.timeStamp || b.timestamp || 0);
+          break;
+        case 'type':
+          vA = (a.txType || '').toLowerCase();
+          vB = (b.txType || '').toLowerCase();
+          break;
+        case 'block':
+          vA = parseInt(a.blockNumber || 0);
+          vB = parseInt(b.blockNumber || 0);
+          break;
+        case 'from':
+          vA = (a.from || (a.topics && a.topics[1] ? '0x' + a.topics[1].slice(-40) : '')).toLowerCase();
+          vB = (b.from || (b.topics && b.topics[1] ? '0x' + b.topics[1].slice(-40) : '')).toLowerCase();
+          break;
+        case 'to':
+          vA = (a.to || (a.topics && a.topics[2] ? '0x' + a.topics[2].slice(-40) : '')).toLowerCase();
+          vB = (b.to || (b.topics && b.topics[2] ? '0x' + b.topics[2].slice(-40) : '')).toLowerCase();
+          break;
+        case 'value':
+          vA = 0; vB = 0;
+          try {
+            vA = a.value ? Number(BigInt(a.value)) : 0;
+            vB = b.value ? Number(BigInt(b.value)) : 0;
+          } catch {}
+          break;
+        default:
+          vA = 0; vB = 0;
+      }
+      if (vA < vB) return txSortAsc ? -1 : 1;
+      if (vA > vB) return txSortAsc ? 1 : -1;
+      return 0;
+    });
+
+    if (filteredTransfers.length === 0) {
+      txHtml = '<tr><td colspan="7" class="text-center text-muted">No transactions found for selected filter(s)</td></tr>';
     } else {
-      const transfersToShow = allTransfers.slice(0, transfersDisplayCount);
+      const transfersToShow = filteredTransfers.slice(0, transfersDisplayCount);
       transfersToShow.forEach(log => {
         try {
-          // Handle multiple data formats: event logs, token transfers, NFT transfers, and regular transactions
+          // ...existing code...
           let from, to, value, txHash, blockNum, timestamp, txType = 'Transfer';
-          
+          // ...existing code...
           if (log.topics) {
-            // Event log format from logs API
             from = log.topics[1] ? '0x' + log.topics[1].slice(-40) : '—';
             to = log.topics[2] ? '0x' + log.topics[2].slice(-40) : '—';
-            
+            // ...existing code...
             if (isNFT && log.topics[3]) {
               value = `#${parseInt(log.topics[3], 16)}`;
             } else if (!isNFT && log.data && log.data !== '0x') {
               try {
-                value = Number(BigInt(log.data) / BigInt(10**decimals)).toFixed(4);
+                value = formatTokenAmount(log.data, decimals, 8);
               } catch (e) {
                 value = 'N/A';
               }
             } else {
               value = '—';
             }
-            
             txHash = log.transactionHash || log.hash || '—';
             blockNum = log.blockNumber || '—';
             timestamp = log.timeStamp || log.timestamp || '0';
             txType = log.txType || 'Transfer';
           } else if (log.from || log.to) {
-            // Token transfer format from tokentx/tokennfttx API or enhanced transactions
             from = log.from || '—';
             to = log.to || '—';
             txType = log.txType || 'Transfer';
-            
-            // Handle pre-processed transaction values
             if (log.originalValue && log.originalValue !== 'N/A') {
               value = log.originalValue;
             } else if (isNFT) {
-              // NFT transfer - show token ID and name if available
               if (log.tokenID) {
                 value = log.tokenName ? `${log.tokenName} #${log.tokenID}` : `#${log.tokenID}`;
               } else if (log.tokenName) {
@@ -562,31 +2530,24 @@
                 value = '1 NFT';
               }
             } else if (log.value && log.value !== '0') {
-              // ERC-20 transfer
               try {
-                const rawValue = BigInt(log.value);
-                const divisor = BigInt(10 ** decimals);
-                value = Number(rawValue / divisor).toFixed(4);
+                value = formatTokenAmount(log.value, decimals, 8);
               } catch (e) {
                 value = log.value;
               }
             } else {
               value = '0';
             }
-            
             txHash = log.hash || '—';
             blockNum = log.blockNumber || '—';
             timestamp = log.timeStamp || '0';
           } else {
-            // Regular transaction format (last resort)
             from = log.from || '—';
             to = log.to || '—';
             txType = log.txType || 'Transaction';
-            
             if (log.originalValue && log.originalValue !== 'N/A') {
               value = log.originalValue;
             } else if (log.value && log.value !== '0') {
-              // Might be ETH transfer or contract interaction
               try {
                 const ethValue = Number(BigInt(log.value) / BigInt(10**18));
                 value = ethValue > 0 ? `${ethValue.toFixed(6)} CRO` : 'Contract Call';
@@ -596,13 +2557,11 @@
             } else {
               value = 'Contract Call';
             }
-            
             txHash = log.hash || '—';
             blockNum = log.blockNumber || '—';
             timestamp = log.timeStamp || '0';
           }
-          
-          // Get appropriate badge color for transaction type
+          // ...existing code...
           let typeBadge = 'bg-secondary';
           switch (txType) {
             case 'Transfer':
@@ -643,8 +2602,7 @@
             default:
               typeBadge = 'bg-secondary';
           }
-          
-            txHtml += `<tr>
+          txHtml += `<tr>
             <td><a href="https://explorer.cronos.org/tx/${txHash}" target="_blank">${txHash.slice(0,10)}...</a></td>
             <td><span class="badge ${typeBadge} small">${txType}</span></td>
             <td>${blockNum}</td>
@@ -664,16 +2622,16 @@
         }
       });
     }
-    
+
     els.transfersBody.innerHTML = txHtml;
-    els.transfersCount.textContent = allTransfers.length.toLocaleString();
-    
+    els.transfersCount.textContent = filteredTransfers.length.toLocaleString();
+
     // Show/hide show more button
-    if (transfersDisplayCount >= allTransfers.length) {
+    if (transfersDisplayCount >= filteredTransfers.length) {
       els.showMoreTransfers.style.display = 'none';
     } else {
       els.showMoreTransfers.style.display = 'inline-block';
-      els.showMoreTransfers.textContent = `Show More (${(allTransfers.length - transfersDisplayCount).toLocaleString()} remaining)`;
+      els.showMoreTransfers.textContent = `Show More (${(filteredTransfers.length - transfersDisplayCount).toLocaleString()} remaining)`;
     }
   };
 
@@ -690,6 +2648,7 @@
         
         // For NFTs, we might need different parameters
         const offset = isNFT ? 10000 : 5000; // NFTs can have more holders per page
+        
         const response = await fetchWithTimeout(`${API}?module=token&action=getTokenHolders&contractaddress=${contractAddr}&page=${page}&offset=${offset}`);
         
         if (!response.ok) {
@@ -702,10 +2661,10 @@
           if (debugMode) console.log(`No more holder data on page ${page}:`, data.message || data.result);
           break;
         }
-        
+
         allHolders.push(...data.result);
         if (debugMode) console.log(`Fetched holders page ${page}: ${data.result.length} holders (total: ${allHolders.length})`);
-        
+
         // If we got less than expected, this is the last page
         if (data.result.length < offset) break;
         page++;
@@ -738,7 +2697,16 @@
         
         // Use tokentx for ERC-20 tokens and tokennfttx for ERC-721 tokens
         const action = isNFT ? 'tokennfttx' : 'tokentx';
-        const response = await fetchWithTimeout(`${API}?module=account&action=${action}&contractaddress=${contractAddr}&page=${page}&offset=1000&sort=desc`);
+        const makeTransfersUrl = (useContractAddressParam) => {
+          const key = useContractAddressParam ? 'contractaddress' : 'address';
+          return `${API}?module=account&action=${action}&${key}=${contractAddr}&page=${page}&offset=1000&sort=desc`;
+        };
+
+        // tokennfttx often requires contractaddress while tokentx works with address.
+        let response = await fetchWithTimeout(makeTransfersUrl(!!isNFT));
+        if (isNFT && response.status === 400) {
+          response = await fetchWithTimeout(makeTransfersUrl(false));
+        }
         
         if (!response.ok) {
           if (debugMode) console.log(`${action} API failed on page ${page}:`, response.status);
@@ -770,7 +2738,7 @@
         try {
           els.loadingText.textContent = `Loading NFT transfers... (alternative method)`;
           
-          const response = await fetchWithTimeout(`${API}?module=account&action=tokennfttx&address=${contractAddr}&page=1&offset=1000&sort=desc`);
+          const response = await fetchWithTimeout(`${API}?module=account&action=tokennfttx&contractaddress=${contractAddr}&page=1&offset=1000&sort=desc`);
           if (response.ok) {
             const data = await response.json();
             if (data.status === '1' && data.result) {
@@ -1017,48 +2985,79 @@
     els.loading.style.display = 'none';
   };
 
-  // Render holders table
+  // Render holders table with filters and sorting
   const renderHolders = () => {
     const { decimals, isNFT, totalSupplyRaw } = window.currentTokenData || {};
     let holdersHtml = '';
-    
-    if (allHolders.length === 0) {
-      holdersHtml = '<tr><td colspan="4" class="text-center text-muted">No holders data available</td></tr>';
+
+    // Apply filters
+    let filteredHolders = allHolders;
+    if (holderAddressFilter) {
+      const addr = holderAddressFilter.toLowerCase();
+      filteredHolders = filteredHolders.filter(h => {
+        const holderAddr = (h.address || h.holder || '').toLowerCase();
+        return holderAddr.includes(addr);
+      });
+    }
+    if (holderMinQtyFilter) {
+      const minQty = parseFloat(holderMinQtyFilter);
+      filteredHolders = filteredHolders.filter(h => {
+        const balance = h.value || h.balance || '0';
+        const qty = isNFT ? Number(balance) : tokenAmountApprox(balance, decimals);
+        return qty >= minQty;
+      });
+    }
+
+    // --- Sorting ---
+    filteredHolders = filteredHolders.slice();
+    filteredHolders.sort((a, b) => {
+      let vA, vB;
+      switch (holderSortKey) {
+        case 'rank':
+          vA = allHolders.indexOf(a);
+          vB = allHolders.indexOf(b);
+          break;
+        case 'address':
+          vA = (a.address || a.holder || '').toLowerCase();
+          vB = (b.address || b.holder || '').toLowerCase();
+          break;
+        case 'qty':
+          vA = isNFT ? Number(a.value || a.balance || 0) : tokenAmountApprox(a.value || a.balance || 0, decimals);
+          vB = isNFT ? Number(b.value || b.balance || 0) : tokenAmountApprox(b.value || b.balance || 0, decimals);
+          break;
+        case 'pct':
+          vA = isNFT ? Number(a.value || a.balance || 0) : tokenAmountApprox(a.value || a.balance || 0, decimals);
+          vB = isNFT ? Number(b.value || b.balance || 0) : tokenAmountApprox(b.value || b.balance || 0, decimals);
+          break;
+        default:
+          vA = 0; vB = 0;
+      }
+      if (vA < vB) return holderSortAsc ? -1 : 1;
+      if (vA > vB) return holderSortAsc ? 1 : -1;
+      return 0;
+    });
+
+    if (filteredHolders.length === 0) {
+      holdersHtml = '<tr><td colspan="4" class="text-center text-muted">No holders found for selected filter(s)</td></tr>';
     } else {
-      const holdersToShow = allHolders.slice(0, holdersDisplayCount);
+      const holdersToShow = filteredHolders.slice(0, holdersDisplayCount);
       holdersToShow.forEach((h, i) => {
         try {
           const holderAddr = h.address || h.holder || '—';
           const balance = h.value || h.balance || '0';
-          
           let qty = '—';
           let pct = '—';
-          
           if (balance !== '0' && balance !== '—') {
             if (isNFT) {
-              // For NFTs, the balance represents the number of NFTs owned
               const nftCount = Number(balance);
               qty = nftCount === 1 ? '1 NFT' : `${nftCount.toLocaleString()} NFTs`;
             } else {
-              try {
-                qty = Number(BigInt(balance) / BigInt(10**decimals)).toLocaleString();
-              } catch (e) {
-                qty = balance;
-              }
+              qty = formatTokenAmount(balance, decimals, 6);
             }
-            
             if (totalSupplyRaw && totalSupplyRaw !== '0') {
-              try {
-                // For NFTs, calculate percentage based on raw numbers (no decimal adjustment)
-                const holderAmount = isNFT ? Number(balance) : Number(balance);
-                const totalAmount = isNFT ? Number(totalSupplyRaw) : Number(totalSupplyRaw);
-                pct = ((holderAmount / totalAmount) * 100).toFixed(2) + '%';
-              } catch (e) {
-                pct = '—';
-              }
+              pct = tokenPct(balance, totalSupplyRaw) + '%';
             }
           }
-          
           holdersHtml += `<tr>
             <td>${i+1}</td>
             <td>
@@ -1073,16 +3072,16 @@
         }
       });
     }
-    
+
     els.holdersBody.innerHTML = holdersHtml;
-    els.holdersCount.textContent = allHolders.length.toLocaleString();
-    
+    els.holdersCount.textContent = filteredHolders.length.toLocaleString();
+
     // Show/hide show more button
-    if (holdersDisplayCount >= allHolders.length) {
+    if (holdersDisplayCount >= filteredHolders.length) {
       els.showMoreHolders.style.display = 'none';
     } else {
       els.showMoreHolders.style.display = 'inline-block';
-      els.showMoreHolders.textContent = `Show More (${(allHolders.length - holdersDisplayCount).toLocaleString()} remaining)`;
+      els.showMoreHolders.textContent = `Show More (${(filteredHolders.length - holdersDisplayCount).toLocaleString()} remaining)`;
     }
   };
 
@@ -1109,11 +3108,11 @@
           if (balance !== '0') {
             try {
               if (token.type === 'ERC-721') {
-                displayBalance = `${balance} NFT${balance > 1 ? 's' : ''}`;
+                displayBalance = `${balance} NFT${Number(balance) > 1 ? 's' : ''}`;
                 valueUsd = 'N/A';
               } else {
-                const rawBalance = Number(BigInt(balance) / BigInt(10**decimals));
-                displayBalance = rawBalance.toLocaleString(undefined, { maximumFractionDigits: 6 });
+                const rawBalance = tokenAmountApprox(balance, decimals);
+                displayBalance = formatTokenAmount(balance, decimals, 6);
                 if (price > 0) {
                   valueUsd = `$${(rawBalance * price).toFixed(2)}`;
                 }
@@ -1171,6 +3170,7 @@
   // Fetch wallet token holdings
   const fetchWalletTokens = async (walletAddr) => {
     let allTokens = [];
+    const walletAddressLower = normalizeAddress(walletAddr);
     
     try {
       let page = 1;
@@ -1216,7 +3216,7 @@
                     }
                   }
                   
-                  if (balance !== '0') {
+                  if (parseBigIntSafe(balance) > 0n) {
                     // Try to get price from CoinGecko
                     let price = 0;
                     let change24h = 0;
@@ -1254,47 +3254,66 @@
         page++;
       }
       
-      // Also check for NFTs
+      // Also check for NFTs by reconstructing current ownership per token ID.
       try {
         els.loadingText.textContent = 'Loading NFT holdings...';
-        const nftRes = await fetchWithTimeout(`${API}?module=account&action=tokennfttx&address=${walletAddr}&page=1&offset=1000&sort=desc`);
-        if (nftRes.ok) {
+        const nftTransfers = [];
+        let nftPage = 1;
+        const maxNftPages = 20;
+        while (nftPage <= maxNftPages) {
+          const nftRes = await fetchWithTimeout(`${API}?module=account&action=tokennfttx&address=${walletAddr}&page=${nftPage}&offset=1000&sort=desc`);
+          if (!nftRes.ok) break;
+
           const nftData = await nftRes.json();
-          if (nftData.status === '1' && nftData.result) {
-            const nftContracts = [...new Set(nftData.result.map(tx => tx.contractAddress.toLowerCase()))];
-            
-            for (const contractAddr of nftContracts) {
-              if (!allTokens.some(t => t.contractAddress.toLowerCase() === contractAddr)) {
-                try {
-                  const tokenRes = await fetchWithTimeout(`${API}?module=token&action=getToken&contractaddress=${contractAddr}`);
-                  if (tokenRes.ok) {
-                    const tokenData = await tokenRes.json();
-                    if (tokenData.status === '1' && tokenData.result) {
-                      const token = tokenData.result;
-                      
-                      // Count NFTs owned
-                      const ownedNfts = nftData.result.filter(tx => 
-                        tx.contractAddress.toLowerCase() === contractAddr && 
-                        tx.to.toLowerCase() === walletAddr.toLowerCase()
-                      );
-                      
-                      if (ownedNfts.length > 0) {
-                        allTokens.push({
-                          ...token,
-                          contractAddress: contractAddr,
-                          balance: ownedNfts.length.toString(),
-                          price: 0,
-                          change24h: 0,
-                          type: 'ERC-721'
-                        });
-                      }
-                    }
-                  }
-                } catch (e) {
-                  if (debugMode) console.log(`Error fetching NFT ${contractAddr}:`, e);
-                }
-              }
-            }
+          if (nftData.status !== '1' || !Array.isArray(nftData.result) || nftData.result.length === 0) {
+            break;
+          }
+
+          nftTransfers.push(...nftData.result);
+          if (nftData.result.length < 1000) break;
+          nftPage++;
+        }
+
+        const currentOwnerByToken = new Map();
+        for (const tx of nftTransfers) {
+          const nftContract = normalizeAddress(tx.contractAddress || '');
+          const tokenId = String(tx.tokenID || tx.tokenId || tx.nftId || '');
+          if (!nftContract || !tokenId) continue;
+
+          const tokenKey = `${nftContract}:${tokenId}`;
+          if (currentOwnerByToken.has(tokenKey)) continue;
+
+          const toAddress = normalizeAddress(tx.to || '');
+          if (!toAddress || EXCLUDED_HOLDER_ADDRESSES.has(toAddress)) continue;
+          currentOwnerByToken.set(tokenKey, toAddress);
+        }
+
+        const nftCountsByContract = new Map();
+        for (const [tokenKey, owner] of currentOwnerByToken.entries()) {
+          if (owner !== walletAddressLower) continue;
+          const nftContract = tokenKey.split(':')[0];
+          nftCountsByContract.set(nftContract, (nftCountsByContract.get(nftContract) || 0) + 1);
+        }
+
+        for (const [nftContract, count] of nftCountsByContract.entries()) {
+          if (count <= 0 || allTokens.some(t => normalizeAddress(t.contractAddress) === nftContract)) continue;
+          try {
+            const tokenRes = await fetchWithTimeout(`${API}?module=token&action=getToken&contractaddress=${nftContract}`);
+            if (!tokenRes.ok) continue;
+
+            const tokenData = await tokenRes.json();
+            if (tokenData.status !== '1' || !tokenData.result) continue;
+
+            allTokens.push({
+              ...tokenData.result,
+              contractAddress: nftContract,
+              balance: String(count),
+              price: 0,
+              change24h: 0,
+              type: 'ERC-721'
+            });
+          } catch (e) {
+            if (debugMode) console.log(`Error fetching NFT ${nftContract}:`, e);
           }
         }
       } catch (e) {
@@ -1307,8 +3326,8 @@
     
     // Sort by USD value (descending)
     allTokens.sort((a, b) => {
-      const aValue = a.type === 'ERC-721' ? 0 : (Number(BigInt(a.balance) / BigInt(10**(parseInt(a.decimals) || 0))) * (a.price || 0));
-      const bValue = b.type === 'ERC-721' ? 0 : (Number(BigInt(b.balance) / BigInt(10**(parseInt(b.decimals) || 0))) * (b.price || 0));
+      const aValue = a.type === 'ERC-721' ? 0 : (tokenAmountApprox(a.balance, a.decimals) * (a.price || 0));
+      const bValue = b.type === 'ERC-721' ? 0 : (tokenAmountApprox(b.balance, b.decimals) * (b.price || 0));
       return bValue - aValue;
     });
     
@@ -1326,6 +3345,7 @@
   const loadWallet = async () => {
     contractAddr = els.input.value.trim().toLowerCase();
     if (!/^0x[a-f0-9]{40}$/.test(contractAddr)) return showError('Invalid wallet address format');
+    const searchRun = beginNewSearchRun();
 
     els.loading.style.display = 'block';
     els.content.style.display = 'none';
@@ -1344,7 +3364,7 @@
       if (balanceRes.ok) {
         const balanceData = await balanceRes.json();
         if (balanceData.status === '1') {
-          croBalance = (Number(BigInt(balanceData.result) / BigInt(10**18))).toFixed(6);
+          croBalance = tokenAmountApprox(balanceData.result, 18).toFixed(6);
         }
       }
 
@@ -1386,7 +3406,7 @@
       allTokens.forEach(token => {
         if (token.type !== 'ERC-721' && token.balance !== '0') {
           try {
-            const balance = Number(BigInt(token.balance) / BigInt(10**(parseInt(token.decimals) || 0)));
+            const balance = tokenAmountApprox(token.balance, token.decimals);
             totalPortfolioValue += balance * (token.price || 0);
           } catch (e) {
             // Skip calculation errors
@@ -1417,14 +3437,21 @@
 
     } catch (err) {
       console.error('Wallet load error:', err);
+      if (err.name === 'AbortError' || searchRun.runId !== activeSearchRunId) {
+        return;
+      }
       if (err.name === 'TimeoutError') {
         showError('Request timeout - The API might be slow. Please try again.');
+      } else if (err instanceof TypeError || /Failed to fetch/i.test(String(err.message || ''))) {
+        showError('Network error - Please check your connection and try again.');
       } else {
         showError(`Failed to load wallet: ${err.message}`);
       }
     } finally {
-      els.loading.style.display = 'none';
-      els.loadBtn.disabled = false;
+      if (searchRun.runId === activeSearchRunId) {
+        els.loading.style.display = 'none';
+        els.loadBtn.disabled = false;
+      }
     }
   };
 
@@ -1436,6 +3463,7 @@
     
     contractAddr = els.input.value.trim().toLowerCase();
     if (!/^0x[a-f0-9]{40}$/.test(contractAddr)) return showError('Invalid contract address format');
+    const searchRun = beginNewSearchRun();
 
     // Removed caching to ensure all data loads completely every time
 
@@ -1467,7 +3495,7 @@
       if (isNFT) {
         totalSupply = totalSupplyRaw !== '0' ? Number(totalSupplyRaw).toLocaleString() + ' NFTs' : 'Unknown';
       } else {
-        totalSupply = Number(BigInt(totalSupplyRaw) / BigInt(10**decimals)).toLocaleString();
+        totalSupply = formatTokenAmount(totalSupplyRaw, decimals, 0);
       }
 
       // First get basic data in parallel
@@ -1481,26 +3509,28 @@
       // Fetch market data from multiple sources with robust fallbacks
       let market = { price: 'N/A', mcap: 'N/A', vol: 'N/A', circ: 'N/A' };
       
-      // Method 1: Try CoinGecko with Cronos platform ID
-      try {
-        els.loadingText.textContent = 'Fetching price data (Method 1)...';
-        const cgRes1 = await fetchWithTimeout(`${CG}/coins/cronos/contract/${contractAddr}`, 6000);
-        if (cgRes1.ok) {
-          const cg = await cgRes1.json();
-          if (cg.market_data && cg.market_data.current_price?.usd) {
-            market.price = cg.market_data.current_price.usd.toFixed(6);
-            market.mcap = cg.market_data.market_cap?.usd ? `$${cg.market_data.market_cap.usd.toLocaleString()}` : 'N/A';
-            market.vol = cg.market_data.total_volume?.usd ? `$${cg.market_data.total_volume.usd.toLocaleString()}` : 'N/A';
-            market.circ = cg.market_data.circulating_supply?.toLocaleString() || 'N/A';
-            if (debugMode) console.log('Price fetched via CoinGecko Cronos contract:', market.price);
+      // Method 1: Try CoinGecko with Cronos platform ID (skip in file:// due CORS)
+      if (!IS_FILE_ORIGIN) {
+        try {
+          els.loadingText.textContent = 'Fetching price data (Method 1)...';
+          const cgRes1 = await fetchWithTimeout(`${CG}/coins/cronos/contract/${contractAddr}`, 6000);
+          if (cgRes1.ok) {
+            const cg = await cgRes1.json();
+            if (cg.market_data && cg.market_data.current_price?.usd) {
+              market.price = cg.market_data.current_price.usd.toFixed(6);
+              market.mcap = cg.market_data.market_cap?.usd ? `$${cg.market_data.market_cap.usd.toLocaleString()}` : 'N/A';
+              market.vol = cg.market_data.total_volume?.usd ? `$${cg.market_data.total_volume.usd.toLocaleString()}` : 'N/A';
+              market.circ = cg.market_data.circulating_supply?.toLocaleString() || 'N/A';
+              if (debugMode) console.log('Price fetched via CoinGecko Cronos contract:', market.price);
+            }
           }
+        } catch (e) {
+          if (debugMode) console.log('CoinGecko Cronos contract method failed:', e);
         }
-      } catch (e) {
-        if (debugMode) console.log('CoinGecko Cronos contract method failed:', e);
       }
       
       // Method 2: Try CoinGecko with token symbol search (if Method 1 failed)
-      if (market.price === 'N/A' && token.symbol) {
+      if (!IS_FILE_ORIGIN && market.price === 'N/A' && token.symbol) {
         try {
           els.loadingText.textContent = 'Fetching price data (Method 2)...';
           const symbolSearch = await fetchWithTimeout(`${CG}/search?query=${token.symbol}`, 6000);
@@ -1531,7 +3561,7 @@
       }
       
       // Method 3: Try alternative CoinGecko endpoint (if Methods 1 & 2 failed)
-      if (market.price === 'N/A') {
+      if (!IS_FILE_ORIGIN && market.price === 'N/A') {
         try {
           els.loadingText.textContent = 'Fetching price data (Method 3)...';
           const cgRes3 = await fetchWithTimeout(`${CG}/simple/token_price/cronos?contract_addresses=${contractAddr}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true`, 6000);
@@ -1606,6 +3636,8 @@
       els.loadingProgress.style.width = '80%';
       allTransfers = await fetchAllTransfers(contractAddr, currentBlock, isNFT);
 
+
+
       // Process creator data
       let creator = '—';
       let creationHash = '';
@@ -1652,28 +3684,36 @@
       els.loadTime.textContent = `Loaded in ${loadMs}ms • ${dataStatus.join(', ') || 'Basic info only'}`;
     } catch (err) {
       console.error('Load error:', err);
+      if (err.name === 'AbortError' || searchRun.runId !== activeSearchRunId) {
+        return;
+      }
       if (err.name === 'TimeoutError') {
         showError('Request timeout - The Cronos API might be slow. Please try again.');
+      } else if (err instanceof TypeError || /Failed to fetch/i.test(String(err.message || ''))) {
+        showError('Network error - Please check your connection and try again.');
       } else if (err.message.includes('Token not found')) {
         showError('Token not found on Cronos network. Please check the contract address.');
       } else {
         showError(`Failed to load token: ${err.message}`);
       }
     } finally {
-      els.loading.style.display = 'none';
-      els.loadBtn.disabled = false; // Re-enable button
+      if (searchRun.runId === activeSearchRunId) {
+        els.loading.style.display = 'none';
+        els.loadBtn.disabled = false; // Re-enable button
+      }
     }
   };
 
   // Render wallet data
   const renderWallet = (d) => {
-    const { address, croBalance, firstTx, totalTxCount, totalPortfolioValue, tokenCount } = d;
+    const { address, croBalance, firstTx, totalTxCount, totalPortfolioValue, tokenCount, tokens, transfers } = d;
 
     // Reset display counts
     transfersDisplayCount = 100;
     tokensDisplayCount = 50;
 
     // Overview - show portfolio summary
+    updateDeepScanVisibility();
     els.tokenName.textContent = 'Wallet Portfolio';
     els.tokenSymbol.textContent = formatAddress(address);
     els.tokenType.textContent = 'WALLET';
@@ -1681,6 +3721,9 @@
     els.tokenPrice.textContent = totalPortfolioValue > 0 ? totalPortfolioValue.toFixed(2) : '—';
     els.totalSupply.textContent = `${tokenCount} tokens`;
     els.totalHolders.textContent = `${croBalance} CRO`;
+    els.contractHolders.textContent = '—';
+    els.activeHolders.textContent = '—';
+    els.holderCoverage.textContent = '—';
     els.totalHoldersFooter.textContent = '—';
     els.volume24h.textContent = '—';
     els.marketCap.textContent = '—';
@@ -1713,15 +3756,27 @@
     els.croBalance.textContent = `${croBalance} CRO`;
     els.explorerLink.href = `https://explorer.cronos.org/address/${address}`;
 
+    // Fallback warning if scan failed or no data
+    if (!tokens || tokens.length === 0) {
+      els.error.textContent = 'Scan did not return any token holdings. If you believe this is an error, please try scanning again.';
+      els.error.style.display = 'block';
+    } else if (!transfers || transfers.length === 0) {
+      els.error.textContent = 'No transactions found for this wallet. If you believe this is an error, please try scanning again.';
+      els.error.style.display = 'block';
+    } else {
+      els.error.style.display = 'none';
+    }
+
     els.content.style.display = 'block';
   };
 
   // Render contract data
   const render = (d) => {
-    const { token, decimals, isNFT, totalSupply, totalSupplyRaw, market, totalHolders, creator, creationHash } = d;
+    const { token, decimals, isNFT, totalSupply, totalSupplyRaw, market, totalHolders, creator, creationHash, transfers, holders } = d;
 
     // Store data globally for render functions
     window.currentTokenData = { token, decimals, isNFT, totalSupply, totalSupplyRaw, market };
+    updateDeepScanVisibility();
 
     // Reset display counts
     holdersDisplayCount = 50;
@@ -1735,6 +3790,9 @@
     els.tokenPrice.textContent = market.price;
     els.totalSupply.textContent = totalSupply;
     els.totalHolders.textContent = totalHolders === '—' ? '—' : Number(totalHolders).toLocaleString();
+    els.contractHolders.textContent = '—';
+    els.activeHolders.textContent = '—';
+    els.holderCoverage.textContent = '—';
     els.totalHoldersFooter.textContent = totalHolders === '—' ? '—' : Number(totalHolders).toLocaleString();
     els.volume24h.textContent = market.vol;
     els.marketCap.textContent = market.mcap;
@@ -1767,6 +3825,20 @@
     els.verifiedInfo.style.display = 'block';
     els.walletStats.style.display = 'none';
 
+    // Fallback warning if scan failed or no data
+    if (!holders || holders.length === 0) {
+      els.error.textContent = 'Scan did not return any holders. If you believe this is an error, please try scanning again.';
+      els.error.style.display = 'block';
+    } else if (!transfers || transfers.length === 0) {
+      els.error.textContent = 'No transactions found for this contract. If you believe this is an error, please try scanning again.';
+      els.error.style.display = 'block';
+    } else if (!token || !token.name) {
+      els.error.textContent = 'Scan did not return valid token info. Please try scanning again.';
+      els.error.style.display = 'block';
+    } else {
+      els.error.style.display = 'none';
+    }
+
     els.content.style.display = 'block';
   };
 
@@ -1797,21 +3869,11 @@
           const nftCount = Number(balance);
           qty = nftCount.toString();
         } else {
-          try {
-            qty = (Number(BigInt(balance) / BigInt(10**decimals))).toString();
-          } catch (e) {
-            qty = balance;
-          }
+          qty = formatTokenAmount(balance, decimals, 8);
         }
         
         if (totalSupplyRaw && totalSupplyRaw !== '0') {
-          try {
-            const holderAmount = Number(balance);
-            const totalAmount = Number(totalSupplyRaw);
-            pct = ((holderAmount / totalAmount) * 100).toFixed(4);
-          } catch (e) {
-            pct = '0';
-          }
+          pct = tokenPct(balance, totalSupplyRaw) || '0';
         }
       }
       
@@ -1854,6 +3916,807 @@
     URL.revokeObjectURL(url);
   };
 
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const deepScanKey = (suffix, addr = contractAddr) => {
+    const normalized = normalizeAddress(addr || '') || 'unknown';
+    return `swigglescan:deep-rpc:${normalized}:${suffix}`;
+  };
+
+  const setDeepScanStatus = (msg) => {
+    if (els.deepScanStatus) els.deepScanStatus.textContent = msg;
+  };
+
+  const setDeepScanMode = (mode) => {
+    deepScanState.mode = mode || 'auto';
+    if (!els.deepScanModeBadge) return;
+    if (deepScanState.mode === 'ownerof-rpc') {
+      els.deepScanModeBadge.textContent = 'Mode: ownerOf RPC';
+      els.deepScanModeBadge.className = 'badge text-bg-primary';
+      return;
+    }
+    if (deepScanState.mode === 'transfer-history') {
+      els.deepScanModeBadge.textContent = 'Mode: Transfer History Fallback';
+      els.deepScanModeBadge.className = 'badge text-bg-warning';
+      return;
+    }
+    els.deepScanModeBadge.textContent = 'Mode: Auto';
+    els.deepScanModeBadge.className = 'badge text-bg-secondary';
+  };
+
+  const setDeepScanControls = (running) => {
+    if (!els.deepScanStartBtn || !els.deepScanStopBtn) return;
+    els.deepScanStartBtn.disabled = !!running;
+    els.deepScanStopBtn.disabled = !running;
+  };
+
+  const loadDeepScanProgress = (addr = contractAddr) => {
+    try {
+      const raw = localStorage.getItem(deepScanKey('progress', addr));
+      if (!raw) return { lastDone: 0, entries: [] };
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.entries)) return { lastDone: 0, entries: [] };
+      return {
+        lastDone: Number(parsed.lastDone || 0),
+        entries: parsed.entries
+      };
+    } catch {
+      return { lastDone: 0, entries: [] };
+    }
+  };
+
+  const saveDeepScanProgress = (entries, lastDone, addr = contractAddr) => {
+    const payload = {
+      lastDone,
+      entries,
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(deepScanKey('progress', addr), JSON.stringify(payload));
+  };
+
+  const clearDeepScanProgress = (addr = contractAddr) => {
+    localStorage.removeItem(deepScanKey('progress', addr));
+  };
+
+  const toUint256Hex = (tokenId) => BigInt(tokenId).toString(16).padStart(64, '0');
+
+  const parseOwnerFromRpcResult = (value) => {
+    const result = String(value || '').toLowerCase();
+    if (!/^0x[0-9a-f]{64}$/.test(result)) return null;
+    const owner = normalizeAddress(`0x${result.slice(-40)}`);
+    return owner || null;
+  };
+
+  const rpcOwnerOfViaExplorerProxy = async (nftAddress, tokenId) => {
+    const data = `0x6352211e${toUint256Hex(tokenId)}`; // ownerOf(uint256)
+    const response = await fetchWithTimeout(
+      `${API}?module=proxy&action=eth_call&to=${nftAddress}&data=${data}&tag=latest`,
+      DEEP_SCAN_RPC_TIMEOUT
+    );
+
+    if (!response.ok) {
+      throw new Error(`Proxy HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    if (payload && payload.error) {
+      const msg = String(payload.error.message || payload.error || 'Proxy RPC error');
+      const lower = msg.toLowerCase();
+      if (lower.includes('nonexistent') || lower.includes('invalid token id') || lower.includes('owner query for nonexistent')) {
+        return null;
+      }
+      throw new Error(msg);
+    }
+
+    const parsed = parseOwnerFromRpcResult(payload?.result);
+    if (parsed) return parsed;
+    if (payload?.result == null || payload?.result === '0x') return null;
+    return null;
+  };
+
+  const rpcOwnerOfDirect = async (nftAddress, tokenId) => {
+    const data = `0x6352211e${toUint256Hex(tokenId)}`; // ownerOf(uint256)
+    const response = await fetch(CRONOS_RPC, {
+      method: 'POST',
+      signal: AbortSignal.timeout(DEEP_SCAN_RPC_TIMEOUT),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: deepRpcRequestId++,
+        method: 'eth_call',
+        params: [{ to: nftAddress, data }, 'latest']
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`RPC HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    if (payload.error) {
+      const msg = String(payload.error.message || 'RPC error');
+      const lower = msg.toLowerCase();
+      // Nonexistent token IDs are normal for sparse ranges.
+      if (lower.includes('nonexistent') || lower.includes('invalid token id') || lower.includes('owner query for nonexistent')) {
+        return null;
+      }
+      throw new Error(msg);
+    }
+
+    return parseOwnerFromRpcResult(payload.result);
+  };
+
+  const rpcOwnerOf = async (nftAddress, tokenId) => {
+    // Prefer Explorer proxy first; it shares the same API origin used elsewhere.
+    try {
+      return await rpcOwnerOfViaExplorerProxy(nftAddress, tokenId);
+    } catch (proxyErr) {
+      if (IS_FILE_ORIGIN) {
+        // Avoid direct RPC CORS spam in file mode.
+        throw proxyErr;
+      }
+      return await rpcOwnerOfDirect(nftAddress, tokenId);
+    }
+  };
+
+  const isRetryableRpcError = (msg = '') => {
+    const lower = String(msg).toLowerCase();
+    return (
+      lower.includes('timeout') ||
+      lower.includes('network') ||
+      lower.includes('429') ||
+      lower.includes('rate') ||
+      lower.includes('too many') ||
+      lower.includes('busy') ||
+      lower.includes('temporar') ||
+      lower.includes('gateway') ||
+      lower.includes('503') ||
+      lower.includes('504') ||
+      lower.includes('502') ||
+      lower.includes('failed to fetch') ||
+      lower.includes('rpc http 5')
+    );
+  };
+
+  const isCorsOrNetworkBlockedError = (msg = '') => {
+    const lower = String(msg).toLowerCase();
+    return (
+      lower.includes('failed to fetch') ||
+      lower.includes('networkerror') ||
+      lower.includes('cors') ||
+      lower.includes('access-control-allow-origin') ||
+      lower.includes('preflight')
+    );
+  };
+
+  const fetchAllNftTransfersForContract = async (addr) => {
+    const out = [];
+    let page = 1;
+    const maxPages = 300;
+    
+    // Use Transfer event logs to fetch NFT transfers (tokennfftx endpoint doesn't exist)
+    const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+    const fromBlock = 1; // Get all transfers from genesis (for NFTs this is usually fine)
+
+    while (page <= maxPages) {
+      try {
+        // Use event logs to fetch Transfer events instead of broken tokennfftx endpoint
+        const logsUrl = `${API}?module=logs&action=getLogs&address=${addr}&fromBlock=${fromBlock}&toBlock=latest&topic0=${TRANSFER_TOPIC}&page=${page}&offset=1000`;
+        
+        const response = await fetchWithTimeout(logsUrl, DEEP_SCAN_RPC_TIMEOUT);
+        if (!response.ok) {
+          if (debugMode) console.log(`Transfer logs fetch failed on page ${page}: ${response.status}`);
+          break;
+        }
+
+        const data = await response.json();
+        if (data.status !== '1' || !Array.isArray(data.result) || data.result.length === 0) {
+          if (debugMode) console.log(`No more Transfer logs on page ${page}`);
+          break;
+        }
+
+        // Convert log entries to transfer-like objects
+        const transfers = data.result.map(log => ({
+          from: log.topics?.[1] ? '0x' + log.topics[1].slice(-40) : '',
+          to: log.topics?.[2] ? '0x' + log.topics[2].slice(-40) : '',
+          tokenID: log.topics?.[3] ? String(BigInt(log.topics[3])) : '',
+          timeStamp: log.timeStamp || Math.floor(Date.now() / 1000),
+          hash: log.transactionHash || log.hash || ''
+        }));
+        
+        out.push(...transfers);
+        if (debugMode) console.log(`Fetched Transfer logs page ${page}: ${transfers.length} transfers (total: ${out.length})`);
+        
+        if (data.result.length < 1000) break;
+        page += 1;
+      } catch (e) {
+        if (debugMode) console.log(`Error fetching Transfer logs page ${page}:`, e);
+        break;
+      }
+    }
+
+    return out;
+  };
+
+  const buildOwnersFromNftTransfers = async (addr, startToken, endToken) => {
+    setDeepScanStatus('RPC blocked. Rebuilding ownership from Transfer event logs...');
+    const txs = await fetchAllNftTransfersForContract(addr);
+    const ownersByToken = new Map();
+
+    for (const tx of txs) {
+      const tokenIdStr = String(tx.tokenID || tx.tokenId || tx.nftId || '').trim();
+      if (!/^\d+$/.test(tokenIdStr)) continue;
+      const tokenIdNum = Number(tokenIdStr);
+      if (!Number.isFinite(tokenIdNum)) continue;
+      if (tokenIdNum < startToken || tokenIdNum > endToken) continue;
+
+      const to = normalizeAddress(tx.to || '');
+      if (!to || EXCLUDED_HOLDER_ADDRESSES.has(to)) {
+        ownersByToken.delete(tokenIdNum);
+      } else {
+        ownersByToken.set(tokenIdNum, to);
+      }
+    }
+
+    return Array.from(ownersByToken.entries()).sort((a, b) => Number(a[0]) - Number(b[0]));
+  };
+
+  const scanOwnerWithRetry = async (nftAddress, tokenId) => {
+    let lastError = '';
+
+    for (let attempt = 1; attempt <= DEEP_SCAN_MAX_RETRIES; attempt++) {
+      try {
+        const owner = await rpcOwnerOf(nftAddress, tokenId);
+        return { owner, error: '' };
+      } catch (err) {
+        lastError = String(err?.message || err || 'Unknown RPC error');
+        if (attempt >= DEEP_SCAN_MAX_RETRIES || !isRetryableRpcError(lastError)) break;
+        const backoff = DEEP_SCAN_RETRY_BASE_MS * (2 ** (attempt - 1)) + Math.floor(Math.random() * 120);
+        await sleep(backoff);
+      }
+    }
+
+    return { owner: null, error: lastError };
+  };
+
+  const downloadCsv = (filename, content) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportDeepScanFiles = (entries, walletCounts, addr) => {
+    const tokenRows = ['token_id,wallet'];
+    for (const [tokenId, wallet] of entries) {
+      tokenRows.push(`${tokenId},${wallet}`);
+    }
+
+    const walletRows = ['wallet,count'];
+    for (const [wallet, count] of walletCounts) {
+      walletRows.push(`${wallet},${count}`);
+    }
+
+    const suffix = (normalizeAddress(addr) || 'contract').slice(2, 10);
+    downloadCsv(`tokenHolders_${suffix}.csv`, tokenRows.join('\n'));
+    downloadCsv(`walletCounts_${suffix}.csv`, walletRows.join('\n'));
+  };
+
+  const applyDeepScanResults = (entries, startToken, endToken) => {
+    const walletCounts = new Map();
+    for (const [, wallet] of entries) {
+      walletCounts.set(wallet, (walletCounts.get(wallet) || 0) + 1);
+    }
+
+    allHolders = Array.from(walletCounts.entries())
+      .map(([address, count]) => ({ address, value: String(count), source: 'deep-rpc-ownerOf' }))
+      .sort((a, b) => Number(b.value) - Number(a.value));
+
+    renderHolders();
+
+    const holderCount = walletCounts.size;
+    const scanned = endToken - startToken + 1;
+    const found = entries.length;
+
+    els.totalHolders.textContent = holderCount.toLocaleString();
+    els.totalHoldersFooter.textContent = holderCount.toLocaleString();
+    els.activeHolders.textContent = holderCount.toLocaleString();
+    const usingFallback = deepScanState.mode === 'transfer-history';
+    els.contractHolders.textContent = usingFallback
+      ? 'Cronos Explorer tokennfttx History Scan'
+      : 'Cronos RPC ownerOf Deep Scan';
+    els.holderCoverage.textContent = usingFallback
+      ? `${found.toLocaleString()}/${scanned.toLocaleString()} token owners mapped • Transfer History`
+      : `${found.toLocaleString()}/${scanned.toLocaleString()} ownerOf scanned • Deep RPC`;
+
+    return walletCounts;
+  };
+
+  const updateDeepScanVisibility = () => {
+    if (!els.deepScanPanel) return;
+    const current = window.currentTokenData || {};
+    const show = !isWalletMode && !!current.isNFT;
+    els.deepScanPanel.style.display = show ? 'block' : 'none';
+
+    if (!show) return;
+    const startToken = DEEP_SCAN_START_TOKEN;
+    const endToken = getDeepScanEndToken(current);
+    const progress = loadDeepScanProgress(contractAddr);
+    if (progress.lastDone > 0) {
+      setDeepScanStatus(`Saved progress found at token ${progress.lastDone}. Scan range is ${startToken}..${endToken}. Click Start / Resume to continue.`);
+    } else {
+      setDeepScanStatus(`Scans ownerOf(${startToken}..${endToken}) via Cronos RPC and can resume after refresh.`);
+    }
+    if (!deepScanState.running) setDeepScanMode('auto');
+  };
+
+  const getDeepScanEndToken = (tokenData = window.currentTokenData || {}) => {
+    const raw = tokenData.totalSupplyRaw;
+    if (raw == null) return DEEP_SCAN_END_TOKEN;
+    const str = String(raw).trim();
+    if (!/^\d+$/.test(str)) return DEEP_SCAN_END_TOKEN;
+    try {
+      const asBigInt = BigInt(str);
+      if (asBigInt < 1n) return DEEP_SCAN_END_TOKEN;
+      const maxSafe = BigInt(Number.MAX_SAFE_INTEGER);
+      return Number(asBigInt > maxSafe ? maxSafe : asBigInt);
+    } catch {
+      return DEEP_SCAN_END_TOKEN;
+    }
+  };
+
+  const runDeepRpcScan = async () => {
+    const current = window.currentTokenData || {};
+    if (isWalletMode || !current.isNFT) {
+      alert('Deep RPC scan is only available for NFT contracts (CRC-721).');
+      return;
+    }
+    if (!normalizeAddress(contractAddr)) {
+      alert('Load a valid contract first.');
+      return;
+    }
+    const progress = loadDeepScanProgress(contractAddr);
+    const startToken = DEEP_SCAN_START_TOKEN;
+    const endToken = getDeepScanEndToken(current);
+    if (!Number.isFinite(endToken) || endToken < startToken) {
+      alert('Unable to determine NFT supply for deep scan.');
+      return;
+    }
+
+    if (IS_FILE_ORIGIN) {
+      deepScanState.running = true;
+      deepScanState.stopRequested = false;
+      setDeepScanMode('transfer-history');
+      setDeepScanControls(true);
+      try {
+        const entries = await buildOwnersFromNftTransfers(contractAddr, startToken, endToken);
+        const walletCounts = applyDeepScanResults(entries, startToken, endToken);
+        exportDeepScanFiles(entries, Array.from(walletCounts.entries()), contractAddr);
+        clearDeepScanProgress(contractAddr);
+        setDeepScanStatus(`Deep scan complete via transfer history fallback. ${entries.length.toLocaleString()} token owners mapped.`);
+      } catch (err) {
+        setDeepScanStatus(`Local file mode has RPC limitations. For better deep scans visit: https://nifftyswiggle.pw/airdrop`);
+      } finally {
+        deepScanState.running = false;
+        setDeepScanControls(false);
+        updateDeepScanVisibility();
+      }
+      return;
+    }
+
+    const resumeAt = progress.lastDone >= startToken ? (progress.lastDone + 1) : startToken;
+
+    deepScanState.running = true;
+    deepScanState.stopRequested = false;
+    deepScanState.results = new Map(progress.entries || []);
+    deepScanState.lastDone = Math.max(0, progress.lastDone || 0);
+    setDeepScanMode('ownerof-rpc');
+    setDeepScanControls(true);
+    setDeepScanStatus(`Deep scan started at token ${resumeAt}/${endToken} with ${DEEP_SCAN_PARALLEL} parallel RPC calls...`);
+
+    let failedCalls = 0;
+
+    try {
+      for (let tokenId = resumeAt; tokenId <= endToken; tokenId += DEEP_SCAN_PARALLEL) {
+        if (deepScanState.stopRequested) {
+          setDeepScanStatus(`Scan stopped at token ${tokenId - 1}. Progress saved.`);
+          break;
+        }
+
+        const chunkEnd = Math.min(endToken, tokenId + DEEP_SCAN_PARALLEL - 1);
+        let pending = [];
+        for (let id = tokenId; id <= chunkEnd; id++) pending.push(id);
+        let round = 0;
+
+        while (pending.length > 0) {
+          if (deepScanState.stopRequested) {
+            deepScanState.lastDone = tokenId - 1;
+            saveDeepScanProgress(Array.from(deepScanState.results.entries()), deepScanState.lastDone, contractAddr);
+            setDeepScanStatus(`Scan stopped before token ${pending[0]}. Progress saved.`);
+            break;
+          }
+
+          round++;
+          const batch = pending;
+          pending = [];
+
+          const results = await Promise.all(batch.map(async (id) => {
+            const out = await scanOwnerWithRetry(contractAddr, id);
+            return { tokenId: id, owner: out.owner, error: out.error };
+          }));
+
+          const allBlocked =
+            results.length > 0 &&
+            results.every((row) => row.error && isCorsOrNetworkBlockedError(row.error));
+
+          if (allBlocked) {
+            setDeepScanStatus('RPC path appears blocked. Switching to transfer-history fallback...');
+            setDeepScanMode('transfer-history');
+            const entries = await buildOwnersFromNftTransfers(contractAddr, startToken, endToken);
+            const walletCounts = applyDeepScanResults(entries, startToken, endToken);
+            exportDeepScanFiles(entries, Array.from(walletCounts.entries()), contractAddr);
+            clearDeepScanProgress(contractAddr);
+            deepScanState.lastDone = endToken;
+            deepScanState.stopRequested = true;
+            setDeepScanStatus(`Deep scan complete via transfer history fallback. ${entries.length.toLocaleString()} token owners mapped.`);
+            break;
+          }
+
+          for (const row of results) {
+            if (row.error) {
+              pending.push(row.tokenId);
+              failedCalls++;
+              if (debugMode) console.log(`Deep RPC failed token ${row.tokenId}:`, row.error);
+              continue;
+            }
+            if (row.owner) {
+              deepScanState.results.set(row.tokenId, row.owner);
+            } else {
+              // Resolved with no owner (nonexistent token or burn/unset): ensure token is not counted.
+              deepScanState.results.delete(row.tokenId);
+            }
+          }
+
+          if (pending.length > 0) {
+            const waitMs = Math.min(15000, DEEP_SCAN_ROUND_BASE_MS * (2 ** Math.min(round - 1, 4)));
+            setDeepScanStatus(
+              `Token ${chunkEnd}/${endToken} • Owners found: ${deepScanState.results.size.toLocaleString()} • Waiting to retry ${pending.length} unresolved token(s) in ${Math.ceil(waitMs / 1000)}s...`
+            );
+            saveDeepScanProgress(Array.from(deepScanState.results.entries()), tokenId - 1, contractAddr);
+            await sleep(waitMs);
+          }
+        }
+
+        if (deepScanState.stopRequested) break;
+
+        deepScanState.lastDone = chunkEnd;
+        saveDeepScanProgress(Array.from(deepScanState.results.entries()), chunkEnd, contractAddr);
+        setDeepScanStatus(
+          `Scanning token ${chunkEnd}/${endToken} • Owners found: ${deepScanState.results.size.toLocaleString()}` +
+          (failedCalls > 0 ? ` • Transient failures retried: ${failedCalls}` : '')
+        );
+      }
+
+      // If completed, apply results and export files.
+      if (!deepScanState.stopRequested && deepScanState.lastDone >= endToken) {
+        const entries = Array.from(deepScanState.results.entries()).sort((a, b) => Number(a[0]) - Number(b[0]));
+        const walletCounts = applyDeepScanResults(entries, startToken, endToken);
+        exportDeepScanFiles(entries, Array.from(walletCounts.entries()), contractAddr);
+        setDeepScanStatus(
+          `Deep scan complete. ${entries.length.toLocaleString()} token owners exported.` +
+          (failedCalls > 0 ? ` ${failedCalls} token calls failed after retries.` : '')
+        );
+      }
+    } finally {
+      deepScanState.running = false;
+      setDeepScanControls(false);
+      updateDeepScanVisibility();
+    }
+  };
+
+  // ===== NEW IMPROVED DEEP SCAN (from AirDrop.html logic) =====
+  let improvedDeepScanState = {
+    running: false,
+    stopRequested: false,
+    holders: new Map(),
+    currentNetwork: null
+  };
+
+  const parseTokenIds = (input) => {
+    const ids = new Set();
+    const segments = input.split(',').map(s => s.trim()).filter(s => s);
+    for (const segment of segments) {
+      if (segment.includes('-') || segment.toLowerCase().includes('to')) {
+        const separator = segment.includes('-') ? '-' : 'to';
+        const parts = segment.split(new RegExp(separator, 'i')).map(n => parseInt(n.trim()));
+        const [start, end] = parts;
+        if (isNaN(start) || isNaN(end) || start < 0 || end < 0 || start > end) {
+          throw new Error(`Invalid range: ${segment}`);
+        }
+        for (let i = start; i <= end; i++) {
+          ids.add(i);
+        }
+      } else {
+        const id = parseInt(segment);
+        if (isNaN(id) || id < 0) {
+          throw new Error(`Invalid token ID: ${segment}`);
+        }
+        ids.add(id);
+      }
+    }
+    return Array.from(ids);
+  };
+
+  const toggleDeepScanForm = () => {
+    const form = document.getElementById('deepScanForm');
+    const btn = document.getElementById('deepScanToggleBtn');
+    if (form.style.display === 'none') {
+      form.style.display = 'block';
+      btn.textContent = 'Hide Scan Form';
+    } else {
+      form.style.display = 'none';
+      btn.textContent = 'Scan Owners';
+    }
+  };
+
+  const updateScanUI = () => {
+    const method = document.querySelector('input[name="scanMethod"]:checked').value;
+    const tokenIdsField = document.getElementById('tokenIdsField');
+    tokenIdsField.style.display = method === 'tokenIds' ? 'block' : 'none';
+  };
+
+  const cancelDeepScan = () => {
+    improvedDeepScanState.stopRequested = true;
+    document.getElementById('deepScanCancelBtn').style.display = 'none';
+    document.getElementById('deepScanBtn').disabled = false;
+  };
+
+  const updateDeepScanProgress = (percent, status, foundCount) => {
+    document.getElementById('deepScanProgressBar').style.width = percent + '%';
+    document.getElementById('deepScanProgressBar').textContent = percent + '%';
+    document.getElementById('deepScanStatus').textContent = status;
+    document.getElementById('deepScanFoundCount').textContent = foundCount;
+  };
+
+  const runDeepScan = async () => {
+    const contractAddr = document.getElementById('deepScanContractInput').value.trim();
+    if (!contractAddr) {
+      alert('Please enter an NFT contract address');
+      return;
+    }
+
+    const method = document.querySelector('input[name="scanMethod"]:checked').value;
+    let tokenIds = [];
+
+    if (method === 'tokenIds') {
+      const input = document.getElementById('deepScanTokenIds').value.trim();
+      if (!input) {
+        alert('Please enter token IDs');
+        return;
+      }
+      try {
+        tokenIds = parseTokenIds(input);
+      } catch (error) {
+        alert('Invalid token ID format: ' + error.message);
+        return;
+      }
+    }
+
+    improvedDeepScanState.running = true;
+    improvedDeepScanState.stopRequested = false;
+    improvedDeepScanState.holders.clear();
+
+    document.getElementById('deepScanProgress').style.display = 'block';
+    document.getElementById('deepScanPreview').style.display = 'none';
+    document.getElementById('deepScanBtn').disabled = true;
+    document.getElementById('deepScanCancelBtn').style.display = 'inline-block';
+
+    try {
+      const networks = [
+        { name: 'Cronos', rpcUrl: 'https://evm.cronos.org' },
+        { name: 'Ethereum', rpcUrl: 'https://eth.llamarpc.com' },
+        { name: 'Polygon', rpcUrl: 'https://polygon-rpc.com' },
+        { name: 'Monad', rpcUrl: 'https://rpc.monad.xyz' }
+      ];
+
+      const erc721Abi = [
+        {
+          constant: true,
+          inputs: [{ name: 'tokenId', type: 'uint256' }],
+          name: 'ownerOf',
+          outputs: [{ name: '', type: 'address' }],
+          type: 'function'
+        },
+        {
+          constant: true,
+          inputs: [],
+          name: 'totalSupply',
+          outputs: [{ name: '', type: 'uint256' }],
+          type: 'function'
+        },
+        {
+          constant: true,
+          inputs: [{ name: 'index', type: 'uint256' }],
+          name: 'tokenByIndex',
+          outputs: [{ name: '', type: 'uint256' }],
+          type: 'function'
+        }
+      ];
+
+      let provider = null;
+      let contractNetwork = null;
+
+      updateDeepScanProgress(5, 'Scanning networks to find contract...', 0);
+
+      for (let i = 0; i < networks.length; i++) {
+        if (improvedDeepScanState.stopRequested) break;
+        const net = networks[i];
+        updateDeepScanProgress(5 + (i * 5), `Checking ${net.name}...`, 0);
+        
+        try {
+          const rpcProvider = new ethers.JsonRpcProvider(net.rpcUrl);
+          const code = await rpcProvider.getCode(contractAddr);
+          if (code && code !== '0x') {
+            provider = rpcProvider;
+            contractNetwork = net;
+            updateDeepScanProgress(30, `Contract found on ${net.name}. Fetching holders...`, 0);
+            break;
+          }
+        } catch (err) {
+          // Network check failed, try next
+        }
+      }
+
+      if (!provider) {
+        updateDeepScanProgress(0, 'Contract not found on any supported network', 0);
+        document.getElementById('deepScanProgress').style.display = 'none';
+        document.getElementById('deepScanBtn').disabled = false;
+        document.getElementById('deepScanCancelBtn').style.display = 'none';
+        improvedDeepScanState.running = false;
+        return;
+      }
+
+      improvedDeepScanState.currentNetwork = contractNetwork;
+      const contract = new ethers.Contract(contractAddr, erc721Abi, provider);
+
+      if (method === 'collection') {
+        try {
+          const totalSupply = Number(await contract.totalSupply());
+          if (totalSupply === 0) {
+            throw new Error('Collection is empty');
+          }
+          if (totalSupply > 50000) {
+            throw new Error('Collection too large (' + totalSupply + ' tokens). Use specific IDs instead.');
+          }
+          tokenIds = Array.from({ length: totalSupply }, (_, i) => i);
+        } catch (error) {
+          updateDeepScanProgress(0, 'Error fetching totalSupply: ' + error.message, 0);
+          document.getElementById('deepScanProgress').style.display = 'none';
+          document.getElementById('deepScanBtn').disabled = false;
+          document.getElementById('deepScanCancelBtn').style.display = 'none';
+          improvedDeepScanState.running = false;
+          return;
+        }
+      }
+
+      const batchSize = 50;
+      let processedCount = 0;
+
+      for (let i = 0; i < tokenIds.length; i += batchSize) {
+        if (improvedDeepScanState.stopRequested) break;
+
+        const batch = tokenIds.slice(i, Math.min(i + batchSize, tokenIds.length));
+        const progress = 30 + Math.round((processedCount / tokenIds.length) * 65);
+
+        updateDeepScanProgress(
+          progress,
+          `Fetching batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(tokenIds.length / batchSize)}...`,
+          improvedDeepScanState.holders.size
+        );
+
+        for (const tokenId of batch) {
+          if (improvedDeepScanState.stopRequested) break;
+          
+          try {
+            const owner = await contract.ownerOf(tokenId);
+            if (owner && owner !== ethers.ZeroAddress) {
+              const count = improvedDeepScanState.holders.get(owner) || 0;
+              improvedDeepScanState.holders.set(owner, count + 1);
+            }
+          } catch (err) {
+            // Token doesn't exist or error, skip it
+          }
+          processedCount++;
+        }
+      }
+
+      if (!improvedDeepScanState.stopRequested) {
+        updateDeepScanProgress(100, `Scan complete! Found ${improvedDeepScanState.holders.size} unique holders.`, improvedDeepScanState.holders.size);
+        displayDeepScanPreview();
+        document.getElementById('deepScanPreview').style.display = 'block';
+      } else {
+        updateDeepScanProgress(0, 'Scan cancelled.', improvedDeepScanState.holders.size);
+      }
+
+    } catch (error) {
+      updateDeepScanProgress(0, 'Error: ' + error.message, improvedDeepScanState.holders.size);
+    } finally {
+      document.getElementById('deepScanBtn').disabled = false;
+      document.getElementById('deepScanCancelBtn').style.display = 'none';
+      improvedDeepScanState.running = false;
+    }
+  };
+
+  const displayDeepScanPreview = () => {
+    const previewList = document.getElementById('deepScanPreviewList');
+    previewList.innerHTML = '';
+    
+    const holders = Array.from(improvedDeepScanState.holders.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 100);
+
+    holders.forEach(([addr, count]) => {
+      const row = document.createElement('div');
+      row.className = 'mb-1';
+      row.style.padding = '4px';
+      row.style.background = 'rgba(255,255,255,0.05)';
+      row.style.borderRadius = '2px';
+      row.textContent = `${addr.substring(0, 10)}...${addr.substring(addr.length - 8)} (${count} NFT${count > 1 ? 's' : ''})`;
+      previewList.appendChild(row);
+    });
+
+    if (improvedDeepScanState.holders.size > 100) {
+      const more = document.createElement('div');
+      more.style.padding = '4px';
+      more.style.color = '#aaa';
+      more.textContent = `...and ${improvedDeepScanState.holders.size - 100} more`;
+      previewList.appendChild(more);
+    }
+  };
+
+  const confirmDeepScanHolders = () => {
+    if (improvedDeepScanState.holders.size === 0) {
+      alert('No holders to add');
+      return;
+    }
+
+    const holders = Array.from(improvedDeepScanState.holders.entries())
+      .map(([addr, count]) => ({ address: addr.toLowerCase(), quantity: count }))
+      .sort((a, b) => b.quantity - a.quantity);
+
+    window.holders = holders;
+    window.sortedHolders = [...holders];
+    window.filteredHolders = [...holders];
+
+    displayHolders();
+    updateHolderStats();
+
+    alert(`✓ Added ${holders.length} holders to the table`);
+    document.getElementById('deepScanForm').style.display = 'none';
+    document.getElementById('deepScanToggleBtn').textContent = 'Scan Owners';
+  };
+
+  // Expose handlers for inline onclick/onchange attributes.
+  window.toggleDeepScanForm = toggleDeepScanForm;
+  window.updateScanUI = updateScanUI;
+  window.runDeepScan = runDeepScan;
+  window.cancelDeepScan = cancelDeepScan;
+  window.confirmDeepScanHolders = confirmDeepScanHolders;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const deepScanPanel = document.getElementById('deepScanPanel');
+    if (deepScanPanel) {
+      deepScanPanel.style.display = 'block';
+    }
+    updateScanUI();
+  });
+
   // Events
   els.loadBtn.addEventListener('click', loadToken);
   els.input.addEventListener('keypress', e => e.key === 'Enter' && loadToken());
@@ -1861,11 +4724,396 @@
     e.preventDefault();
     exportHoldersToCSV();
   });
+  if (els.deepScanStartBtn) {
+    els.deepScanStartBtn.addEventListener('click', runDeepRpcScan);
+  }
+  if (els.deepScanStopBtn) {
+    els.deepScanStopBtn.addEventListener('click', () => {
+      if (deepScanState.running) {
+        deepScanState.stopRequested = true;
+        setDeepScanStatus('Stop requested... finishing current token call.');
+      }
+    });
+  }
+  if (els.deepScanResetBtn) {
+    els.deepScanResetBtn.addEventListener('click', () => {
+      if (deepScanState.running) {
+        alert('Stop the deep scan before resetting progress.');
+        return;
+      }
+      clearDeepScanProgress(contractAddr);
+      setDeepScanStatus('Deep scan progress reset. Click Start / Resume to begin from token 1.');
+    });
+  }
+
+  // --- VERIFY BUTTON LOGIC ---
+  const verifyBtn = document.getElementById('verifyBtn');
+  const verifyResult = document.getElementById('verifyResult');
+  const viewReportBtn = document.getElementById('viewReportBtn');
+  const verifyReport = document.getElementById('verifyReport');
+  let lastVerifyReport = null;
+  if (verifyBtn) {
+    verifyBtn.addEventListener('click', async () => {
+      verifyResult.innerHTML = '<span class="text-info">Verifying data, please wait...</span>';
+      verifyReport.style.display = 'none';
+      verifyReport.innerHTML = '';
+      viewReportBtn.style.display = 'none';
+      viewReportBtn.textContent = 'View Report';
+      let contractAddr = els.input.value.trim().toLowerCase();
+      if (!/^0x[a-f0-9]{40}$/.test(contractAddr)) {
+        verifyResult.innerHTML = '<span class="text-danger">Invalid address for verification.</span>';
+        return;
+      }
+      try {
+        // Fetch holders and token info from Cronos Scan API
+        const holdersRes = await fetch(`https://cronos.org/explorer/api?module=token&action=getTokenHolders&contractaddress=${contractAddr}&page=1&offset=10000`);
+        const tokenRes = await fetch(`https://cronos.org/explorer/api?module=token&action=getToken&contractaddress=${contractAddr}`);
+        const holdersData = holdersRes.ok ? await holdersRes.json() : null;
+        const tokenData = tokenRes.ok ? await tokenRes.json() : null;
+        let missing = [];
+        let report = [];
+        // Compare holders count
+        let holdersMatch = false;
+        if (holdersData && holdersData.status === '1' && Array.isArray(holdersData.result)) {
+          const verifiedMeaningfulHolders = holdersData.result.filter(isMeaningfulHolderRow);
+          holdersMatch = verifiedMeaningfulHolders.length === allHolders.length;
+          report.push(`<b>Holders:</b> ${allHolders.length} / ${verifiedMeaningfulHolders.length} matched (non-zero, non-burn)`);
+          if (!holdersMatch) {
+            missing.push(`Holders count mismatch: Cronos Scan shows ${verifiedMeaningfulHolders.length} meaningful holders, this scan shows ${allHolders.length}`);
+          }
+        } else {
+          report.push('<b>Holders:</b> Could not fetch holders from Cronos Scan.');
+          missing.push('Could not fetch holders from Cronos Scan.');
+        }
+        // Compare token info
+        if (tokenData && tokenData.status === '1' && tokenData.result) {
+          const t = tokenData.result;
+          const local = window.currentTokenData?.token || {};
+          let nameMatch = t.name === local.name;
+          let symbolMatch = t.symbol === local.symbol;
+          let decimalsMatch = t.decimals === local.decimals;
+          report.push(`<b>Token Name:</b> ${local.name} ${nameMatch ? '✔️' : `❌ (Cronos: ${t.name})`}`);
+          report.push(`<b>Token Symbol:</b> ${local.symbol} ${symbolMatch ? '✔️' : `❌ (Cronos: ${t.symbol})`}`);
+          report.push(`<b>Token Decimals:</b> ${local.decimals} ${decimalsMatch ? '✔️' : `❌ (Cronos: ${t.decimals})`}`);
+          if (!nameMatch) missing.push(`Token name mismatch: Cronos Scan shows "${t.name}", this scan shows "${local.name}"`);
+          if (!symbolMatch) missing.push(`Token symbol mismatch: Cronos Scan shows "${t.symbol}", this scan shows "${local.symbol}"`);
+          if (!decimalsMatch) missing.push(`Token decimals mismatch: Cronos Scan shows "${t.decimals}", this scan shows "${local.decimals}"`);
+        } else {
+          report.push('<b>Token Info:</b> Could not fetch token info from Cronos Scan.');
+          missing.push('Could not fetch token info from Cronos Scan.');
+        }
+        // Save report for later
+        lastVerifyReport = { report, missing };
+        viewReportBtn.style.display = 'inline-block';
+        // Show result
+        if (missing.length === 0) {
+          verifyResult.innerHTML = '<span class="text-success">All data matches Cronos Scan. No missing info detected.</span>';
+        } else {
+          verifyResult.innerHTML = '<span class="text-danger">Verification issues:<br>' + missing.map(m => `• ${m}`).join('<br>') + '</span>';
+        }
+      } catch (e) {
+        verifyResult.innerHTML = '<span class="text-danger">Verification failed: ' + (e.message || e) + '</span>';
+      }
+    });
+  }
+
+  if (viewReportBtn) {
+    const renderVerifyReport = () => {
+      if (!verifyReport) return;
+      if (lastVerifyReport) {
+        let html = '';
+        html += '<div style="font-size:1.1em;line-height:1.6;">';
+        html += lastVerifyReport.report.map(line => `<div>${line}</div>`).join('');
+        if (lastVerifyReport.missing && lastVerifyReport.missing.length > 0) {
+          html += '<hr><div class="text-danger fw-bold mb-2">Issues:</div>' +
+            lastVerifyReport.missing.map(m => `<div class='text-danger'>• ${m}</div>`).join('');
+        } else {
+          html += '<hr><div class="text-success fw-bold">All data matches Cronos Scan. No missing info detected.</div>';
+        }
+        html += '</div>';
+        verifyReport.innerHTML = html;
+      } else {
+        verifyReport.innerHTML = '<div class="text-muted">No verification report available.</div>';
+      }
+      verifyReport.style.display = 'block';
+    };
+
+    viewReportBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const expanded = viewReportBtn.getAttribute('aria-expanded') === 'true';
+      if (expanded) {
+        verifyReport.style.display = 'none';
+        viewReportBtn.textContent = 'View Report';
+        viewReportBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        renderVerifyReport();
+        viewReportBtn.textContent = 'Hide Report';
+        viewReportBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  }
+
+  // --- FILTER & SORT EVENTS ---
+  // Transaction filters
+  const txTypeFilterEl2 = document.getElementById('txTypeFilter');
+  if (txTypeFilterEl2) {
+    txTypeFilterEl2.addEventListener('change', e => {
+      txTypeFilter = e.target.value;
+      renderTransfers();
+    });
+  }
+  const txAddressFilterEl2 = document.getElementById('txAddressFilter');
+  if (txAddressFilterEl2) {
+    txAddressFilterEl2.addEventListener('input', e => {
+      txAddressFilter = e.target.value;
+      renderTransfers();
+    });
+  }
+  // Transaction sorting
+  const txSortMap = {
+    thTxnHash: null, // not sortable
+    thType: 'type',
+    thBlock: 'block',
+    thAge: 'age',
+    thFrom: 'from',
+    thTo: 'to',
+    thValue: 'value',
+  };
+  Object.entries(txSortMap).forEach(([id, key]) => {
+    const th = document.getElementById(id);
+    if (th && key) {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        if (txSortKey === key) {
+          txSortAsc = !txSortAsc;
+        } else {
+          txSortKey = key;
+          txSortAsc = true;
+        }
+        renderTransfers();
+        // Visual indicator
+        Object.entries(txSortMap).forEach(([oid, okey]) => {
+          const oth = document.getElementById(oid);
+          if (oth) oth.innerHTML = oth.textContent.replace(/\s*[▲▼]$/, '');
+        });
+        th.innerHTML = th.textContent + (txSortAsc ? ' ▲' : ' ▼');
+      });
+    }
+  });
+
+  // Holder filters
+  const holderAddressFilterEl2 = document.getElementById('holderAddressFilter');
+  if (holderAddressFilterEl2) {
+    holderAddressFilterEl2.addEventListener('input', e => {
+      holderAddressFilter = e.target.value;
+      renderHolders();
+    });
+  }
+  const holderMinQtyFilterEl2 = document.getElementById('holderMinQtyFilter');
+  if (holderMinQtyFilterEl2) {
+    holderMinQtyFilterEl2.addEventListener('input', e => {
+      holderMinQtyFilter = e.target.value;
+      renderHolders();
+    });
+  }
+  // Holder sorting
+  const holderSortMap = {
+    thRank: 'rank',
+    thHolderAddress: 'address',
+    thHolderQty: 'qty',
+    thHolderPct: 'pct',
+  };
+  Object.entries(holderSortMap).forEach(([id, key]) => {
+    const th = document.getElementById(id);
+    if (th) {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        if (holderSortKey === key) {
+          holderSortAsc = !holderSortAsc;
+        } else {
+          holderSortKey = key;
+          holderSortAsc = true;
+        }
+        renderHolders();
+        // Visual indicator
+        Object.entries(holderSortMap).forEach(([oid, okey]) => {
+          const oth = document.getElementById(oid);
+          if (oth) oth.innerHTML = oth.textContent.replace(/\s*[▲▼]$/, '');
+        });
+        th.innerHTML = th.textContent + (holderSortAsc ? ' ▲' : ' ▼');
+      });
+    }
+  });
 
   // Auto-load
   window.addEventListener('load', () => {
+    updateDeepScanVisibility();
     if (els.input.value) loadToken();
   });
+</script>
+
+<!-- Cursor glow element -->
+<div id="cursor-glow" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+
+<script>
+/* ── Unified cursor effects (desktop + touch safe) ── */
+(function () {
+  const supportsPointer = typeof window.PointerEvent !== 'undefined';
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+  const reduceMotion = prefersReducedMotion || saveData;
+  const cursorEligible = !reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  const moveEvent = supportsPointer ? 'pointermove' : 'mousemove';
+  const leaveEvent = supportsPointer ? 'pointerleave' : 'mouseleave';
+  const downEvent = supportsPointer ? 'pointerdown' : 'mousedown';
+  const upEvent = supportsPointer ? 'pointerup' : 'mouseup';
+
+  function getPointFromTouchEvent(event) {
+    if (!event || !event.touches || !event.touches[0]) return null;
+    return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }
+
+  function isTouchPointer(event) {
+    return !!(event && event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen');
+  }
+
+  // Cursor hue glow (fine pointers only)
+  const glow = document.getElementById('cursor-glow');
+  if (glow && cursorEligible) {
+    let tx = -9999;
+    let ty = -9999;
+    let cx = -9999;
+    let cy = -9999;
+
+    document.addEventListener(moveEvent, function (event) {
+      if (isTouchPointer(event)) return;
+      tx = event.clientX;
+      ty = event.clientY;
+    }, { passive: true });
+
+    document.addEventListener(leaveEvent, function () {
+      tx = -9999;
+      ty = -9999;
+    });
+
+    (function tick() {
+      cx += (tx - cx) * 0.075;
+      cy += (ty - cy) * 0.075;
+      glow.style.transform = `translate(calc(${cx}px - 50%), calc(${cy}px - 50%))`;
+      requestAnimationFrame(tick);
+    })();
+  }
+
+  // Cursor push effect (fine pointers only)
+  if (cursorEligible) {
+    const RADIUS = 90;
+    const STRENGTH = 7;
+    const SEL = '#tokenTabs .nav-link, .ad-nav-links a, #loadBtn';
+    let animId = null;
+    let lastX = 0;
+    let lastY = 0;
+
+    function applyPush(ex, ey) {
+      document.querySelectorAll(SEL).forEach(function (el) {
+        const r = el.getBoundingClientRect();
+        const ecx = r.left + r.width / 2;
+        const ecy = r.top + r.height / 2;
+        const dx = ex - ecx;
+        const dy = ey - ecy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < RADIUS && dist > 0) {
+          const f = (1 - dist / RADIUS) * STRENGTH;
+          el.style.transform = `translate(${-dx / dist * f}px, ${-dy / dist * f}px)`;
+        } else {
+          el.style.transform = '';
+        }
+      });
+    }
+
+    document.addEventListener(moveEvent, function (event) {
+      if (isTouchPointer(event)) return;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      cancelAnimationFrame(animId);
+      animId = requestAnimationFrame(function () {
+        applyPush(lastX, lastY);
+      });
+    }, { passive: true });
+
+    document.addEventListener(leaveEvent, function () {
+      document.querySelectorAll(SEL).forEach(function (el) {
+        el.style.transform = '';
+      });
+    });
+  }
+
+  // Cursor click ripple + cursor dot
+  function spawnTapRipple(x, y) {
+    const ripple = document.createElement('span');
+    ripple.className = 'tap-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    document.body.appendChild(ripple);
+    window.setTimeout(function () {
+      ripple.remove();
+    }, 760);
+  }
+
+  if (!reduceMotion) {
+    document.addEventListener(downEvent, function (event) {
+      if (typeof event.clientX === 'number' && typeof event.clientY === 'number') {
+        spawnTapRipple(event.clientX, event.clientY);
+      }
+    }, { passive: true });
+
+    if (!supportsPointer) {
+      document.addEventListener('touchstart', function (event) {
+        const point = getPointFromTouchEvent(event);
+        if (point) spawnTapRipple(point.x, point.y);
+      }, { passive: true });
+    }
+  }
+
+  if (cursorEligible) {
+    const dot = document.getElementById('cursor-dot');
+    if (dot) {
+      document.body.classList.add('has-cursor-effects');
+      dot.style.left = (window.innerWidth / 2) + 'px';
+      dot.style.top = (window.innerHeight / 2) + 'px';
+
+      document.addEventListener(moveEvent, function (event) {
+        if (isTouchPointer(event)) return;
+        dot.style.left = event.clientX + 'px';
+        dot.style.top = event.clientY + 'px';
+      }, { passive: true });
+
+      document.addEventListener(downEvent, function (event) {
+        if (isTouchPointer(event)) return;
+        dot.classList.add('cursor-down');
+      });
+
+      document.addEventListener(upEvent, function () {
+        dot.classList.remove('cursor-down');
+      });
+
+      document.addEventListener('pointercancel', function () {
+        dot.classList.remove('cursor-down');
+      });
+
+      const overEvent = supportsPointer ? 'pointerover' : 'mouseover';
+      document.addEventListener(overEvent, function (event) {
+        const interactive = event.target.closest('a, button, .btn, .nav-link, [role="button"]');
+        if (interactive) {
+          dot.classList.add('cursor-hover');
+        } else {
+          dot.classList.remove('cursor-hover');
+        }
+      });
+    }
+  }
+})();
 </script>
 </body>
 </html>
