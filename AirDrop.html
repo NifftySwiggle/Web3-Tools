@@ -2035,7 +2035,7 @@
             if (transferMethod === 'batch') {
               const batchContractAddress = getBatchContractAddress();
               if (!ethers.isAddress(batchContractAddress)) {
-                setStatus(prev => `${prev}Batch contract not available on ${selectedNetwork?.name || 'this network'}. Contact Niffty: https://x.com/pet_rescueNFT to deploy the contract or switch to another network.\n`);
+                setStatus(prev => `${prev}Batch contract not available on ${selectedNetwork?.name || 'this network'}. Contact Niffty: https://x.com/nifftyswiggle to deploy the contract or switch to another network.\n`);
                 setIsLoading(false);
                 return;
               }
@@ -2131,7 +2131,7 @@
             if (transferMethod === 'batch') {
               const batchContractAddress = getBatchContractAddress();
               if (!ethers.isAddress(batchContractAddress)) {
-                setStatus(prev => `${prev}Batch contract not available on ${selectedNetwork?.name || 'this network'}. Contact Niffty: https://x.com/pet_rescueNFT to deploy the contract or switch to another network.\n`);
+                setStatus(prev => `${prev}Batch contract not available on ${selectedNetwork?.name || 'this network'}. Contact Niffty: https://x.com/nifftyswiggle to deploy the contract or switch to another network.\n`);
                 setIsLoading(false);
                 return;
               }
@@ -2400,7 +2400,7 @@
                   </div>
                 ) : (
                   <p className="mt-2 text-xs text-amber-300">
-                    Batch contract not available on this network. Contact <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer" className="text-sky-300 hover:underline">Niffty</a> to deploy the contract or switch to another network.
+                    Batch contract not available on this network. Contact <a href="https://x.com/nifftyswiggle" target="_blank" rel="noopener noreferrer" className="text-sky-300 hover:underline">Niffty</a> to deploy the contract or switch to another network.
                   </p>
                 )}
               </div>
@@ -2799,7 +2799,7 @@
 
             <footer className="mt-8 text-center text-gray-400 text-sm section-card">
               <p>
-                Developed By <a href="https://x.com/pet_rescueNFT" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">NifftySwiggle. All rights reserved.</a> 
+                Developed By <a href="https://x.com/nifftyswiggle" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">NifftySwiggle. All rights reserved.</a> 
               </p>
              <p>
                 Enjoying the tool? Consider donating to support development:
