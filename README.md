@@ -5,7 +5,7 @@ a growing suite of modular, creator-focused utilities designed to empower develo
 
 🔗 [Live Site](https://nifftyswiggle.pw)  
 💬 [Join the Discord](https://discord.gg/CaSgfqdYCW)  
-🐦 [Follow on X](https://x.com/pet_rescueNFT)
+🐦 [Follow on X](https://x.com/nifftyswiggle)
 
 ---
 
