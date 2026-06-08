@@ -1845,7 +1845,7 @@
               <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                 <strong>🔍 Deep NFT Scan</strong>
                 <button class="btn btn-sm btn-outline-primary" id="deepScanToggleBtn" onclick="toggleDeepScanForm()">Scan Owners</button>
-                <a href="https://nifftyswiggle.pw/airdrop" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info">Use Airdrop Tool</a>
+                <a href="https://nifftyswiggle.com/airdrop" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info">Use Airdrop Tool</a>
               </div>
               <div id="deepScanForm" style="display:none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px;">
                 <div class="mb-2">
@@ -4329,7 +4329,7 @@
         clearDeepScanProgress(contractAddr);
         setDeepScanStatus(`Deep scan complete via transfer history fallback. ${entries.length.toLocaleString()} token owners mapped.`);
       } catch (err) {
-        setDeepScanStatus(`Local file mode has RPC limitations. For better deep scans visit: https://nifftyswiggle.pw/airdrop`);
+        setDeepScanStatus(`Local file mode has RPC limitations. For better deep scans visit: https://nifftyswiggle.com/airdrop`);
       } finally {
         deepScanState.running = false;
         setDeepScanControls(false);
